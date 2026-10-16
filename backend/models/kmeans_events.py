@@ -134,3 +134,61 @@ def assign_cluster_to_users(
         )
 
     return profiles
+
+
+def get_cluster_summary(profiles: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Aggregate per-cluster stats from already pipeline-scored user profiles.
+
+    This function expects profiles that have already been scored and assigned a
+    cluster label by the pipeline. It performs a pure aggregation over the saved
+    user_profiles.json data and returns one summary row per cluster that has at
+    least one user.
+    """
+    grouped_profiles: dict[int, list[dict[str, Any]]] = {}
+    for profile in profiles:
+        try:
+            cluster_label = int(profile.get("cluster_label", 0) or 0)
+        except (TypeError, ValueError):
+            cluster_label = 0
+        grouped_profiles.setdefault(cluster_label, []).append(profile)
+
+    summaries: list[dict[str, Any]] = []
+    for cluster_label in sorted(grouped_profiles):
+        group = grouped_profiles[cluster_label]
+        user_count = len(group)
+        avg_risk_score = (
+            round(
+                sum(float(profile.get("risk_score", 0.0) or 0.0) for profile in group) / user_count,
+                2,
+            )
+            if user_count
+            else 0.0
+        )
+
+        flag_counter: Counter[str] = Counter()
+        for profile in group:
+            flags = profile.get("flags", [])
+            if isinstance(flags, list):
+                flag_counter.update(
+                    str(flag).strip() for flag in flags if str(flag).strip()
+                )
+
+        summaries.append(
+            {
+                "cluster_label": cluster_label,
+                "description": CLUSTER_DESCRIPTIONS.get(cluster_label, "Unknown cluster"),
+                "user_count": user_count,
+                "avg_risk_score": avg_risk_score,
+                "top_flags": [flag for flag, _count in flag_counter.most_common(3)],
+                "critical_count": sum(
+                    1 for profile in group if float(profile.get("risk_score", 0.0) or 0.0) >= 80.0
+                ),
+                "high_count": sum(
+                    1
+                    for profile in group
+                    if 60.0 <= float(profile.get("risk_score", 0.0) or 0.0) < 80.0
+                ),
+            }
+        )
+
+    return summaries

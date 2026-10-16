@@ -31,6 +31,7 @@ A doubt_score of 1.0 means it is almost certainly a false positive."""
 def build_prosecutor_messages(
     profile: dict[str, Any],
     flagged_events: list[dict[str, Any]],
+    breach_summary: str = "",
 ) -> list[dict[str, str]]:
     """Builds the message list for the Prosecutor LLM call."""
     # Summarise flagged events concisely to stay within token budget
@@ -61,6 +62,7 @@ USER PROFILE:
 
 FLAGGED EVENTS ({len(flagged_events)} total, showing up to 15):
 {event_summary}
+{f"\n{breach_summary}" if breach_summary else ""}
 """.strip()
 
     return [
