@@ -1,6 +1,9 @@
 fastapi
 uvicorn[standard]
 pandas
+numpy
 scikit-learn
-anthropic
+openai
+groq
+huggingface_hub
 python-dotenv
