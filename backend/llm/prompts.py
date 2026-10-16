@@ -4,8 +4,9 @@ Two-pass Devil's Advocate prompt templates.
 
 Pass 1 — PROSECUTOR: Build the case against the user with specific evidence.
 Pass 2 — DEVIL'S ADVOCATE: Challenge the prosecution with contextual mitigators.
+Pass 3 — INFERENCE: Synthesise both sides into a final conclusion & remediation plan.
 
-Both prompts demand JSON output so responses are machine-parseable.
+All prompts demand JSON output so responses are machine-parseable.
 """
 from __future__ import annotations
 
@@ -150,6 +151,61 @@ def apply_doubt_gate(prosecution_severity: str, doubt_score: float) -> str:
     elif doubt_score > 0.65:
         severity = SEVERITY_DOWNGRADE.get(severity, severity)
     return severity
+
+
+# ─── Inference (Pass 3) ──────────────────────────────────────────────────────
+
+SYSTEM_INFERENCE = """You are a senior security analyst writing the FINAL VERDICT after hearing
+both the prosecution's case and the defence counsel's challenge.
+Your job is to synthesise both perspectives into an objective, balanced conclusion that:
+  1. States what most likely actually happened (be honest about certainty).
+  2. Provides a concrete, prioritised remediation plan for the security team.
+Do NOT simply repeat what was already said — integrate and resolve the tension between both sides.
+You MUST respond with valid JSON only — no markdown, no explanation outside the JSON."""
+
+
+def build_inference_messages(
+    profile: dict[str, Any],
+    prosecution_text: str,
+    da_text: str,
+    doubt_score: float | None = None,
+    final_severity: str | None = None,
+) -> list[dict[str, str]]:
+    """Builds the message list for the Inference (Pass 3) LLM call."""
+    doubt_line = f"  doubt_score (DA confidence it's a false-positive): {doubt_score:.2f}" if doubt_score is not None else ""
+    severity_line = f"  current_severity: {final_severity}" if final_severity else ""
+
+    context = f"""
+USER: {profile.get('username')} | dept: {profile.get('department')} | role: {profile.get('job_title')} | privilege: {profile.get('privilege_level')}
+{severity_line}
+{doubt_line}
+
+PROSECUTION ARGUMENT:
+{prosecution_text[:800]}
+
+DEVIL'S ADVOCATE CHALLENGE:
+{da_text[:600]}
+""".strip()
+
+    return [
+        {"role": "system", "content": SYSTEM_INFERENCE},
+        {
+            "role": "user",
+            "content": (
+                f"Synthesise the prosecution and defence into a final verdict.\n\n"
+                f"{context}\n\n"
+                "Respond with JSON in exactly this schema:\n"
+                "{\n"
+                '  "what_happened": "<150-300 word balanced assessment of what most likely actually occurred>",\n'
+                '  "confidence": "<HIGH|MEDIUM|LOW — how confident you are in this conclusion>",\n'
+                '  "key_findings": ["<finding 1>", "<finding 2>", ...],\n'
+                '  "remediation_steps": ["<step 1>", "<step 2>", ...],\n'
+                '  "recommended_action": "<ESCALATE|INVESTIGATE|MONITOR|DISMISS>",\n'
+                '  "rationale": "<1-2 sentences explaining why you chose this action>"\n'
+                "}"
+            ),
+        },
+    ]
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────

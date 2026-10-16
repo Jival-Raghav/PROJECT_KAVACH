@@ -60,3 +60,37 @@ export function streamNarrative(userId, { onSection, onChunk, onError, onDone } 
 
   return source
 }
+
+/**
+ * Streams the inference SSE for a user (Pass 3: final verdict).
+ * Collects all chunks and calls onChunk with each text piece.
+ * onDone(rawText) is called when [DONE] arrives with the full raw JSON string.
+ * Returns the EventSource so the caller can close it.
+ */
+export function streamInference(userId, { onChunk, onError, onDone } = {}) {
+  const source = new EventSource(`${BASE_URL}/users/${userId}/inference`)
+  const chunks = []
+
+  source.onmessage = ({ data }) => {
+    if (data === '[DONE]') {
+      source.close()
+      onDone?.(chunks.join(''))
+      return
+    }
+    if (data.startsWith('ERROR')) {
+      source.close()
+      onError?.(data.replace(/^ERROR[:\s]*/, ''))
+      return
+    }
+    if (data.startsWith('[INFERENCE')) return  // section header
+    chunks.push(data)
+    onChunk?.(data)
+  }
+
+  source.onerror = () => {
+    source.close()
+    onError?.('Connection lost. Make sure the backend is running.')
+  }
+
+  return source
+}
