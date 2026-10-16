@@ -1,24 +1,33 @@
-import { Building2, TrendingUp, Users, AlertTriangle } from 'lucide-react'
+import { Building2, TrendingUp, AlertTriangle } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
+/* ── Helpers ──────────────────────────────────────────── */
+
 function barColor(score) {
-  if (score > 35) return '#f43f5e'
-  if (score > 28) return '#f97316'
-  if (score > 22) return '#eab308'
-  return '#22c55e'
+  if (score > 35) return 'var(--c-critical)'
+  if (score > 28) return 'var(--c-review)'
+  if (score > 22) return 'var(--c-review)'
+  return 'var(--c-normal)'
 }
 
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
-    <div className="glass rounded-xl border border-white/10 p-3 text-xs">
-      <div className="font-semibold text-white">{d.department}</div>
-      <div className="mt-1 text-slate-400">Avg Risk: <span className="text-white">{d.avg_score.toFixed(1)}</span></div>
-      {d.count && <div className="text-slate-500">{d.count} anomalies</div>}
+    <div style={{
+      background: 'var(--surface)', border: '1px solid var(--border)',
+      borderRadius: 6, padding: '8px 12px', fontSize: 12,
+    }}>
+      <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{d.department}</div>
+      <div style={{ marginTop: 4, color: 'var(--text-secondary)' }}>
+        Avg Risk: <span style={{ color: 'var(--text-primary)' }}>{d.avg_score.toFixed(1)}</span>
+      </div>
+      {d.count && <div style={{ color: 'var(--text-muted)' }}>{d.count} anomalies</div>}
     </div>
   )
 }
+
+/* ── Component ─────────────────────────────────────────── */
 
 export default function OrgAnomalyPanel({ anomalies, stats }) {
   // Build department stats from anomalies list
@@ -39,34 +48,32 @@ export default function OrgAnomalyPanel({ anomalies, stats }) {
   const topDepts = stats?.top_risky_departments || []
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
-            <Building2 size={18} className="text-indigo-400" /> Org Anomalies
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">
-            {anomalies.length} users flagged as statistical outliers in their department
-          </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Building2 size={15} style={{ color: 'var(--c-info)' }} />
+          <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>Org Anomalies</span>
+          <span className="badge-neutral">{anomalies.length} flagged</span>
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-white">{anomalies.length}</div>
-          <div className="text-xs text-slate-500 uppercase tracking-widest">Anomalies</div>
-        </div>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          Statistical outliers by department
+        </span>
       </div>
 
-      {/* Bar chart */}
+      {/* ── Bar chart ── */}
       {deptData.length > 0 && (
-        <div className="glass rounded-2xl border border-white/10 p-4">
-          <div className="mb-3 text-[11px] uppercase tracking-widest text-slate-500 flex items-center gap-2">
+        <div className="card" style={{ padding: '12px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
             <TrendingUp size={11} /> Avg Risk Score by Department
           </div>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={deptData} layout="vertical" barCategoryGap={6}>
-              <XAxis type="number" domain={[0, 80]} tick={{ fill: '#475569', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="department" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} width={90} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
-              <Bar dataKey="avg_score" radius={[0, 4, 4, 0]}>
+              <XAxis type="number" domain={[0, 80]} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="department" tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} width={90} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--surface-mid)' }} />
+              <Bar dataKey="avg_score" radius={[0, 3, 3, 0]}>
                 {deptData.map((d, i) => <Cell key={i} fill={barColor(d.avg_score)} fillOpacity={0.85} />)}
               </Bar>
             </BarChart>
@@ -74,33 +81,40 @@ export default function OrgAnomalyPanel({ anomalies, stats }) {
         </div>
       )}
 
-      {/* Anomaly cards */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {/* ── Anomaly cards grid ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
         {anomalies.map(user => (
-          <article key={user.user_id} className="glass rounded-2xl border border-white/10 p-4 slide-up hover:border-white/20 transition">
-            <div className="flex items-start justify-between gap-2">
+          <article key={user.user_id} className="card slide-up" style={{ padding: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
               <div>
-                <div className="font-medium text-white text-sm">{user.username}</div>
-                <div className="mt-0.5 text-[11px] uppercase tracking-widest text-slate-500">{user.department}</div>
+                <div style={{ fontWeight: 500, fontSize: 13, color: 'var(--text-primary)' }}>{user.username}</div>
+                <div style={{ marginTop: 2, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)' }}>
+                  {user.department}
+                </div>
               </div>
-              <span className="chip border border-rose-400/40 bg-rose-500/10 text-rose-300 shrink-0">
+              <span className="badge-critical" style={{ flexShrink: 0 }}>
                 {Number(user.risk_score).toFixed(0)}
               </span>
             </div>
-            <div className="mt-3 rounded-xl border border-rose-500/20 bg-rose-500/8 p-3">
-              <div className="flex gap-1.5 text-[10px] uppercase tracking-widest text-rose-400 mb-1">
+
+            <div style={{
+              marginTop: 10, borderRadius: 4, border: '1px solid var(--c-critical-bd)',
+              background: 'var(--c-critical-bg)', padding: '8px 10px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--c-critical)', marginBottom: 4 }}>
                 <AlertTriangle size={10} /> Org Reason
               </div>
-              <div className="text-xs text-slate-300 leading-relaxed">
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
                 {user.org_anomaly?.reason || 'Statistical outlier in department risk distribution.'}
               </div>
             </div>
+
             {user.org_anomaly?.dept_baseline?.avg_risk_score !== undefined && (() => {
               const deptAvg = user.org_anomaly?.dept_baseline?.avg_risk_score
               return (
-                <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+                <div style={{ marginTop: 8, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)' }}>
                   <span>Dept avg: {Number(deptAvg).toFixed(1)}</span>
-                  <span className="text-rose-400">+{(user.risk_score - deptAvg).toFixed(1)} above</span>
+                  <span style={{ color: 'var(--c-critical)' }}>+{(user.risk_score - deptAvg).toFixed(1)} above</span>
                 </div>
               )
             })()}
@@ -109,7 +123,7 @@ export default function OrgAnomalyPanel({ anomalies, stats }) {
       </div>
 
       {anomalies.length === 0 && (
-        <div className="flex h-40 items-center justify-center text-sm text-slate-500">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120, color: 'var(--text-muted)', fontSize: 13 }}>
           No org anomalies detected. Run the pipeline first.
         </div>
       )}

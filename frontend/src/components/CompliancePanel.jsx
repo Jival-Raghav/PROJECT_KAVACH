@@ -1,96 +1,154 @@
+import { useState } from 'react'
 import { ShieldCheck, ShieldAlert, FileWarning } from 'lucide-react'
 
-const FRAMEWORK_STYLE = {
-  'NIST AC-2': { color: 'text-blue-300 border-blue-400/40 bg-blue-500/10', icon: ShieldCheck },
-  'NIST AC-6': { color: 'text-purple-300 border-purple-400/40 bg-purple-500/10', icon: ShieldAlert },
-  'GDPR Art. 32': { color: 'text-rose-300 border-rose-400/40 bg-rose-500/10', icon: FileWarning },
+/* ── Constants ────────────────────────────────────────── */
+
+const FRAMEWORK_META = {
+  'NIST AC-2':   { icon: ShieldCheck,  badgeCls: 'badge-info'     },
+  'NIST AC-6':   { icon: ShieldAlert,  badgeCls: 'badge-critical' },
+  'GDPR Art. 32':{ icon: FileWarning,  badgeCls: 'badge-review'   },
 }
 
-const SEV_BADGE = {
-  HIGH:   'border-rose-400/40 bg-rose-500/10 text-rose-300',
-  MEDIUM: 'border-orange-400/40 bg-orange-500/10 text-orange-300',
-  LOW:    'border-yellow-400/30 bg-yellow-500/10 text-yellow-300',
+const SEV_CLS = {
+  HIGH:   'badge-critical',
+  MEDIUM: 'badge-review',
+  LOW:    'badge-neutral',
 }
+
+const ALL_FRAMEWORKS = ['NIST AC-2', 'NIST AC-6', 'GDPR Art. 32']
+
+/* ── Component ─────────────────────────────────────────── */
 
 export default function CompliancePanel({ users }) {
-  const withGaps = users.filter(u => (u.compliance_gaps || []).length > 0)
+  const [activeFilters, setActiveFilters] = useState([]) // visual-only filter state
+
+  const withGaps  = users.filter(u => (u.compliance_gaps || []).length > 0)
   const totalGaps = users.reduce((s, u) => s + (u.compliance_gaps || []).length, 0)
 
-  // Framework breakdown
+  // Framework breakdown counts
   const fwCount = {}
   users.forEach(u => (u.compliance_gaps || []).forEach(g => {
     const fw = `${g.framework || 'Other'} ${g.control_id || ''}`.trim()
     fwCount[fw] = (fwCount[fw] || 0) + 1
   }))
 
+  const toggleFilter = fw => {
+    setActiveFilters(prev =>
+      prev.includes(fw) ? prev.filter(f => f !== fw) : [...prev, fw]
+    )
+  }
+
+  // Apply visual filter: if no filters active, show all; else show only matching
+  const filteredUsers = activeFilters.length === 0
+    ? withGaps
+    : withGaps.filter(u =>
+        (u.compliance_gaps || []).some(g => {
+          const fw = `${g.framework || 'Other'} ${g.control_id || ''}`.trim()
+          return activeFilters.some(f => fw.startsWith(f))
+        })
+      )
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
-            <ShieldCheck size={18} className="text-indigo-400" /> Compliance Gaps
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">
-            {totalGaps} violations across {withGaps.length} users · NIST AC-2, AC-6, GDPR Art.32
-          </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <ShieldCheck size={15} style={{ color: 'var(--c-info)' }} />
+          <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>Compliance Gaps</span>
+          <span className="badge-neutral">{totalGaps} violations</span>
         </div>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{withGaps.length} users affected</span>
       </div>
 
-      {/* Framework summary */}
-      {Object.keys(fwCount).length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(fwCount).map(([fw, count]) => {
-            const displayKey = fw
-            const s = FRAMEWORK_STYLE[displayKey] || { color: 'text-slate-300 border-white/20 bg-white/5', icon: ShieldCheck }
-            const Icon = s.icon
+      {/* ── Filter chips ── */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {ALL_FRAMEWORKS.map(fw => {
+          const meta = FRAMEWORK_META[fw] || { icon: ShieldCheck, badgeCls: 'badge-neutral' }
+          const Icon = meta.icon
+          const count = fwCount[fw] || 0
+          const isActive = activeFilters.includes(fw)
+          return (
+            <button
+              key={fw}
+              className={`filter-chip${isActive ? ' active' : ''}`}
+              onClick={() => toggleFilter(fw)}
+            >
+              <Icon size={10} />
+              {fw}
+              {count > 0 && <span style={{ marginLeft: 2, opacity: 0.7 }}>· {count}</span>}
+            </button>
+          )
+        })}
+        {activeFilters.length > 0 && (
+          <button
+            className="filter-chip"
+            onClick={() => setActiveFilters([])}
+            style={{ color: 'var(--text-muted)', fontSize: 10 }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* ── User cards grid — 2 columns ── */}
+      {filteredUsers.length === 0 ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120, color: 'var(--text-muted)', fontSize: 13 }}>
+          {withGaps.length === 0 ? 'No compliance gaps detected. Run the pipeline first.' : 'No gaps match selected filters.'}
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+          {filteredUsers.map(user => {
+            const gaps = (user.compliance_gaps || []).filter(g => {
+              if (activeFilters.length === 0) return true
+              const fw = `${g.framework || 'Other'} ${g.control_id || ''}`.trim()
+              return activeFilters.some(f => fw.startsWith(f))
+            })
+
             return (
-              <div key={fw} className={`chip border ${s.color} gap-1.5 px-3 py-1.5`}>
-                <Icon size={10} /> {fw}: {count}
-              </div>
+              <article key={user.user_id} className="card slide-up" style={{ padding: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 500, fontSize: 13, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user.username}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      {user.department} · {user.privilege_level} · <span className="mono">{user.user_id}</span>
+                    </div>
+                  </div>
+                  <span className="badge-critical" style={{ flexShrink: 0 }}>
+                    {gaps.length} gap{gaps.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {gaps.map((gap, i) => {
+                    const displayKey = `${gap.framework || 'Other'} ${gap.control_id || ''}`.trim()
+                    const meta = FRAMEWORK_META[displayKey] || { icon: ShieldAlert, badgeCls: 'badge-neutral' }
+                    const Icon = meta.icon
+                    const sevCls = SEV_CLS[gap.severity] || SEV_CLS.LOW
+                    return (
+                      <div key={i} style={{
+                        borderRadius: 4, border: '1px solid var(--border)',
+                        background: 'var(--surface-mid)', padding: '8px 10px',
+                      }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                          <span className={meta.badgeCls} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <Icon size={9} /> {displayKey}
+                          </span>
+                          <span className={sevCls}>{gap.severity}</span>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{gap.control_name}</span>
+                        </div>
+                        <p style={{ fontSize: 12, lineHeight: 1.55, color: 'var(--text-secondary)', margin: 0 }}>{gap.gap}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </article>
             )
           })}
         </div>
       )}
-
-      {/* User cards */}
-      <div className="space-y-3">
-        {withGaps.length === 0 ? (
-          <div className="flex h-40 items-center justify-center text-sm text-slate-500">
-            No compliance gaps detected. Run the pipeline first.
-          </div>
-        ) : withGaps.map(user => (
-          <article key={user.user_id} className="glass rounded-2xl border border-white/10 p-4 slide-up transition hover:border-white/20">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <div className="font-medium text-white">{user.username}</div>
-                <div className="text-[11px] text-slate-500">{user.department} · {user.privilege_level} · <span className="mono">{user.user_id}</span></div>
-              </div>
-              <span className="chip border border-rose-400/40 bg-rose-500/10 text-rose-300 shrink-0">
-                {user.compliance_gaps.length} gap{user.compliance_gaps.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-
-            <div className="mt-3 space-y-2">
-              {(user.compliance_gaps || []).map((gap, i) => {
-                const displayKey = `${gap.framework || 'Other'} ${gap.control_id || ''}`.trim()
-                const s = FRAMEWORK_STYLE[displayKey] || { color: 'text-slate-400 border-white/15 bg-white/5', icon: ShieldAlert }
-                const Icon = s.icon
-                const sev = SEV_BADGE[gap.severity] || SEV_BADGE.LOW
-                return (
-                  <div key={i} className="rounded-xl border border-white/8 bg-white/4 p-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className={`chip border ${s.color}`}><Icon size={9} /> {displayKey}</span>
-                      <span className={`chip border ${sev}`}>{gap.severity}</span>
-                      <span className="text-[11px] text-slate-400">{gap.control_name}</span>
-                    </div>
-                    <p className="mt-2 text-xs leading-relaxed text-slate-300">{gap.gap}</p>
-                  </div>
-                )
-              })}
-            </div>
-          </article>
-        ))}
-      </div>
     </div>
   )
 }
