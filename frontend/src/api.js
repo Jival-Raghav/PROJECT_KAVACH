@@ -10,6 +10,8 @@ export const getUser      = id => fetch(`${BASE_URL}/users/${id}`).then(err).the
 export const getStats     = () => fetch(`${BASE_URL}/stats`).then(err).then(json)
 export const getOrgAnomalies = () => fetch(`${BASE_URL}/org-anomalies`).then(err).then(json)
 export const getLlmStatus = () => fetch(`${BASE_URL}/llm-status`).then(err).then(json)
+export const getBreachSimulation = userId => fetch(`${BASE_URL}/users/${userId}/breach-simulation`).then(err).then(json)
+export const getClusterSummary = () => fetch(`${BASE_URL}/clusters/summary`).then(err).then(json)
 
 export const postFeedback = (userId, action, note) =>
   fetch(`${BASE_URL}/feedback/${userId}`, {

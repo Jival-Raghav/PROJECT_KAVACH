@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getOrgAnomalies, getStatus, getStats, getUserRisks, runPipeline, getLlmStatus } from './api'
+import { getClusterSummary, getOrgAnomalies, getStatus, getStats, getUserRisks, runPipeline, getLlmStatus } from './api'
 import StatusBar from './components/StatusBar'
 import RiskTable from './components/RiskTable'
 import UserCard from './components/UserCard'
@@ -8,6 +8,7 @@ import OrgAnomalyPanel from './components/OrgAnomalyPanel'
 import FeedbackButtons from './components/FeedbackButtons'
 import BreachImpactPanel from './components/BreachImpactPanel'
 import CompliancePanel from './components/CompliancePanel'
+import ClusterPanel from './components/ClusterPanel'
 
 const emptyStats = {
   total_users: 0, critical_count: 0, high_count: 0, review_count: 0,
@@ -24,19 +25,22 @@ export default function App() {
   const [users, setUsers] = useState([])
   const [stats, setStats] = useState(emptyStats)
   const [orgAnomalies, setOrgAnomalies] = useState([])
+  const [clusters, setClusters] = useState([])
   
   const [selectedUser, setSelectedUser] = useState(null)
   const [activeTab, setActiveTab] = useState('risks')
 
   const loadDashboard = async () => {
     try {
-      const [loadedUsers, loadedStats, loadedOrgAnomalies, loadedLlmStatus] = await Promise.all([
+      const [loadedUsers, loadedStats, loadedOrgAnomalies, loadedLlmStatus, loadedClusters] = await Promise.allSettled([
         getUserRisks(), getStats(), getOrgAnomalies(), getLlmStatus()
+      , getClusterSummary()
       ])
-      setUsers(loadedUsers)
-      setStats(loadedStats)
-      setOrgAnomalies(loadedOrgAnomalies)
-      setLlmStatus(loadedLlmStatus)
+      setUsers(loadedUsers.status === 'fulfilled' ? loadedUsers.value : [])
+      setStats(loadedStats.status === 'fulfilled' ? loadedStats.value : emptyStats)
+      setOrgAnomalies(loadedOrgAnomalies.status === 'fulfilled' ? loadedOrgAnomalies.value : [])
+      setLlmStatus(loadedLlmStatus.status === 'fulfilled' ? loadedLlmStatus.value : null)
+      setClusters(loadedClusters.status === 'fulfilled' ? loadedClusters.value : [])
     } catch (e) {
       console.error('Failed to load dashboard:', e)
     }
@@ -79,8 +83,9 @@ export default function App() {
   const visiblePanel = useMemo(() => {
     if (activeTab === 'org')        return <OrgAnomalyPanel anomalies={orgAnomalies} stats={stats} />
     if (activeTab === 'compliance') return <CompliancePanel users={users} />
+    if (activeTab === 'clusters')   return <ClusterPanel clusters={clusters} />
     return <RiskTable users={users} onSelectUser={setSelectedUser} selectedUser={selectedUser} />
-  }, [activeTab, orgAnomalies, users, stats, selectedUser])
+  }, [activeTab, orgAnomalies, users, stats, selectedUser, clusters])
 
   return (
     <div className="min-h-screen px-4 py-8 text-slate-100 md:px-8">
@@ -110,7 +115,8 @@ export default function App() {
           {[
             { id: 'risks', label: 'Identity Risks' },
             { id: 'org', label: 'Org Anomalies' },
-            { id: 'compliance', label: 'Compliance Gaps' }
+            { id: 'compliance', label: 'Compliance Gaps' },
+            { id: 'clusters', label: 'Behavior Clusters' }
           ].map(t => (
             <button
               key={t.id}
