@@ -1,4 +1,5 @@
 import { Shield, Users } from 'lucide-react'
+import ClusterScatterPlot from './ClusterScatterPlot'
 
 function riskGradient(score) {
   if (score >= 70) return 'from-rose-500 to-red-600'
@@ -14,7 +15,7 @@ function dotClass(level) {
   return 'bg-slate-400'
 }
 
-export default function ClusterPanel({ clusters }) {
+export default function ClusterPanel({ clusters, users, onSelectUser }) {
   if (!clusters || clusters.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center text-sm text-slate-500">
@@ -38,6 +39,8 @@ export default function ClusterPanel({ clusters }) {
           <Users size={12} /> {clusters.length} clusters
         </div>
       </div>
+
+      <ClusterScatterPlot users={users} onSelectUser={onSelectUser} />
 
       <div className="grid gap-3 lg:grid-cols-2">
         {clusters.map(cluster => (

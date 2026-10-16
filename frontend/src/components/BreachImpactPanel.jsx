@@ -1,31 +1,43 @@
-import { useEffect, useRef, useState } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { AlertTriangle, X } from 'lucide-react'
 import { getBreachSimulation } from '../api'
 
-const sensitivityColor = {
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const SENSITIVITY_COLOR = {
   critical: '#ef4444',
-  high: '#f97316',
-  medium: '#eab308',
-  low: '#94a3b8',
+  high:     '#f97316',
+  medium:   '#eab308',
+  low:      '#94a3b8',
 }
 
-const impactStyle = {
+const IMPACT_STYLE = {
   CATASTROPHIC: 'border-rose-400/40 bg-rose-500/10 text-rose-300',
-  SEVERE: 'border-orange-400/40 bg-orange-500/10 text-orange-300',
-  MODERATE: 'border-yellow-400/40 bg-yellow-500/10 text-yellow-300',
-  LOW: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-300',
+  SEVERE:       'border-orange-400/40 bg-orange-500/10 text-orange-300',
+  MODERATE:     'border-yellow-400/40 bg-yellow-500/10 text-yellow-300',
+  LOW:          'border-emerald-400/40 bg-emerald-500/10 text-emerald-300',
 }
 
-const impactGradient = {
+const IMPACT_GRADIENT = {
   CATASTROPHIC: 'from-rose-500 to-red-600',
-  SEVERE: 'from-orange-400 to-amber-500',
-  MODERATE: 'from-yellow-400 to-amber-400',
-  LOW: 'from-emerald-400 to-teal-500',
+  SEVERE:       'from-orange-400 to-amber-500',
+  MODERATE:     'from-yellow-400 to-amber-400',
+  LOW:          'from-emerald-400 to-teal-500',
 }
 
-function truncateLabel(label) {
+// Legend filter definitions
+const LEGEND_ITEMS = [
+  { key: 'critical', label: 'Critical System',   dot: 'bg-rose-500' },
+  { key: 'high',     label: 'High Sensitivity',  dot: 'bg-orange-500' },
+  { key: 'lateral',  label: 'Lateral Reach',     dot: 'bg-indigo-500' },
+  { key: 'user',     label: 'Compromised User',  dot: 'bg-slate-400' },
+]
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function trunc(label, n) {
   if (!label) return ''
-  return label.length > 10 ? `${label.slice(0, 10)}…` : label
+  return label.length > n ? `${label.slice(0, n)}…` : label
 }
 
 function loadD3() {
@@ -33,6 +45,7 @@ function loadD3() {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector('script[data-d3="true"]')
     if (existing) {
+      // Already loading — wait for it
       existing.addEventListener('load', () => resolve(window.d3))
       existing.addEventListener('error', reject)
       return
@@ -47,122 +60,342 @@ function loadD3() {
   })
 }
 
-function Badge({ impact }) {
-  const cls = impactStyle[impact] || impactStyle.LOW
-  return <span className={`chip border ${cls}`}>{impact}</span>
+// Build nodes + links from breach data
+// Lateral nodes connect to direct nodes (distributed evenly), not to user center
+function buildGraph(breachData, username) {
+  const centerNode = {
+    id: `user-${breachData.user_id}`,
+    label: username || breachData.user_id,
+    type: 'user',
+    sensitivity: 'user',
+    radius: 20,
+    color: '#94a3b8',
+  }
+
+  const directNodes = (breachData.directly_accessible || []).map((item, i) => ({
+    id: `direct-${item.system}-${i}`,
+    label: item.system,
+    type: 'direct',
+    sensitivity: item.sensitivity,
+    radius: 13,
+    color: SENSITIVITY_COLOR[item.sensitivity] || SENSITIVITY_COLOR.low,
+  }))
+
+  const lateralNodes = (breachData.lateral_movement_risk || []).map((sys, i) => ({
+    id: `lateral-${sys}-${i}`,
+    label: sys,
+    type: 'lateral',
+    sensitivity: 'lateral',
+    radius: 10,
+    color: '#6366f1',
+  }))
+
+  const nodes = [centerNode, ...directNodes, ...lateralNodes]
+
+  // Direct systems connect to user center (solid lines)
+  const directLinks = directNodes.map(n => ({
+    source: centerNode.id, target: n.id, kind: 'direct'
+  }))
+
+  // Lateral systems connect to a direct node parent (distributed evenly)
+  // This creates a tree structure instead of hub-and-spoke
+  const lateralLinks = lateralNodes.map((n, i) => {
+    const parent = directNodes.length > 0
+      ? directNodes[i % directNodes.length]
+      : centerNode
+    return { source: parent.id, target: n.id, kind: 'lateral' }
+  })
+
+  return { nodes, links: [...directLinks, ...lateralLinks] }
 }
 
-function BreachGraph({ breachData, username }) {
-  const svgRef = useRef(null)
+// ── BreachGraph component ─────────────────────────────────────────────────────
+
+function BreachGraph({ breachData, username, height = 200, interactive = false, activeFilter, onFilterChange }) {
+  const svgRef       = useRef(null)
   const containerRef = useRef(null)
+  const simRef       = useRef(null)
+  const nodesDataRef = useRef([]) // keep ref for filter effect
 
+  // Tooltip state (interactive mode only)
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, node: null })
+
+  // ── Build & render simulation ──────────────────────────────────────────────
   useEffect(() => {
-    if (!breachData || !svgRef.current || !containerRef.current) return undefined
-
-    let simulation = null
+    if (!breachData || !svgRef.current || !containerRef.current) return
     let cancelled = false
 
     const render = async () => {
       const d3 = await loadD3()
       if (cancelled || !svgRef.current || !containerRef.current) return
 
-      const width = containerRef.current.clientWidth || 640
-      const height = 280
+      const width  = containerRef.current.clientWidth || 500
+      const { nodes, links } = buildGraph(breachData, username)
+      nodesDataRef.current = nodes
+
       const svg = d3.select(svgRef.current)
       svg.selectAll('*').remove()
-      svg.attr('viewBox', `0 0 ${width} ${height}`).attr('preserveAspectRatio', 'xMidYMid meet')
+      svg
+        .attr('viewBox', `0 0 ${width} ${height}`)
+        .attr('preserveAspectRatio', 'xMidYMid meet')
 
-      const centerNode = {
-        id: `user-${breachData.user_id}`,
-        label: username || breachData.user_id,
-        type: 'user',
-        radius: 20,
-        color: '#f43f5e',
-      }
-
-      const directNodes = (breachData.directly_accessible || []).map((item, index) => ({
-        id: `direct-${item.system}-${index}`,
-        label: item.system,
-        type: 'direct',
-        radius: 12,
-        color: sensitivityColor[item.sensitivity] || sensitivityColor.low,
-      }))
-
-      const lateralNodes = (breachData.lateral_movement_risk || []).map((system, index) => ({
-        id: `lateral-${system}-${index}`,
-        label: system,
-        type: 'lateral',
-        radius: 10,
-        color: '#6366f1',
-      }))
-
-      const nodes = [centerNode, ...directNodes, ...lateralNodes]
-
-      const links = [
-        ...directNodes.map(node => ({ source: centerNode.id, target: node.id, kind: 'direct' })),
-        ...lateralNodes.map(node => ({ source: centerNode.id, target: node.id, kind: 'lateral' })),
-      ]
-
-      const linkSelection = svg.append('g').attr('stroke', '#334155').attr('stroke-opacity', 0.7)
-        .selectAll('line')
+      // ── Edges ──
+      const linkG = svg.append('g').attr('class', 'links')
+      const linkSel = linkG.selectAll('line')
         .data(links)
         .enter()
         .append('line')
-        .attr('stroke-width', 1.5)
-        .attr('stroke-dasharray', d => d.kind === 'lateral' ? '4,3' : '0')
+        .attr('stroke', d => d.kind === 'lateral' ? '#4f46e5' : '#334155')
+        .attr('stroke-opacity', 0.6)
+        .attr('stroke-width', d => d.kind === 'direct' ? 1.8 : 1.2)
+        .attr('stroke-dasharray', d => d.kind === 'lateral' ? '5,3' : '0')
 
-      const nodeGroup = svg.append('g').selectAll('g').data(nodes).enter().append('g').style('cursor', 'default')
+      // ── Nodes ──
+      const nodeG = svg.append('g').attr('class', 'nodes')
+      const nodeSel = nodeG.selectAll('g')
+        .data(nodes)
+        .enter()
+        .append('g')
+        .attr('class', 'node-group')
+        .style('cursor', interactive ? 'pointer' : 'default')
 
-      nodeGroup.append('circle')
+      // Circle
+      nodeSel.append('circle')
         .attr('r', d => d.radius)
         .attr('fill', d => d.color)
-        .attr('stroke', d => d.type === 'lateral' ? '#a5b4fc' : 'rgba(255,255,255,0.2)')
+        .attr('fill-opacity', d => d.type === 'user' ? 0.25 : 0.85)
+        .attr('stroke', d => {
+          if (d.type === 'user')    return '#94a3b8'
+          if (d.type === 'lateral') return '#818cf8'
+          return 'rgba(255,255,255,0.25)'
+        })
         .attr('stroke-width', d => d.type === 'lateral' ? 1.5 : 1)
         .attr('stroke-dasharray', d => d.type === 'lateral' ? '3,2' : '0')
 
-      nodeGroup.append('text')
-        .text(d => truncateLabel(d.label))
-        .attr('y', d => d.radius + 12)
+      // Label
+      nodeSel.append('text')
+        .attr('y', d => d.radius + (interactive ? 14 : 11))
         .attr('text-anchor', 'middle')
-        .attr('font-size', '9px')
+        .attr('font-size', interactive ? '10px' : '8px')
         .attr('fill', '#94a3b8')
+        .attr('pointer-events', 'none')
+        .text(d => interactive ? d.label : trunc(d.label, 8))
 
-      simulation = d3.forceSimulation(nodes)
-        .force('link', d3.forceLink(links).id(d => d.id).distance(80).strength(0.5))
-        .force('charge', d3.forceManyBody().strength(-200))
+      // ── Tooltip events (interactive only) ──
+      if (interactive) {
+        nodeSel
+          .on('mouseenter', (event, d) => {
+            const rect = containerRef.current.getBoundingClientRect()
+            setTooltip({
+              visible: true,
+              x: event.clientX - rect.left + 12,
+              y: event.clientY - rect.top - 10,
+              node: d,
+            })
+          })
+          .on('mousemove', (event) => {
+            const rect = containerRef.current.getBoundingClientRect()
+            setTooltip(prev => ({
+              ...prev,
+              x: event.clientX - rect.left + 12,
+              y: event.clientY - rect.top - 10,
+            }))
+          })
+          .on('mouseleave', () => setTooltip({ visible: false, x: 0, y: 0, node: null }))
+      }
+
+      // ── Force simulation ──
+      const sim = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(d => d.id)
+          .distance(d => d.kind === 'lateral' ? 70 : 100)
+          .strength(0.6))
+        .force('charge', d3.forceManyBody().strength(interactive ? -280 : -180))
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(30))
+        .force('collision', d3.forceCollide().radius(d => d.radius + (interactive ? 18 : 12)))
 
-      simulation.on('tick', () => {
-        linkSelection
+      sim.on('tick', () => {
+        linkSel
           .attr('x1', d => d.source.x)
           .attr('y1', d => d.source.y)
           .attr('x2', d => d.target.x)
           .attr('y2', d => d.target.y)
-
-        nodeGroup.attr('transform', d => `translate(${d.x},${d.y})`)
+        nodeSel.attr('transform', d => `translate(${d.x ?? 0},${d.y ?? 0})`)
       })
+
+      simRef.current = sim
     }
 
     render()
 
     return () => {
       cancelled = true
-      if (simulation) simulation.stop()
+      simRef.current?.stop()
+      setTooltip({ visible: false, x: 0, y: 0, node: null })
     }
-  }, [breachData, username])
+  }, [breachData, username, height, interactive])
+
+  // ── Filter effect — runs independently when activeFilter changes ───────────
+  useEffect(() => {
+    if (!svgRef.current || !interactive) return
+    const d3 = window.d3
+    if (!d3) return
+
+    const svg = d3.select(svgRef.current)
+
+    const nodeMatch = d => {
+      if (!activeFilter) return true
+      if (activeFilter === 'critical') return d.sensitivity === 'critical'
+      if (activeFilter === 'high')     return d.sensitivity === 'high'
+      if (activeFilter === 'lateral')  return d.type === 'lateral'
+      if (activeFilter === 'user')     return d.type === 'user'
+      return true
+    }
+
+    // Update circles
+    svg.selectAll('.node-group circle')
+      .transition().duration(200)
+      .attr('opacity', d => nodeMatch(d) ? 1 : 0.1)
+      .attr('r', d => nodeMatch(d) && activeFilter ? d.radius + 3 : d.radius)
+
+    // Update labels
+    svg.selectAll('.node-group text')
+      .transition().duration(200)
+      .attr('opacity', d => nodeMatch(d) ? 1 : 0.08)
+      .attr('fill', d => nodeMatch(d) && activeFilter ? '#e2e8f0' : '#94a3b8')
+      .attr('font-size', d => nodeMatch(d) && activeFilter ? '11px' : '10px')
+
+    // Update edges — dim if neither endpoint matches
+    svg.selectAll('.links line')
+      .transition().duration(200)
+      .attr('stroke-opacity', d => {
+        if (!activeFilter) return 0.6
+        const srcMatch = nodeMatch(d.source)
+        const tgtMatch = nodeMatch(d.target)
+        return (srcMatch || tgtMatch) ? 0.6 : 0.04
+      })
+  }, [activeFilter, interactive])
 
   return (
-    <div ref={containerRef} className="w-full">
-      <svg ref={svgRef} className="h-[280px] w-full" />
+    <div ref={containerRef} className="relative w-full">
+      <svg ref={svgRef} style={{ height, width: '100%' }} />
+
+      {/* Hover tooltip */}
+      {interactive && tooltip.visible && tooltip.node && (
+        <div
+          className="pointer-events-none absolute z-10 rounded-xl border border-white/10 bg-slate-900/95 p-3 text-xs shadow-xl backdrop-blur"
+          style={{ left: tooltip.x, top: tooltip.y, maxWidth: 180 }}
+        >
+          <div className="font-semibold text-white">{tooltip.node.label}</div>
+          {tooltip.node.type !== 'user' && (
+            <div className="mt-1 text-slate-400">
+              Sensitivity: <span className="text-slate-200 capitalize">{tooltip.node.sensitivity}</span>
+            </div>
+          )}
+          <div className="mt-0.5 text-slate-400">
+            Type: <span className="text-slate-200">
+              {tooltip.node.type === 'user'    ? 'Compromised User'  :
+               tooltip.node.type === 'direct'  ? 'Direct Access'     :
+               'Lateral Reach'}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
+// ── Interactive legend ────────────────────────────────────────────────────────
+
+function GraphLegend({ activeFilter, onFilterChange }) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {LEGEND_ITEMS.map(item => {
+        const isActive = activeFilter === item.key
+        return (
+          <button
+            key={item.key}
+            onClick={() => onFilterChange(isActive ? null : item.key)}
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-widest transition ${
+              isActive
+                ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300'
+                : 'border-white/10 bg-white/5 text-slate-500 hover:border-white/20 hover:text-slate-300'
+            }`}
+          >
+            <span className={`h-2 w-2 rounded-full ${item.dot}`} />
+            {item.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Full-screen modal ─────────────────────────────────────────────────────────
+
+function GraphModal({ breachData, username, onClose }) {
+  const [activeFilter, setActiveFilter] = useState(null)
+
+  // Close on Escape key
+  useEffect(() => {
+    const handler = e => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative flex w-[60vw] flex-col rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-2xl"
+        style={{ height: '70vh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <div className="text-[11px] uppercase tracking-widest text-slate-500">Lateral Movement Graph</div>
+            <div className="mt-0.5 font-semibold text-white">{username}</div>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* Graph fills remaining space */}
+        <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-white/5 bg-black/30">
+          <BreachGraph
+            breachData={breachData}
+            username={username}
+            height={420}
+            interactive={true}
+            activeFilter={activeFilter}
+            onFilterChange={setActiveFilter}
+          />
+        </div>
+
+        {/* Interactive legend at bottom */}
+        <GraphLegend activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+
+        <p className="mt-3 text-center text-[10px] text-slate-600">
+          Click a legend item to highlight · Hover nodes for details · Press Esc to close
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ── Main panel ────────────────────────────────────────────────────────────────
+
 export default function BreachImpactPanel({ user }) {
-  const [breachData, setBreachData] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [breachData,  setBreachData]  = useState(null)
+  const [loading,     setLoading]     = useState(false)
+  const [error,       setError]       = useState('')
+  const [showModal,   setShowModal]   = useState(false)
 
   useEffect(() => {
     let active = true
@@ -171,7 +404,7 @@ export default function BreachImpactPanel({ user }) {
       setBreachData(null)
       setLoading(false)
       setError('')
-      return undefined
+      return
     }
 
     setLoading(true)
@@ -179,113 +412,117 @@ export default function BreachImpactPanel({ user }) {
     setBreachData(null)
 
     getBreachSimulation(user.user_id)
-      .then(data => {
-        if (!active) return
-        setBreachData(data)
-      })
-      .catch(() => {
-        if (!active) return
-        setError('Could not load breach simulation')
-      })
-      .finally(() => {
-        if (!active) return
-        setLoading(false)
-      })
+      .then(data  => { if (active) setBreachData(data) })
+      .catch(()   => { if (active) setError('Could not load breach simulation') })
+      .finally(() => { if (active) setLoading(false) })
 
-    return () => {
-      active = false
-    }
-  }, [user])
+    return () => { active = false }
+  }, [user?.user_id])
 
   if (!user) return null
 
   return (
-    <section className="glass rounded-2xl border border-white/10 p-5 slide-up">
-      <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-slate-500">
-        <AlertTriangle size={12} className="text-rose-400" /> Breach Impact
-      </div>
-
-      {loading && (
-        <div className="mt-4 flex h-40 items-center justify-center text-sm text-slate-500">
-          Loading breach simulation...
+    <>
+      <section className="glass rounded-2xl border border-white/10 p-5 slide-up">
+        {/* Section label */}
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-slate-500">
+          <AlertTriangle size={12} className="text-rose-400" /> Breach Impact
         </div>
-      )}
 
-      {!loading && error && (
-        <div className="mt-4 rounded-xl border border-rose-400/20 bg-rose-500/10 p-3 text-sm text-rose-300">
-          {error}
-        </div>
-      )}
-
-      {!loading && !error && breachData && (
-        <div className="mt-4 space-y-4">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-1">
-              <div className="text-[10px] uppercase tracking-widest text-slate-500">Estimated Impact</div>
-              <div className="mt-2">
-                <Badge impact={breachData.estimated_impact} />
-              </div>
-              <div className="mt-3 text-xs text-slate-400">
-                {breachData.pivot_user_count} users reachable via lateral movement
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-2">
-              <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-slate-500">
-                <span>Data Sensitivity Score</span>
-                <span className="text-slate-300">{Number(breachData.data_sensitivity_score).toFixed(1)} / 100</span>
-              </div>
-              <div className="mt-3 risk-bar">
-                <div className={`risk-bar-fill bg-gradient-to-r ${impactGradient[breachData.estimated_impact] || impactGradient.LOW}`} style={{ width: `${breachData.data_sensitivity_score}%` }} />
-              </div>
-              <div className="mt-4 text-xs text-slate-400">
-                {breachData.pivot_user_ids?.length || 0} pivot users identified
-              </div>
-            </div>
+        {/* Loading */}
+        {loading && (
+          <div className="mt-4 flex h-32 items-center justify-center text-sm text-slate-500">
+            Simulating breach paths…
           </div>
+        )}
 
-          <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-            <BreachGraph breachData={breachData} username={user.username} />
-            <div className="mt-3 flex flex-wrap gap-3 text-[10px] uppercase tracking-widest text-slate-500">
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rose-500" /> Critical system</span>
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-orange-500" /> High sensitivity</span>
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-indigo-500" /> Lateral reach</span>
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-slate-500" /> User</span>
-            </div>
+        {/* Error */}
+        {!loading && error && (
+          <div className="mt-4 rounded-xl border border-rose-400/20 bg-rose-500/10 p-3 text-sm text-rose-300">
+            {error}
           </div>
+        )}
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="mb-3 text-[10px] uppercase tracking-widest text-slate-500">Direct Access</div>
-              <div className="space-y-2">
-                {(breachData.directly_accessible || []).map(item => (
-                  <div key={item.system} className="flex items-center justify-between rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-slate-200">
-                    <span>{item.system}</span>
-                    <span className="chip border border-white/10 bg-white/5 text-[10px] text-slate-300">
-                      {item.sensitivity}
-                    </span>
-                  </div>
+        {/* Content */}
+        {!loading && !error && breachData && (
+          <div className="mt-4 space-y-4">
+
+            {/* Impact header row */}
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/8 bg-white/4 p-4">
+                <div className="text-[10px] uppercase tracking-widest text-slate-500">Estimated Impact</div>
+                <div className="mt-2">
+                  <span className={`chip border ${IMPACT_STYLE[breachData.estimated_impact] || IMPACT_STYLE.LOW}`}>
+                    {breachData.estimated_impact}
+                  </span>
+                </div>
+                <div className="mt-3 text-xs text-slate-400">
+                  {breachData.pivot_user_count} users reachable
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/8 bg-white/4 p-4 sm:col-span-2">
+                <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-slate-500">
+                  <span>Data Sensitivity Score</span>
+                  <span className="text-slate-300">{Number(breachData.data_sensitivity_score).toFixed(1)} / 100</span>
+                </div>
+                <div className="mt-3 risk-bar">
+                  <div
+                    className={`risk-bar-fill bg-gradient-to-r ${IMPACT_GRADIENT[breachData.estimated_impact] || IMPACT_GRADIENT.LOW}`}
+                    style={{ width: `${breachData.data_sensitivity_score}%` }}
+                  />
+                </div>
+                <div className="mt-3 text-xs text-slate-400">
+                  {breachData.lateral_movement_risk?.length || 0} systems in lateral reach
+                </div>
+              </div>
+            </div>
+
+            {/* Collapsed graph */}
+            <div className="rounded-2xl border border-white/8 bg-black/30 p-3">
+              <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">
+                Attack Path Preview
+              </div>
+              <BreachGraph
+                breachData={breachData}
+                username={user.username}
+                height={200}
+                interactive={false}
+                activeFilter={null}
+                onFilterChange={() => {}}
+              />
+
+              {/* Static mini legend (not interactive — save that for modal) */}
+              <div className="mt-2 flex flex-wrap gap-3 text-[10px] text-slate-600">
+                {LEGEND_ITEMS.map(item => (
+                  <span key={item.key} className="flex items-center gap-1">
+                    <span className={`h-1.5 w-1.5 rounded-full ${item.dot}`} />
+                    {item.label}
+                  </span>
                 ))}
               </div>
+
+              {/* Expand button */}
+              <button
+                onClick={() => setShowModal(true)}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs text-slate-400 transition hover:border-cyan-500/30 hover:bg-cyan-500/5 hover:text-cyan-300"
+              >
+                View Full Graph ↗
+              </button>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="mb-3 text-[10px] uppercase tracking-widest text-slate-500">Lateral Reach</div>
-              <div className="space-y-2">
-                {(breachData.lateral_movement_risk || []).map(system => (
-                  <div key={system} className="flex items-center justify-between rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-3 py-2 text-sm text-indigo-200">
-                    <span>{system}</span>
-                    <span className="chip border border-indigo-400/30 bg-indigo-500/10 text-[10px] text-indigo-200">pivot</span>
-                  </div>
-                ))}
-                {(breachData.lateral_movement_risk || []).length === 0 && (
-                  <div className="text-sm text-slate-500">No lateral reach identified.</div>
-                )}
-              </div>
-            </div>
           </div>
-        </div>
+        )}
+      </section>
+
+      {/* Full-screen modal */}
+      {showModal && breachData && (
+        <GraphModal
+          breachData={breachData}
+          username={user.username}
+          onClose={() => setShowModal(false)}
+        />
       )}
-    </section>
+    </>
   )
 }
