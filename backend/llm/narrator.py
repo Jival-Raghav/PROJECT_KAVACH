@@ -235,7 +235,7 @@ def stream_narrative(
     prosecution_result = _parse_json_response("".join(prosecution_chunks))
 
     # ── Stream Pass 2: Devil's Advocate (Ollama) ────────────────────────────
-    yield f"data: \n\n[DEVIL'S ADVOCATE — {da.name()}]\n\n"
+    yield f"data: [DEVIL'S ADVOCATE — {da.name()}]\n\n"
     da_messages = build_devils_advocate_messages(profile, flagged_events, prosecution_result)
 
     try:

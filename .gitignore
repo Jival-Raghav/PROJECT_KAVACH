@@ -137,5 +137,5 @@ venv.bak/
 Process/
 **/.vscode/
 **/.vscode/*
-
-
+**/pyrightconfig.json
+pyrightconfig.json
