@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { AlertTriangle, X } from 'lucide-react'
 import { getBreachSimulation } from '../api'
 
@@ -447,7 +448,7 @@ function GraphModal({ breachData, username, onClose }) {
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
 
-  return (
+  return createPortal(
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
@@ -552,7 +553,8 @@ function GraphModal({ breachData, username, onClose }) {
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -702,7 +704,7 @@ export default function BreachImpactPanel({ user }) {
 
                 {/* Expand button */}
                 <button
-                  onClick={() => setShowModal(true)}
+                  onClick={e => { e.stopPropagation(); setShowModal(true) }}
                   style={{
                     width: '100%', marginTop: 12, height: 32, cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
