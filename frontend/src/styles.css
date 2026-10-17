@@ -23,27 +23,31 @@
   --text-secondary: #B0B0B0;
   --text-muted:     #6B6B6B;
 
-  /* SG Brand Red */
-  --sg-red:        #E3000B;
-  --sg-red-hover:  #C40009;
-  --sg-red-subtle: rgba(227,0,11,0.10);
-  --sg-red-border: rgba(227,0,11,0.28);
+  /* Brand Accent: Electric Cyan & Indigo Command Center */
+  --accent:        #00E5FF;
+  --accent-hover:  #00B8D4;
+  --accent-subtle: rgba(0,229,255,0.12);
+  --accent-border: rgba(0,229,255,0.30);
+  --sg-red:        #00E5FF;
+  --sg-red-hover:  #00B8D4;
+  --sg-red-subtle: rgba(0,229,255,0.12);
+  --sg-red-border: rgba(0,229,255,0.30);
 
   /* Semantic risk colours */
-  --c-critical:    #E3000B;
-  --c-review:      #E8870A;
-  --c-normal:      #1D9E75;
-  --c-info:        #378ADD;
+  --c-critical:    #EF4444;
+  --c-review:      #F59E0B;
+  --c-normal:      #10B981;
+  --c-info:        #00E5FF;
 
   /* Semantic subtles */
-  --c-critical-bg: rgba(227,0,11,0.10);
-  --c-critical-bd: rgba(227,0,11,0.28);
-  --c-review-bg:   rgba(232,135,10,0.10);
-  --c-review-bd:   rgba(232,135,10,0.28);
-  --c-normal-bg:   rgba(29,158,117,0.10);
-  --c-normal-bd:   rgba(29,158,117,0.28);
-  --c-info-bg:     rgba(55,138,221,0.10);
-  --c-info-bd:     rgba(55,138,221,0.28);
+  --c-critical-bg: rgba(239,68,68,0.12);
+  --c-critical-bd: rgba(239,68,68,0.30);
+  --c-review-bg:   rgba(245,158,11,0.12);
+  --c-review-bd:   rgba(245,158,11,0.30);
+  --c-normal-bg:   rgba(16,185,129,0.12);
+  --c-normal-bd:   rgba(16,185,129,0.30);
+  --c-info-bg:     rgba(0,229,255,0.12);
+  --c-info-bd:     rgba(0,229,255,0.30);
 
   /* Misc */
   --shadow:        none;
@@ -125,7 +129,7 @@ html, body, #root {
 
 .sg-stripe {
   height: 2px;
-  background: var(--sg-red);
+  background: linear-gradient(90deg, #00E5FF 0%, #6366F1 50%, #00E5FF 100%);
   flex-shrink: 0;
 }
 

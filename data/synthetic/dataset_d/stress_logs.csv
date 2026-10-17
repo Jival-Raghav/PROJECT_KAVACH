@@ -1,0 +1,4 @@
+ts_event,usr_key,op_verb,target_res,ip_addr,is_ok_yn,extra_junk_col
+2026-03-22 08:30:00,user_991,LOGIN,SRV-ALPHA,192.168.1.50,Y,col_dummy_1
+2026-03-22T09:15:00Z,user_992,QUERY,DB-CROWN,10.0.0.12,Y,col_dummy_2
+2026/03/22 14:10:00,user_991,DELETE_ROW,CUSTOMER_TABLE,192.168.1.50,N,col_dummy_3

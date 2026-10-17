@@ -8,15 +8,29 @@ import FeedbackButtons  from './components/FeedbackButtons'
 import BreachImpactPanel from './components/BreachImpactPanel'
 import CompliancePanel  from './components/CompliancePanel'
 import ClusterPanel     from './components/ClusterPanel'
+import Connect          from './pages/Connect'
+import Mapping          from './pages/Mapping'
+import UnifiedSchemaView from './pages/UnifiedSchema'
+import ResolutionView   from './pages/Resolution'
+import CaseDetail       from './pages/CaseDetail'
+import GraphView        from './pages/GraphView'
+import Remediation      from './pages/Remediation'
+import ComplianceView   from './pages/Compliance'
+import AISecurityView   from './pages/AISecurity'
 import { Cpu, Loader2, Moon, Play, Shield, Sun } from 'lucide-react'
 
 /* ── Constants ─────────────────────────────────────────── */
 
 const TABS = [
-  { id: 'risks',      label: 'Identity Risks' },
-  { id: 'org',        label: 'Org Anomalies' },
-  { id: 'compliance', label: 'Compliance Gaps' },
-  { id: 'clusters',   label: 'Behavior Clusters' },
+  { id: 'autopilot',   label: 'Schema Autopilot' },
+  { id: 'resolution',  label: 'Identity Resolution' },
+  { id: 'risks',       label: 'Identity Risks' },
+  { id: 'investigate', label: 'Case Investigation' },
+  { id: 'graph',       label: 'Access Graph & Paths' },
+  { id: 'remediation', label: 'Remediation Queue' },
+  { id: 'compliance',  label: 'Posture & Compliance' },
+  { id: 'security',    label: 'AI & NHI Security' },
+  { id: 'clusters',    label: 'Behavior Clusters' },
 ]
 
 const emptyStats = {
@@ -50,7 +64,9 @@ export default function App() {
 
   /* UI state */
   const [selectedUser, setSelectedUser] = useState(null)
-  const [activeTab,    setActiveTab]    = useState('risks')
+  const [activeTab,    setActiveTab]    = useState('autopilot')
+  const [wizardStep,   setWizardStep]   = useState('connect')
+  const [ingestedSources, setIngestedSources] = useState([])
 
   /* ── Data loading ──────────────────────────────────────── */
   const loadDashboard = async () => {
@@ -102,11 +118,63 @@ export default function App() {
 
   /* ── Tab content ────────────────────────────────────────── */
   const visiblePanel = useMemo(() => {
-    if (activeTab === 'org')        return <OrgAnomalyPanel anomalies={orgAnomalies} stats={stats} />
-    if (activeTab === 'compliance') return <CompliancePanel users={users} />
-    if (activeTab === 'clusters')   return <ClusterPanel clusters={clusters} users={users} onSelectUser={setSelectedUser} />
+    if (activeTab === 'autopilot') {
+      if (wizardStep === 'connect') {
+        return (
+          <Connect
+            sources={ingestedSources}
+            setSources={setIngestedSources}
+            onNext={() => setWizardStep('mapping')}
+          />
+        )
+      } else if (wizardStep === 'mapping') {
+        return (
+          <Mapping
+            sources={ingestedSources}
+            onBack={() => setWizardStep('connect')}
+            onNext={() => setWizardStep('unified')}
+          />
+        )
+      } else {
+        return (
+          <UnifiedSchemaView
+            sources={ingestedSources}
+            onBack={() => setWizardStep('mapping')}
+            onRunComplete={() => {
+              setActiveTab('resolution')
+              onRunPipeline()
+            }}
+          />
+        )
+      }
+    }
+    if (activeTab === 'resolution') return <ResolutionView />
+    if (activeTab === 'investigate') {
+      return (
+        <CaseDetail
+          currentUserId={selectedUser?.user_id || 'USR00173'}
+          onSelectUser={(uid) => {
+            const found = users.find(u => (u.user_id || u.canonical_id) === uid)
+            if (found) setSelectedUser(found)
+          }}
+        />
+      )
+    }
+    if (activeTab === 'graph') {
+      return (
+        <GraphView
+          selectedAccount={selectedUser?.user_id || 'USR00173'}
+          onNavigateToRemediation={() => setActiveTab('remediation')}
+        />
+      )
+    }
+    if (activeTab === 'remediation') return <Remediation />
+    if (activeTab === 'compliance') return <ComplianceView />
+    if (activeTab === 'security') return <AISecurityView />
+    if (activeTab === 'org') return <OrgAnomalyPanel anomalies={orgAnomalies} stats={stats} />
+    if (activeTab === 'clusters') return <ClusterPanel clusters={clusters} users={users} onSelectUser={setSelectedUser} />
     return <RiskTable users={users} onSelectUser={setSelectedUser} selectedUser={selectedUser} />
-  }, [activeTab, orgAnomalies, users, stats, selectedUser, clusters])
+  }, [activeTab, wizardStep, ingestedSources, orgAnomalies, users, stats, selectedUser, clusters])
 
   const isRunning = pipelineStatus === 'running'
 
@@ -114,7 +182,7 @@ export default function App() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
 
-      {/* ── SG red stripe ── */}
+      {/* ── Cyan/Indigo gradient stripe ── */}
       <div className="sg-stripe" />
 
       {/* ══════════════════ NAV BAR ══════════════════ */}
@@ -124,9 +192,9 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flexShrink: 0 }}>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: 28, height: 28, borderRadius: 4, background: 'var(--sg-red)', flexShrink: 0,
+            width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg, #00E5FF, #6366F1)', flexShrink: 0,
           }}>
-            <Shield size={14} color="#ffffff" strokeWidth={2.5} />
+            <Shield size={15} color="#090D16" strokeWidth={2.5} />
           </div>
           <div style={{ minWidth: 0 }}>
             <div className="nav-logo">ISPAD</div>
@@ -214,12 +282,19 @@ export default function App() {
         {/* Right panel — slides in when a user is selected */}
         {selectedUser && (
           <aside className="right-panel slide-in-right">
-            <UserCard        user={selectedUser} onClose={() => setSelectedUser(null)} />
+            <UserCard
+              user={selectedUser}
+              onClose={() => setSelectedUser(null)}
+              onInvestigate={(u) => {
+                setSelectedUser(u)
+                setActiveTab('investigate')
+              }}
+            />
             <NarrativePanel  user={selectedUser} />
             <BreachImpactPanel user={selectedUser} />
             <FeedbackButtons user={selectedUser} />
             <div style={{ paddingTop: 4, textAlign: 'center', fontSize: 10, color: 'var(--text-muted)' }}>
-              Powered by Société Générale Hackathon
+              ISPAD v2 · Enterprise Identity Risk Platform
             </div>
           </aside>
         )}

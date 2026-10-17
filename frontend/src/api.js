@@ -98,3 +98,146 @@ export function streamInference(userId, { onChunk, onError, onDone } = {}) {
 
   return source
 }
+
+/* ─── Phase 1: Schema Autopilot & Unified Schema API ─────── */
+
+export const uploadSourceFile = (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return fetch(`${BASE_URL}/api/sources`, {
+    method: 'POST',
+    body: formData,
+  }).then(err).then(json)
+}
+
+export const registerSqlSource = (sqlConfig) => {
+  const formData = new FormData()
+  formData.append('sql_config', JSON.stringify(sqlConfig))
+  return fetch(`${BASE_URL}/api/sources`, {
+    method: 'POST',
+    body: formData,
+  }).then(err).then(json)
+}
+
+export const getSourceProfile = (sourceId) =>
+  fetch(`${BASE_URL}/api/sources/${sourceId}/profile`).then(err).then(json)
+
+export const proposeSourceMapping = (sourceId, targetRole = null, useLlm = true) =>
+  fetch(`${BASE_URL}/api/sources/${sourceId}/propose-mapping`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target_role: targetRole, use_llm: useLlm }),
+  }).then(err).then(json)
+
+export const saveMappingProfile = (profileId, payload) =>
+  fetch(`${BASE_URL}/api/mappings/${profileId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).then(err).then(json)
+
+export const previewMapping = (profileId, payload) =>
+  fetch(`${BASE_URL}/api/mappings/${profileId}/preview`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).then(err).then(json)
+
+export const proposeUnifiedSchema = (draftId, sourceIds) =>
+  fetch(`${BASE_URL}/api/drafts/${draftId}/unified-schema/propose`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ source_ids: sourceIds }),
+  }).then(err).then(json)
+
+export const getUnifiedSchema = (schemaId) =>
+  fetch(`${BASE_URL}/api/unified-schema/${schemaId}`).then(err).then(json)
+
+export const patchUnifiedSchema = (schemaId, ops) =>
+  fetch(`${BASE_URL}/api/unified-schema/${schemaId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(ops),
+  }).then(err).then(json)
+
+export const deriveFieldFromText = (schemaId, prompt) =>
+  fetch(`${BASE_URL}/api/unified-schema/${schemaId}/derive-from-text`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  }).then(err).then(json)
+
+export const undoUnifiedSchema = (schemaId) =>
+  fetch(`${BASE_URL}/api/unified-schema/${schemaId}/undo`, { method: 'POST' }).then(err).then(json)
+
+export const redoUnifiedSchema = (schemaId) =>
+  fetch(`${BASE_URL}/api/unified-schema/${schemaId}/redo`, { method: 'POST' }).then(err).then(json)
+
+export const resetUnifiedSchema = (schemaId) =>
+  fetch(`${BASE_URL}/api/unified-schema/${schemaId}/reset`, { method: 'POST' }).then(err).then(json)
+
+export const diffUnifiedSchema = (schemaId) =>
+  fetch(`${BASE_URL}/api/unified-schema/${schemaId}/diff`).then(err).then(json)
+
+export const previewUnifiedSchema = (schemaId, n = 20) =>
+  fetch(`${BASE_URL}/api/unified-schema/${schemaId}/preview?n=${n}`).then(err).then(json)
+
+export const createRun = (sourceIds, profileIds) =>
+  fetch(`${BASE_URL}/api/runs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ source_ids: sourceIds, profile_ids: profileIds }),
+  }).then(err).then(json)
+
+// ── Feature 1b: Identity Resolution API ──────────────────────────────────────
+
+export const getResolutionSummary = (runId = 'default') =>
+  fetch(`${BASE_URL}/api/resolution/${runId}`).then(err).then(json)
+
+export const getResolutionClusters = (runId = 'default') =>
+  fetch(`${BASE_URL}/api/resolution/${runId}/clusters`).then(err).then(json)
+
+export const getResolutionOrphans = (runId = 'default') =>
+  fetch(`${BASE_URL}/api/resolution/${runId}/orphans`).then(err).then(json)
+
+export const getResolutionLeavers = (runId = 'default') =>
+  fetch(`${BASE_URL}/api/resolution/${runId}/leavers`).then(err).then(json)
+
+export const getResolutionClassifications = (runId = 'default', classificationType = '') => {
+  const url = classificationType
+    ? `${BASE_URL}/api/resolution/${runId}/classifications?classification_type=${classificationType}`
+    : `${BASE_URL}/api/resolution/${runId}/classifications`
+  return fetch(url).then(err).then(json)
+}
+
+export const getResolutionReviewQueue = (runId = 'default') =>
+  fetch(`${BASE_URL}/api/resolution/${runId}/review`).then(err).then(json)
+
+export const decideReviewItem = (runId = 'default', itemId, action) =>
+  fetch(`${BASE_URL}/api/resolution/${runId}/review/${itemId}/decide`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action }),
+  }).then(err).then(json)
+
+export const mergeIdentities = (runId = 'default', targetIdentityId, sourceIdentityId) =>
+  fetch(`${BASE_URL}/api/resolution/${runId}/merge`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target_identity_id: targetIdentityId, source_identity_id: sourceIdentityId }),
+  }).then(err).then(json)
+
+export const splitAccount = (runId = 'default', accountId) =>
+  fetch(`${BASE_URL}/api/resolution/${runId}/split`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ account_id: accountId }),
+  }).then(err).then(json)
+
+export const triggerResolution = (runId = 'default') =>
+  fetch(`${BASE_URL}/api/resolution/run`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ run_id: runId }),
+  }).then(err).then(json)
+
