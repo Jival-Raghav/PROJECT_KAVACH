@@ -130,12 +130,12 @@ def run_benchmark() -> None:
         GROUND_TRUTH_MAPPINGS["dataset_a_events"],
     )
     results.append({
-        "dataset": "A: Legacy ISPAD (Users)",
+        "dataset": "A: Legacy Kavach (Users)",
         "role": "identities",
         **res_a_users,
     })
     results.append({
-        "dataset": "A: Legacy ISPAD (Events)",
+        "dataset": "A: Legacy Kavach (Events)",
         "role": "events",
         **res_a_events,
     })

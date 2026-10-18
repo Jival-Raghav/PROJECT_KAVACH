@@ -22,7 +22,7 @@ Feature 1b (Identity Resolution Engine) unifies fragmented user accounts across 
 
 ## 2. Hard Invariant Verification: Constrained Union-Find
 
-A core requirement of ISPAD v2 is that records carrying differing non-null employee IDs are **never merged**, regardless of fuzzy name similarity, nickname equivalence, or matching surname.
+A core requirement of Kavach v2 is that records carrying differing non-null employee IDs are **never merged**, regardless of fuzzy name similarity, nickname equivalence, or matching surname.
 
 - **Planted Conflicting ID Pairs Tested:** `2`
 - **Merges Allowed:** `0`

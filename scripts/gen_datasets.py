@@ -1,7 +1,7 @@
 """scripts/gen_datasets.py
 Synthetic multi-schema dataset generator with ground-truth mapping definitions.
 Generates:
-  - Dataset A: Original ISPAD legacy CSVs
+  - Dataset A: Original Kavach legacy CSVs
   - Dataset B: Workday-style HR CSV + Okta-style nested JSONL events
   - Dataset C: AWS CloudTrail / IAM-style JSON events + Entitlements CSV
   - Dataset D: Stress-test CSV (mixed dates, Y/N flags, snake/camel mix)

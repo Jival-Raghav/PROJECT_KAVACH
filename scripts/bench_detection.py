@@ -1,5 +1,5 @@
 """scripts/bench_detection.py
-Generalized Detection Core Benchmark for ISPAD v2.
+Generalized Detection Core Benchmark for Kavach v2.
 
 Evaluates:
 1. Dataset A benchmark:
@@ -237,7 +237,7 @@ def build_dataset_d_bundle() -> CanonicalBundle:
 
 def run_benchmark() -> dict:
     print("=" * 60)
-    print("ISPAD v2 Phase 3: Generalized Detection Core Benchmark")
+    print("Kavach v2 Phase 3: Generalized Detection Core Benchmark")
     print("=" * 60)
 
     # ── 1. Benchmark on Dataset A ─────────────────────────────────────────────
@@ -326,7 +326,7 @@ def run_benchmark() -> dict:
     report_content = f"""# Generalized Detection Core Benchmark Report (Phase 3)
 
 **Generated:** {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}\
-**Target:** ISPAD v2 Generalized Detection & Scoring Engine
+**Target:** Kavach v2 Generalized Detection & Scoring Engine
 
 ---
 
@@ -371,7 +371,7 @@ Phase 3 introduces a schema-independent, multi-source anomaly detection engine e
 
 | Dataset | Schema Type | Entities | Active Features | Skipped Features | Peer Group Mode |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| **Dataset A** | Legacy ISPAD (Users + Events) | {len(res_a.user_profiles)} | {len(res_a.feature_result.active_features)} | {len(res_a.feature_result.skipped_features)} | Hierarchical (Department -> Job Title) |
+| **Dataset A** | Legacy Kavach (Users + Events) | {len(res_a.user_profiles)} | {len(res_a.feature_result.active_features)} | {len(res_a.feature_result.skipped_features)} | Hierarchical (Department -> Job Title) |
 | **Dataset B** | Workday HR + Okta JSONL | {len(res_b.user_profiles)} | {len(res_b.feature_result.active_features)} | {len(res_b.feature_result.skipped_features)} (`unused_entitlement_ratio`, `sensitivity_ratio`, etc.) | Hierarchical (Workday Org) |
 | **Dataset C** | AWS CloudTrail + IAM | {len(res_c.user_profiles)} | {len(res_c.feature_result.active_features)} | {len(res_c.feature_result.skipped_features)} (HR attributes) | Fallback: Entitlement Jaccard Clustering |
 | **Dataset D** | Stress Minimal Events | {len(res_d.user_profiles)} | {len(res_d.feature_result.active_features)} | {len(res_d.feature_result.skipped_features)} (Entitlements, Sensitivities) | Fallback: Action Distribution Clustering |

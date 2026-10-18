@@ -4,8 +4,8 @@ Evaluation of Schema Autopilot accuracy across diverse real-world and synthetic 
 
 | Dataset | Role | Total Fields | Heuristic Accuracy | Autopilot Accuracy | Target Gate | Result |
 |---|---|:---:|:---:|:---:|:---:|:---:|
-| A: Legacy ISPAD (Users) | `identities` | 6 | 100% | **100%** | ≥90% | ✅ PASS |
-| A: Legacy ISPAD (Events) | `events` | 7 | 100% | **100%** | ≥90% | ✅ PASS |
+| A: Legacy Kavach (Users) | `identities` | 6 | 100% | **100%** | ≥90% | ✅ PASS |
+| A: Legacy Kavach (Events) | `events` | 7 | 100% | **100%** | ≥90% | ✅ PASS |
 | B: Workday HR Export | `identities` | 8 | 100% | **100%** | ≥90% | ✅ PASS |
 | B: Okta JSONL Logs | `events` | 6 | 100% | **100%** | ≥90% | ✅ PASS |
 | C: AWS CloudTrail JSON | `events` | 5 | 100% | **100%** | ≥90% | ✅ PASS |

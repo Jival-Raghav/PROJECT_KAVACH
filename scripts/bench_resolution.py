@@ -1,5 +1,5 @@
 """scripts/bench_resolution.py
-Identity Resolution Benchmark for ISPAD v2.
+Identity Resolution Benchmark for Kavach v2.
 
 Evaluates:
 1. Pair Precision (>= 0.95) & Recall (>= 0.90) across planted aliases, typos, nicknames, and inversions.
@@ -321,7 +321,7 @@ def build_benchmark_dataset() -> tuple[CanonicalBundle, dict[str, set[str]], set
 
 def run_benchmark() -> dict[str, float | int | bool]:
     print("=" * 70)
-    print("ISPAD v2 — Phase 2 Identity Resolution Benchmark")
+    print("Kavach v2 — Phase 2 Identity Resolution Benchmark")
     print("=" * 70)
 
     bundle, gt_clusters, planted_leavers, planted_orphans, conflicting_emp_pairs = build_benchmark_dataset()
@@ -449,7 +449,7 @@ Feature 1b (Identity Resolution Engine) unifies fragmented user accounts across 
 
 ## 2. Hard Invariant Verification: Constrained Union-Find
 
-A core requirement of ISPAD v2 is that records carrying differing non-null employee IDs are **never merged**, regardless of fuzzy name similarity, nickname equivalence, or matching surname.
+A core requirement of Kavach v2 is that records carrying differing non-null employee IDs are **never merged**, regardless of fuzzy name similarity, nickname equivalence, or matching surname.
 
 - **Planted Conflicting ID Pairs Tested:** `{len(conflicting_emp_pairs)}`
 - **Merges Allowed:** `0`
