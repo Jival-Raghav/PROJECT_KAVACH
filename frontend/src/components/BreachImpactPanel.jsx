@@ -9,7 +9,7 @@ const SENSITIVITY_COLOR = {
   critical: '#E3000B',
   high:     '#f97316',
   medium:   '#eab308',
-  low:      '#94a3b8',
+  low:      'var(--text-secondary)',
 }
 
 // Glow colour per node type (for SVG filter / stroke)
@@ -19,7 +19,7 @@ const NODE_GLOW = {
   medium:   '#eab308',
   lateral:  '#818cf8',
   user:     '#60a5fa',
-  low:      '#94a3b8',
+  low:      'var(--text-secondary)',
 }
 
 const IMPACT_BADGE_CLS = {
@@ -80,7 +80,7 @@ function buildGraph(breachData, username) {
     type: 'user',
     sensitivity: 'user',
     radius: 20,
-    color: '#94a3b8',
+    color: 'var(--text-secondary)',
   }
 
   const directNodes = (breachData.directly_accessible || []).map((item, i) => ({
@@ -251,7 +251,7 @@ function BreachGraph({ breachData, username, height = 200, interactive = false, 
           if (d.type === 'lateral')           return '#a5b4fc'
           if (d.sensitivity === 'critical')   return '#fca5a5'
           if (d.sensitivity === 'high')       return '#fdba74'
-          return '#94a3b8'
+          return 'var(--text-secondary)'
         })
         .attr('pointer-events', 'none')
         .text(d => interactive ? d.label : trunc(d.label, 8))
@@ -336,7 +336,7 @@ function BreachGraph({ breachData, username, height = 200, interactive = false, 
     svg.selectAll('.node-group text')
       .transition().duration(200)
       .attr('opacity', d => nodeMatch(d) ? 1 : 0.08)
-      .attr('fill', d => nodeMatch(d) && activeFilter ? '#e2e8f0' : '#94a3b8')
+      .attr('fill', d => nodeMatch(d) && activeFilter ? 'var(--text-primary)' : 'var(--text-secondary)')
       .attr('font-size', d => nodeMatch(d) && activeFilter ? '11px' : '10px')
 
     // Update edges — dim if neither endpoint matches
@@ -382,13 +382,13 @@ function BreachGraph({ breachData, username, height = 200, interactive = false, 
             boxShadow: '0 0 18px rgba(96,165,250,0.12), 0 4px 20px rgba(0,0,0,0.5)',
           }}
         >
-          <div style={{ fontWeight: 600, fontSize: 12, color: '#e2e8f0', marginBottom: 4 }}>{tooltip.node.label}</div>
+          <div style={{ fontWeight: 600, fontSize: 12, color: 'var(--text-primary)', marginBottom: 4 }}>{tooltip.node.label}</div>
           {tooltip.node.type !== 'user' && (
-            <div style={{ fontSize: 11, color: '#64748b' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
               Sensitivity: <span style={{ color: '#cbd5e1', textTransform: 'capitalize' }}>{tooltip.node.sensitivity}</span>
             </div>
           )}
-          <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
             Type: <span style={{ color: '#cbd5e1' }}>
               {tooltip.node.type === 'user'    ? 'Compromised User'  :
                tooltip.node.type === 'direct'  ? 'Direct Access'     :
@@ -417,7 +417,7 @@ function GraphLegend({ activeFilter, onFilterChange }) {
               padding: '5px 14px', borderRadius: 9999,
               border: `1px solid ${isActive ? item.color : 'rgba(255,255,255,0.10)'}`,
               background: isActive ? `${item.color}18` : 'rgba(255,255,255,0.03)',
-              color: isActive ? item.color : '#64748b',
+              color: isActive ? item.color : 'var(--text-muted)',
               fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
               letterSpacing: '0.08em', cursor: 'pointer',
               transition: 'all 150ms ease',
@@ -493,7 +493,7 @@ function GraphModal({ breachData, username, onClose }) {
               <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#E3000B', marginBottom: 5 }}>
                 ◈ LATERAL MOVEMENT GRAPH
               </div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: '#e2e8f0', letterSpacing: '-0.01em' }}>{username}</div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>{username}</div>
             </div>
             <button
               onClick={onClose}
@@ -502,11 +502,11 @@ function GraphModal({ breachData, username, onClose }) {
                 width: 32, height: 32, borderRadius: 6,
                 border: '1px solid rgba(255,255,255,0.10)',
                 background: 'rgba(255,255,255,0.03)',
-                color: '#64748b', cursor: 'pointer',
+                color: 'var(--text-muted)', cursor: 'pointer',
                 transition: 'all 150ms ease', flexShrink: 0,
               }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(227,0,11,0.5)'; e.currentTarget.style.color = '#fca5a5' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; e.currentTarget.style.color = '#64748b' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; e.currentTarget.style.color = 'var(--text-muted)' }}
             >
               <X size={14} />
             </button>
@@ -548,7 +548,7 @@ function GraphModal({ breachData, username, onClose }) {
           {/* Interactive legend — horizontal, wraps naturally */}
           <GraphLegend activeFilter={activeFilter} onFilterChange={setActiveFilter} />
 
-          <p style={{ marginTop: 8, textAlign: 'center', fontSize: 10, color: '#334155', letterSpacing: '0.04em' }}>
+          <p style={{ marginTop: 8, textAlign: 'center', fontSize: 10, color: 'var(--border)', letterSpacing: '0.04em' }}>
             Click a legend item to highlight · Hover nodes for details · Press Esc to close
           </p>
         </div>
@@ -697,7 +697,7 @@ export default function BreachImpactPanel({ user }) {
                   {LEGEND_ITEMS.map(item => (
                     <span key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       <span style={{ width: 6, height: 6, borderRadius: '50%', background: item.color, boxShadow: `0 0 4px ${item.color}88`, flexShrink: 0 }} />
-                      <span style={{ color: '#64748b' }}>{item.label}</span>
+                      <span style={{ color: 'var(--text-muted)' }}>{item.label}</span>
                     </span>
                   ))}
                 </div>

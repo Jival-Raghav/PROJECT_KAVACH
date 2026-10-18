@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { CheckCircle2, Send, Loader2, RotateCcw } from 'lucide-react'
 import { postFeedback } from '../api'
 
-export default function FeedbackButtons({ user }) {
+export default function FeedbackButtons({ user, onChanged }) {
   const [loading,   setLoading]   = useState(false)
   const [note,      setNote]      = useState('')
   const [showNote,  setShowNote]  = useState(false)
@@ -18,6 +18,7 @@ export default function FeedbackButtons({ user }) {
     setLoading(true)
     try {
       await postFeedback(user.user_id, 'suppress', note)
+      await onChanged?.(user.user_id)
       setNote('')
       setShowNote(false)
       setSubmitted(true)
@@ -33,6 +34,7 @@ export default function FeedbackButtons({ user }) {
     setLoading(true)
     try {
       await postFeedback(user.user_id, 'unflag', '')
+      await onChanged?.(user.user_id)
     } catch (e) {
       console.error(e)
     } finally {

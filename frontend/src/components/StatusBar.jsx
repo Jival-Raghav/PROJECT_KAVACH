@@ -22,7 +22,7 @@ export default function StatusBar({ status, progress, message, onRunPipeline, ll
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="grad-text text-lg font-bold tracking-tight">ISPAD</h1>
+              <h1 className="grad-text text-lg font-bold tracking-tight">Kavach</h1>
               <span className="text-xs text-slate-500">Identity Sprawl & Privilege Abuse Detection</span>
             </div>
             <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-400">

@@ -183,7 +183,7 @@ export default function GraphView({ selectedAccount = 'USR00173', onNavigateToRe
       .attr('markerHeight', 6)
       .attr('orient', 'auto')
       .append('path')
-      .attr('fill', '#334155')
+      .attr('fill', 'var(--border)')
       .attr('d', 'M0,-5L10,0L0,5')
 
     // Links
@@ -191,7 +191,7 @@ export default function GraphView({ selectedAccount = 'USR00173', onNavigateToRe
       .selectAll('line')
       .data(links)
       .enter().append('line')
-      .attr('stroke', '#1E293B')
+      .attr('stroke', 'var(--border)')
       .attr('stroke-width', d => Math.max(1, 3 - (d.weight || 1)))
       .attr('marker-end', 'url(#arrow)')
 
@@ -213,7 +213,7 @@ export default function GraphView({ selectedAccount = 'USR00173', onNavigateToRe
     // Node circles with glowing ring for crown jewels
     node.append('circle')
       .attr('r', d => (d.is_crown ? 14 : d.node_type === 'identity' ? 12 : 9))
-      .attr('fill', d => d.is_crown ? '#EF4444' : (colorByType[d.node_type] || '#94A3B8'))
+      .attr('fill', d => d.is_crown ? '#EF4444' : (colorByType[d.node_type] || 'var(--text-secondary)'))
       .attr('stroke', d => d.is_crown ? '#FCA5A5' : '#0F172A')
       .attr('stroke-width', d => d.is_crown ? 3 : 1.5)
       .style('cursor', 'pointer')
@@ -224,7 +224,7 @@ export default function GraphView({ selectedAccount = 'USR00173', onNavigateToRe
       .attr('x', 14)
       .attr('y', 4)
       .text(d => d.label)
-      .attr('fill', '#94A3B8')
+      .attr('fill', 'var(--text-secondary)')
       .attr('font-size', '10px')
       .attr('font-family', 'monospace')
       .style('pointer-events', 'none')
@@ -317,7 +317,7 @@ export default function GraphView({ selectedAccount = 'USR00173', onNavigateToRe
 
         {/* Graph Canvas Container */}
         <div className="card" style={{ flex: 1, position: 'relative', overflow: 'hidden', padding: 0 }}>
-          <svg ref={svgRef} style={{ width: '100%', height: '100%', display: 'block', background: '#090D16' }} />
+          <svg ref={svgRef} style={{ width: '100%', height: '100%', display: 'block', background: 'var(--bg-deep)' }} />
 
           {/* Graph Legend Overlay */}
           <div style={{

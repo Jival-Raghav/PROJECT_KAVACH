@@ -169,12 +169,12 @@ export default function ResolutionView({ runId = 'default' }) {
   })
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: '#090D16' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: 'var(--bg-deep)' }}>
       {/* ── Top Header Bar ── */}
       <div style={{
         padding: '16px 24px',
-        borderBottom: '1px solid #1E293B',
-        background: '#0D1526',
+        borderBottom: '1px solid var(--border)',
+        background: 'var(--surface)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -194,7 +194,7 @@ export default function ResolutionView({ runId = 'default' }) {
               Identity Resolution Engine
               <span style={{
                 fontSize: 11, padding: '2px 8px', borderRadius: 999,
-                background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-border)',
+                background: 'var(--accent-subtle)', color: 'var(--accent-ink)', border: '1px solid var(--accent-border)',
                 fontWeight: 600,
               }}>
                 Feature 1b · Constrained Union-Find
@@ -259,46 +259,46 @@ export default function ResolutionView({ runId = 'default' }) {
         gridTemplateColumns: 'repeat(6, 1fr)',
         gap: 12,
         padding: '16px 24px',
-        borderBottom: '1px solid #1E293B',
-        background: '#090D16',
+        borderBottom: '1px solid var(--border)',
+        background: 'var(--bg-deep)',
         flexShrink: 0,
       }}>
         {/* KPI 1 */}
         <div style={{
-          background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8, padding: '12px 16px',
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 16px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: 11, fontWeight: 600 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }}>
             <span>GOLDEN IDENTITIES</span>
             <Users size={14} color="#00E5FF" />
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#F8FAFC', marginTop: 4 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginTop: 4 }}>
             {summary?.golden_identities_count ?? '-'}
           </div>
-          <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
             Unified person anchors
           </div>
         </div>
 
         {/* KPI 2 */}
         <div style={{
-          background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8, padding: '12px 16px',
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 16px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: 11, fontWeight: 600 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }}>
             <span>ACCOUNTS LINKED</span>
             <CheckCircle2 size={14} color="#6366F1" />
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#F8FAFC', marginTop: 4 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginTop: 4 }}>
             {summary?.account_links_count ?? '-'}
           </div>
-          <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
             Across all systems
           </div>
         </div>
 
         {/* KPI 3 (LEAVER ACTIVE - CRITICAL) */}
         <div style={{
-          background: summary?.leaver_active_count > 0 ? 'rgba(239, 68, 68, 0.08)' : '#0D1526',
-          border: `1px solid ${summary?.leaver_active_count > 0 ? '#EF4444' : '#1E293B'}`,
+          background: summary?.leaver_active_count > 0 ? 'rgba(239, 68, 68, 0.08)' : 'var(--surface)',
+          border: `1px solid ${summary?.leaver_active_count > 0 ? '#EF4444' : 'var(--border)'}`,
           borderRadius: 8, padding: '12px 16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#EF4444', fontSize: 11, fontWeight: 700 }}>
@@ -308,7 +308,7 @@ export default function ResolutionView({ runId = 'default' }) {
           <div style={{ fontSize: 22, fontWeight: 800, color: '#EF4444', marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
             {summary?.leaver_active_count ?? 0}
             {summary?.leaver_active_count > 0 && (
-              <span style={{ fontSize: 10, padding: '2px 6px', background: '#EF4444', color: '#090D16', borderRadius: 4, fontWeight: 800 }}>
+              <span style={{ fontSize: 10, padding: '2px 6px', background: '#EF4444', color: 'var(--on-accent)', borderRadius: 4, fontWeight: 800 }}>
                 CRITICAL
               </span>
             )}
@@ -320,7 +320,7 @@ export default function ResolutionView({ runId = 'default' }) {
 
         {/* KPI 4 */}
         <div style={{
-          background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8, padding: '12px 16px',
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#F59E0B', fontSize: 11, fontWeight: 600 }}>
             <span>ORPHAN ACCOUNTS</span>
@@ -329,39 +329,39 @@ export default function ResolutionView({ runId = 'default' }) {
           <div style={{ fontSize: 22, fontWeight: 800, color: '#F59E0B', marginTop: 4 }}>
             {summary?.orphaned_count ?? 0}
           </div>
-          <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
             No HR identity match
           </div>
         </div>
 
         {/* KPI 5 */}
         <div style={{
-          background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8, padding: '12px 16px',
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#A855F7', fontSize: 11, fontWeight: 600 }}>
             <span>DORMANT</span>
             <Clock size={14} color="#A855F7" />
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#F8FAFC', marginTop: 4 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginTop: 4 }}>
             {summary?.dormant_count ?? 0}
           </div>
-          <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
             &gt; 90 days inactive
           </div>
         </div>
 
         {/* KPI 6 */}
         <div style={{
-          background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8, padding: '12px 16px',
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#3B82F6', fontSize: 11, fontWeight: 600 }}>
             <span>REVIEW QUEUE</span>
             <AlertTriangle size={14} color="#3B82F6" />
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#F8FAFC', marginTop: 4 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginTop: 4 }}>
             {summary?.review_queue_count ?? 0}
           </div>
-          <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
             0.70 – 0.90 band matches
           </div>
         </div>
@@ -370,8 +370,8 @@ export default function ResolutionView({ runId = 'default' }) {
       {/* ── Sub Navigation Tabs & Filter Bar ── */}
       <div style={{
         padding: '12px 24px',
-        borderBottom: '1px solid #1E293B',
-        background: '#0D1526',
+        borderBottom: '1px solid var(--border)',
+        background: 'var(--surface)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -419,10 +419,10 @@ export default function ResolutionView({ runId = 'default' }) {
               width: '100%',
               padding: '6px 10px 6px 32px',
               fontSize: 12,
-              background: '#090D16',
-              border: '1px solid #1E293B',
+              background: 'var(--bg-deep)',
+              border: '1px solid var(--border)',
               borderRadius: 6,
-              color: '#F8FAFC',
+              color: 'var(--text-primary)',
               outline: 'none',
             }}
           />
@@ -434,7 +434,7 @@ export default function ResolutionView({ runId = 'default' }) {
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
             <Loader2 size={32} className="spin" color="#00E5FF" />
-            <div style={{ fontSize: 13, color: '#94A3B8' }}>Loading identity graph &amp; cluster topology...</div>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Loading identity graph &amp; cluster topology...</div>
           </div>
         ) : (
           <>
@@ -442,7 +442,7 @@ export default function ResolutionView({ runId = 'default' }) {
             {activeSubTab === 'clusters' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {filteredClusters.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: 48, color: '#64748B', fontSize: 13 }}>
+                  <div style={{ textAlign: 'center', padding: 48, color: 'var(--text-muted)', fontSize: 13 }}>
                     No golden identity clusters matched your criteria.
                   </div>
                 ) : (
@@ -452,8 +452,8 @@ export default function ResolutionView({ runId = 'default' }) {
                       <div
                         key={cluster.identity_id}
                         style={{
-                          background: '#0D1526',
-                          border: '1px solid #1E293B',
+                          background: 'var(--surface)',
+                          border: '1px solid var(--border)',
                           borderRadius: 8,
                           overflow: 'hidden',
                           transition: 'border-color 0.15s ease',
@@ -475,16 +475,16 @@ export default function ResolutionView({ runId = 'default' }) {
                             {isExpanded ? <ChevronDown size={16} color="#00E5FF" /> : <ChevronRight size={16} color="#64748B" />}
                             <div style={{
                               width: 32, height: 32, borderRadius: '50%',
-                              background: '#1E293B', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                               fontWeight: 700, fontSize: 12, color: '#00E5FF',
                             }}>
                               {cluster.canonical_name?.substring(0, 2).toUpperCase()}
                             </div>
                             <div>
-                              <div style={{ fontSize: 14, fontWeight: 700, color: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                                 {cluster.canonical_name}
                                 {cluster.employee_id && (
-                                  <span style={{ fontSize: 11, padding: '1px 6px', background: '#1E293B', color: '#94A3B8', borderRadius: 4 }}>
+                                  <span style={{ fontSize: 11, padding: '1px 6px', background: 'var(--border)', color: 'var(--text-secondary)', borderRadius: 4 }}>
                                     EMP: {cluster.employee_id}
                                   </span>
                                 )}
@@ -497,7 +497,7 @@ export default function ResolutionView({ runId = 'default' }) {
                                   {cluster.employment_status?.toUpperCase() || 'ACTIVE'}
                                 </span>
                               </div>
-                              <div style={{ fontSize: 12, color: '#64748B', marginTop: 2, display: 'flex', gap: 12 }}>
+                              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, display: 'flex', gap: 12 }}>
                                 <span>{cluster.primary_email || 'No primary email'}</span>
                                 {cluster.department && <span>· Dept: {cluster.department}</span>}
                                 {cluster.job_title && <span>· {cluster.job_title}</span>}
@@ -529,8 +529,8 @@ export default function ResolutionView({ runId = 'default' }) {
 
                         {/* Expanded Linked Accounts Table */}
                         {isExpanded && (
-                          <div style={{ padding: '0 18px 18px 18px', borderTop: '1px solid #1E293B', background: '#090D16' }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', padding: '12px 0 8px 0', textTransform: 'uppercase' }}>
+                          <div style={{ padding: '0 18px 18px 18px', borderTop: '1px solid var(--border)', background: 'var(--bg-deep)' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', padding: '12px 0 8px 0', textTransform: 'uppercase' }}>
                               Linked System Accounts &amp; Resolution Evidence
                             </div>
 
@@ -540,23 +540,23 @@ export default function ResolutionView({ runId = 'default' }) {
                                   key={acc.account_id}
                                   style={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                    background: '#0D1526', border: '1px solid #1E293B', borderRadius: 6,
+                                    background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6,
                                     padding: '10px 14px',
                                   }}
                                 >
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                     <span style={{
                                       fontSize: 11, padding: '2px 8px', borderRadius: 4,
-                                      background: '#1E293B', color: '#00E5FF', fontWeight: 700, textTransform: 'uppercase',
+                                      background: 'var(--border)', color: '#00E5FF', fontWeight: 700, textTransform: 'uppercase',
                                     }}>
                                       {acc.system}
                                     </span>
                                     <div>
-                                      <div style={{ fontSize: 13, fontWeight: 600, color: '#F8FAFC' }}>
+                                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                                         {acc.username}
-                                        <span style={{ fontSize: 11, color: '#64748B', marginLeft: 8 }}>({acc.account_id})</span>
+                                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>({acc.account_id})</span>
                                       </div>
-                                      <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                         {acc.reasons?.map((r, ri) => (
                                           <span key={ri} style={{
                                             background: 'rgba(0, 229, 255, 0.08)', color: '#00E5FF',
@@ -581,7 +581,7 @@ export default function ResolutionView({ runId = 'default' }) {
                                       title="Detach account into separate golden identity"
                                       style={{
                                         display: 'flex', alignItems: 'center', gap: 4,
-                                        background: '#1E293B', color: '#F87171', border: '1px solid #334155',
+                                        background: 'var(--border)', color: '#F87171', border: '1px solid #334155',
                                         borderRadius: 4, padding: '4px 8px', fontSize: 11, cursor: 'pointer',
                                       }}
                                     >
@@ -611,10 +611,10 @@ export default function ResolutionView({ runId = 'default' }) {
                   <strong>High Severity Security Risk:</strong> The following accounts belong to employees whose HR records indicate they have been terminated, yet their credentials remain active or recent login activity was detected.
                 </div>
 
-                <div style={{ background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
                     <thead>
-                      <tr style={{ background: '#090D16', borderBottom: '1px solid #1E293B', color: '#94A3B8' }}>
+                      <tr style={{ background: 'var(--bg-deep)', borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
                         <th style={{ padding: '10px 16px' }}>SYSTEM &amp; ACCOUNT</th>
                         <th style={{ padding: '10px 16px' }}>OWNER / DEPARTED EMPLOYEE</th>
                         <th style={{ padding: '10px 16px' }}>INACTIVITY</th>
@@ -625,21 +625,21 @@ export default function ResolutionView({ runId = 'default' }) {
                     <tbody>
                       {leavers.length === 0 ? (
                         <tr>
-                          <td colSpan={5} style={{ padding: 32, textAlign: 'center', color: '#64748B' }}>
+                          <td colSpan={5} style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)' }}>
                             Zero active leavers detected. Clean offboarding hygiene!
                           </td>
                         </tr>
                       ) : (
                         leavers.map(lv => (
-                          <tr key={lv.account_id} style={{ borderBottom: '1px solid #1E293B' }}>
+                          <tr key={lv.account_id} style={{ borderBottom: '1px solid var(--border)' }}>
                             <td style={{ padding: '12px 16px' }}>
-                              <div style={{ fontWeight: 700, color: '#F8FAFC' }}>{lv.username}</div>
+                              <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{lv.username}</div>
                               <div style={{ fontSize: 11, color: '#00E5FF' }}>System: {lv.system}</div>
                             </td>
-                            <td style={{ padding: '12px 16px', color: '#E2E8F0', fontWeight: 600 }}>
+                            <td style={{ padding: '12px 16px', color: 'var(--text-primary)', fontWeight: 600 }}>
                               {lv.owner || 'Unknown Former Employee'}
                             </td>
-                            <td style={{ padding: '12px 16px', color: '#94A3B8' }}>
+                            <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>
                               {lv.inactivity_days != null ? `${lv.inactivity_days} days ago` : 'Active'}
                             </td>
                             <td style={{ padding: '12px 16px', color: '#F87171', fontSize: 11 }}>
@@ -666,10 +666,10 @@ export default function ResolutionView({ runId = 'default' }) {
             {/* ══ SUB-TAB 3: ORPHAN ACCOUNTS ══ */}
             {activeSubTab === 'orphans' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
                     <thead>
-                      <tr style={{ background: '#090D16', borderBottom: '1px solid #1E293B', color: '#94A3B8' }}>
+                      <tr style={{ background: 'var(--bg-deep)', borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
                         <th style={{ padding: '10px 16px' }}>ACCOUNT ID &amp; USERNAME</th>
                         <th style={{ padding: '10px 16px' }}>SYSTEM</th>
                         <th style={{ padding: '10px 16px' }}>INACTIVITY</th>
@@ -680,21 +680,21 @@ export default function ResolutionView({ runId = 'default' }) {
                     <tbody>
                       {orphans.length === 0 ? (
                         <tr>
-                          <td colSpan={5} style={{ padding: 32, textAlign: 'center', color: '#64748B' }}>
+                          <td colSpan={5} style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)' }}>
                             Zero orphan accounts detected.
                           </td>
                         </tr>
                       ) : (
                         orphans.map(op => (
-                          <tr key={op.account_id} style={{ borderBottom: '1px solid #1E293B' }}>
+                          <tr key={op.account_id} style={{ borderBottom: '1px solid var(--border)' }}>
                             <td style={{ padding: '12px 16px' }}>
-                              <div style={{ fontWeight: 700, color: '#F8FAFC' }}>{op.username}</div>
-                              <div style={{ fontSize: 11, color: '#64748B' }}>{op.account_id}</div>
+                              <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{op.username}</div>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{op.account_id}</div>
                             </td>
                             <td style={{ padding: '12px 16px', color: '#00E5FF', fontWeight: 600 }}>
                               {op.system}
                             </td>
-                            <td style={{ padding: '12px 16px', color: '#94A3B8' }}>
+                            <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>
                               {op.inactivity_days != null ? `${op.inactivity_days} days` : 'Recent'}
                             </td>
                             <td style={{ padding: '12px 16px', color: '#FBBF24', fontSize: 11 }}>
@@ -722,14 +722,14 @@ export default function ResolutionView({ runId = 'default' }) {
             {/* ══ SUB-TAB 4: REVIEW QUEUE (0.70 - 0.90 BAND) ══ */}
             {activeSubTab === 'review' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ fontSize: 13, color: '#94A3B8' }}>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                   The following match candidates fall into the <strong>0.70 – 0.90 confidence threshold</strong>. Confirm or reject each linkage to train the engine.
                 </div>
 
                 {reviewQueue.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: 48, background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8, color: '#64748B' }}>
+                  <div style={{ textAlign: 'center', padding: 48, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-muted)' }}>
                     <CheckCircle2 size={32} color="#10B981" style={{ margin: '0 auto 12px auto' }} />
-                    <div style={{ fontWeight: 600, color: '#F8FAFC' }}>Review queue is clear!</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Review queue is clear!</div>
                     <div style={{ fontSize: 12, marginTop: 4 }}>All auto-merge threshold pairs (≥ 0.90) have been reconciled.</div>
                   </div>
                 ) : (
@@ -737,18 +737,18 @@ export default function ResolutionView({ runId = 'default' }) {
                     <div
                       key={item.item_id}
                       style={{
-                        background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8,
+                        background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8,
                         padding: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                         {/* Account Box */}
                         <div style={{
-                          background: '#090D16', border: '1px solid #1E293B', borderRadius: 6,
+                          background: 'var(--bg-deep)', border: '1px solid var(--border)', borderRadius: 6,
                           padding: '10px 14px', width: 220,
                         }}>
-                          <div style={{ fontSize: 10, color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>System Account</div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC', marginTop: 2 }}>{item.account_id}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>System Account</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginTop: 2 }}>{item.account_id}</div>
                           <div style={{ fontSize: 11, color: '#00E5FF', marginTop: 2 }}>
                             {item.account_details?.system || 'System'}
                           </div>
@@ -767,24 +767,24 @@ export default function ResolutionView({ runId = 'default' }) {
 
                         {/* Suggested Identity Box */}
                         <div style={{
-                          background: '#090D16', border: '1px solid #1E293B', borderRadius: 6,
+                          background: 'var(--bg-deep)', border: '1px solid var(--border)', borderRadius: 6,
                           padding: '10px 14px', width: 220,
                         }}>
-                          <div style={{ fontSize: 10, color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Suggested HR Identity</div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC', marginTop: 2 }}>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Suggested HR Identity</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginTop: 2 }}>
                             {item.identity_details?.full_name || item.suggested_identity_id}
                           </div>
-                          <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>
+                          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
                             {item.identity_details?.department || 'Corporate Identity'}
                           </div>
                         </div>
 
                         {/* Reasons */}
                         <div style={{ maxWidth: 320 }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', marginBottom: 4 }}>EVIDENCE SIGNALS</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4 }}>EVIDENCE SIGNALS</div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             {item.reasons?.map((r, ri) => (
-                              <div key={ri} style={{ fontSize: 11, color: '#E2E8F0' }}>• {r}</div>
+                              <div key={ri} style={{ fontSize: 11, color: 'var(--text-primary)' }}>• {r}</div>
                             ))}
                           </div>
                         </div>
@@ -796,7 +796,7 @@ export default function ResolutionView({ runId = 'default' }) {
                           onClick={() => handleReviewDecision(item.item_id, 'reject')}
                           style={{
                             display: 'flex', alignItems: 'center', gap: 4,
-                            background: '#1E293B', color: '#F87171', border: '1px solid #334155',
+                            background: 'var(--border)', color: '#F87171', border: '1px solid #334155',
                             borderRadius: 6, padding: '7px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                           }}
                         >
@@ -807,7 +807,7 @@ export default function ResolutionView({ runId = 'default' }) {
                           onClick={() => handleReviewDecision(item.item_id, 'accept')}
                           style={{
                             display: 'flex', alignItems: 'center', gap: 4,
-                            background: '#10B981', color: '#090D16', border: 'none',
+                            background: '#10B981', color: 'var(--on-accent)', border: 'none',
                             borderRadius: 6, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
                           }}
                         >
@@ -833,8 +833,8 @@ export default function ResolutionView({ runId = 'default' }) {
                       style={{
                         padding: '4px 10px', borderRadius: 4, fontSize: 11, fontWeight: 600,
                         cursor: 'pointer', textTransform: 'uppercase',
-                        background: classFilter === f ? '#00E5FF' : '#1E293B',
-                        color: classFilter === f ? '#090D16' : '#94A3B8',
+                        background: classFilter === f ? '#00E5FF' : 'var(--border)',
+                        color: classFilter === f ? 'var(--on-accent)' : 'var(--text-secondary)',
                         border: 'none',
                       }}
                     >
@@ -843,10 +843,10 @@ export default function ResolutionView({ runId = 'default' }) {
                   ))}
                 </div>
 
-                <div style={{ background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
                     <thead>
-                      <tr style={{ background: '#090D16', borderBottom: '1px solid #1E293B', color: '#94A3B8' }}>
+                      <tr style={{ background: 'var(--bg-deep)', borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
                         <th style={{ padding: '10px 16px' }}>USERNAME / ACCOUNT</th>
                         <th style={{ padding: '10px 16px' }}>SYSTEM</th>
                         <th style={{ padding: '10px 16px' }}>CLASSIFICATION</th>
@@ -857,10 +857,10 @@ export default function ResolutionView({ runId = 'default' }) {
                     </thead>
                     <tbody>
                       {filteredClassifications.map(cl => (
-                        <tr key={cl.account_id} style={{ borderBottom: '1px solid #1E293B' }}>
+                        <tr key={cl.account_id} style={{ borderBottom: '1px solid var(--border)' }}>
                           <td style={{ padding: '12px 16px' }}>
-                            <div style={{ fontWeight: 700, color: '#F8FAFC' }}>{cl.username}</div>
-                            <div style={{ fontSize: 11, color: '#64748B' }}>{cl.account_id}</div>
+                            <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{cl.username}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{cl.account_id}</div>
                           </td>
                           <td style={{ padding: '12px 16px', color: '#00E5FF', fontWeight: 600 }}>
                             {cl.system}
@@ -868,22 +868,22 @@ export default function ResolutionView({ runId = 'default' }) {
                           <td style={{ padding: '12px 16px' }}>
                             <span style={{
                               fontSize: 10, padding: '2px 8px', borderRadius: 4,
-                              background: '#1E293B', color: '#E2E8F0', fontWeight: 700, textTransform: 'uppercase',
+                              background: 'var(--border)', color: 'var(--text-primary)', fontWeight: 700, textTransform: 'uppercase',
                             }}>
                               {cl.classification?.replace('_', ' ')}
                             </span>
                           </td>
-                          <td style={{ padding: '12px 16px', color: '#94A3B8' }}>
+                          <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>
                             {cl.owner || '—'}
                           </td>
-                          <td style={{ padding: '12px 16px', color: '#94A3B8' }}>
+                          <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>
                             {cl.inactivity_days != null ? `${cl.inactivity_days}d` : 'Recent'}
                           </td>
                           <td style={{ padding: '12px 16px' }}>
                             <span style={{
                               fontSize: 10, padding: '2px 6px', borderRadius: 4, fontWeight: 800,
-                              background: cl.risk_level === 'critical' ? 'rgba(239,68,68,0.2)' : cl.risk_level === 'high' ? 'rgba(245,158,11,0.2)' : '#1E293B',
-                              color: cl.risk_level === 'critical' ? '#EF4444' : cl.risk_level === 'high' ? '#F59E0B' : '#64748B',
+                              background: cl.risk_level === 'critical' ? 'rgba(239,68,68,0.2)' : cl.risk_level === 'high' ? 'rgba(245,158,11,0.2)' : 'var(--border)',
+                              color: cl.risk_level === 'critical' ? '#EF4444' : cl.risk_level === 'high' ? '#F59E0B' : 'var(--text-muted)',
                             }}>
                               {cl.risk_level?.toUpperCase()}
                             </span>
@@ -906,13 +906,13 @@ export default function ResolutionView({ runId = 'default' }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
         }}>
           <div style={{
-            background: '#0D1526', border: '1px solid #1E293B', borderRadius: 8,
+            background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8,
             width: 480, padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
           }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#F8FAFC', marginBottom: 4 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
               Merge Golden Identities
             </div>
-            <div style={{ fontSize: 12, color: '#94A3B8', marginBottom: 18 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 18 }}>
               Transfer all linked accounts from the source identity into the target identity.
               Hard constraint: Cannot merge identities with conflicting non-null employee IDs.
             </div>
@@ -929,7 +929,7 @@ export default function ResolutionView({ runId = 'default' }) {
                   onChange={e => setTargetMergeId(e.target.value)}
                   style={{
                     width: '100%', padding: '8px 12px', fontSize: 13,
-                    background: '#090D16', border: '1px solid #1E293B', borderRadius: 6, color: '#F8FAFC',
+                    background: 'var(--bg-deep)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-primary)',
                   }}
                 />
               </div>
@@ -945,7 +945,7 @@ export default function ResolutionView({ runId = 'default' }) {
                   onChange={e => setSourceMergeId(e.target.value)}
                   style={{
                     width: '100%', padding: '8px 12px', fontSize: 13,
-                    background: '#090D16', border: '1px solid #1E293B', borderRadius: 6, color: '#F8FAFC',
+                    background: 'var(--bg-deep)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-primary)',
                   }}
                 />
               </div>
@@ -955,7 +955,7 @@ export default function ResolutionView({ runId = 'default' }) {
               <button
                 onClick={() => setMergeModalOpen(false)}
                 style={{
-                  background: '#1E293B', color: '#E2E8F0', border: 'none',
+                  background: 'var(--border)', color: 'var(--text-primary)', border: 'none',
                   borderRadius: 6, padding: '8px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                 }}
               >
@@ -964,7 +964,7 @@ export default function ResolutionView({ runId = 'default' }) {
               <button
                 onClick={handleMergeSubmit}
                 style={{
-                  background: 'linear-gradient(135deg, #00E5FF, #6366F1)', color: '#090D16', border: 'none',
+                  background: 'linear-gradient(135deg, #00E5FF, #6366F1)', color: 'var(--on-accent)', border: 'none',
                   borderRadius: 6, padding: '8px 18px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
                 }}
               >
