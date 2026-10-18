@@ -140,7 +140,7 @@ export default function AISecurity() {
 
         <div className="card" style={{ padding: '12px 14px' }}>
           <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Threat Interception Rate</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: '#00E5FF', marginTop: 4 }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--accent)', marginTop: 4 }}>
             {redteamData ? `${redteamData.detection_rate}%` : '100%'}
           </div>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -338,7 +338,7 @@ export default function AISecurity() {
             <tbody>
               {nhiData?.records?.map(rec => (
                 <tr key={rec.account_id}>
-                  <td className="mono" style={{ fontWeight: 600, color: '#00E5FF' }}>
+                  <td className="mono" style={{ fontWeight: 600, color: 'var(--accent)' }}>
                     {rec.account_id}
                   </td>
                   <td>

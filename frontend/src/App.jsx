@@ -192,13 +192,15 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flexShrink: 0 }}>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg, #00E5FF, #6366F1)', flexShrink: 0,
+            width: 28, height: 28, borderRadius: 6,
+            background: theme === 'dark' ? 'linear-gradient(135deg, #00E5FF, #6366F1)' : 'linear-gradient(135deg, #059669, #10B981)',
+            flexShrink: 0,
           }}>
-            <Shield size={15} color="#090D16" strokeWidth={2.5} />
+            <Shield size={15} color={theme === 'dark' ? '#090D16' : '#FFFFFF'} strokeWidth={2.5} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <div className="nav-logo">ISPAD</div>
-            <div className="nav-subtitle">Identity Sprawl &amp; Privilege Abuse Detection</div>
+            <div className="nav-logo">AEGIS</div>
+            <div className="nav-subtitle">Identity Threat Detection &amp; Response</div>
           </div>
           {/* Status dot */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginLeft: 8, flexShrink: 0 }}>

@@ -43,16 +43,25 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
       .catch(() => {})
   }, [])
 
+  const safeJson = async (res, defaultErrMsg) => {
+    const text = await res.text()
+    try {
+      const data = JSON.parse(text)
+      if (!res.ok) throw new Error(data.detail || `${defaultErrMsg} (HTTP ${res.status})`)
+      return data
+    } catch (e) {
+      if (!res.ok) throw new Error(`${defaultErrMsg} (HTTP ${res.status})`)
+      throw new Error(`Server returned unexpected format: ${text.slice(0, 80)}...`)
+    }
+  }
+
   // Fetch or run case investigation
   const loadCase = (userId) => {
     if (!userId) return
     setLoading(true)
     setError(null)
     fetch(`/api/investigate/${encodeURIComponent(userId)}/case`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to load case dossier`)
-        return res.json()
-      })
+      .then(res => safeJson(res, 'Failed to load case dossier'))
       .then(data => {
         if (data.status === 'success' && data.case) {
           setCaseData(data.case)
@@ -78,10 +87,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ run_id: 'default', use_llm: true }),
     })
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}: Investigation run failed`)
-        return res.json()
-      })
+      .then(res => safeJson(res, 'Investigation run failed'))
       .then(data => {
         if (data.status === 'success' && data.case) {
           setCaseData(data.case)
@@ -145,11 +151,11 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Scale size={20} color="#00E5FF" />
+            <Scale size={20} color="var(--accent)" />
             <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>
               Adversarial Case Investigation & Remediation Co-Pilot
             </h2>
-            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,229,255,0.1)', color: '#00E5FF', border: '1px solid rgba(0,229,255,0.3)', fontWeight: 600 }}>
+            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-border)', fontWeight: 600 }}>
               3-PASS ADVERSARIAL
             </span>
           </div>
@@ -316,7 +322,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: '#00E5FF' }}>
+                        <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)' }}>
                           {claim.claim_id.toUpperCase()}
                         </span>
                         <span style={{ fontSize: 10, textTransform: 'uppercase', padding: '1px 6px', borderRadius: 3, background: 'var(--surface-high)', color: 'var(--text-secondary)' }}>
@@ -360,12 +366,12 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
             <div className="card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Scale size={16} color="#00E5FF" />
+                  <Scale size={16} color="var(--accent)" />
                   <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Pass 2: Devil's Advocate Rebuttal ({caseData.rebuttals?.length || 0} Evaluations)
                   </span>
                 </div>
-                <span style={{ fontSize: 10, color: '#00E5FF', fontWeight: 600 }}>Evidence-Grounded Defense</span>
+                <span style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600 }}>Evidence-Grounded Defense</span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -373,7 +379,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
                   const isRefuted = reb.status === 'refuted'
                   const isWeakened = reb.status === 'weakened'
                   const isStands = reb.status === 'stands'
-                  const borderColor = isRefuted ? '#10B981' : (isWeakened ? '#00E5FF' : (isStands ? '#EF4444' : 'var(--border)'))
+                  const borderColor = isRefuted ? '#10B981' : (isWeakened ? 'var(--accent)' : (isStands ? '#DC2626' : 'var(--border)'))
 
                   return (
                     <div
@@ -415,9 +421,9 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
                                 key={cid}
                                 onClick={() => setActiveEvidenceModal(ev)}
                                 style={{
-                                  background: 'rgba(0,229,255,0.1)',
-                                  border: '1px solid rgba(0,229,255,0.3)',
-                                  color: '#00E5FF',
+                                  background: 'var(--accent-subtle)',
+                                  border: '1px solid var(--accent-border)',
+                                  color: 'var(--accent)',
                                   fontSize: 10,
                                   fontWeight: 600,
                                   padding: '2px 8px',
@@ -538,7 +544,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
                       }}>
                         {step.action}
                       </span>
-                      <span className="mono" style={{ fontSize: 11, color: '#00E5FF' }}>
+                      <span className="mono" style={{ fontSize: 11, color: 'var(--accent)' }}>
                         {step.target}
                       </span>
                     </div>
@@ -570,7 +576,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
           <div className="card" style={{ maxWidth: 640, width: '100%', padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: 10 }}>
               <div>
-                <div style={{ fontSize: 11, color: '#00E5FF', textTransform: 'uppercase', fontWeight: 700 }}>
+                <div style={{ fontSize: 11, color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 700 }}>
                   Tool Evidence Dossier
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginTop: 2 }}>

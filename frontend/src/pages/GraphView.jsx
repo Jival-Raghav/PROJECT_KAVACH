@@ -152,12 +152,13 @@ export default function GraphView({ selectedAccount = 'USR00173', onNavigateToRe
     svg.call(zoom)
 
     // Node colors by type
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00E5FF'
     const colorByType = {
-      identity: '#00E5FF',     // Neon Cyan
+      identity: accentColor,
       account: '#6366F1',      // Indigo
       entitlement: '#F59E0B',  // Amber
       system: '#A855F7',       // Purple
-      resource: '#EF4444',     // Crimson
+      resource: '#DC2626',     // Crimson
     }
 
     const nodes = graphData.nodes.map(d => ({ ...d }))
@@ -321,12 +322,12 @@ export default function GraphView({ selectedAccount = 'USR00173', onNavigateToRe
           {/* Graph Legend Overlay */}
           <div style={{
             position: 'absolute', bottom: 12, left: 12,
-            background: 'rgba(13, 21, 38, 0.85)', backdropFilter: 'blur(8px)',
+            background: 'var(--surface)', backdropFilter: 'blur(8px)',
             border: '1px solid var(--border)', borderRadius: 6, padding: '8px 12px',
             display: 'flex', gap: 14, fontSize: 11, color: 'var(--text-secondary)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#00E5FF' }} /> Identity
+              <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--accent)' }} /> Identity
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#6366F1' }} /> Account
@@ -385,7 +386,7 @@ export default function GraphView({ selectedAccount = 'USR00173', onNavigateToRe
           <div className="card slide-up" style={{ padding: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
-                <Zap size={14} color="#00E5FF" /> Blast Radius Analysis
+                <Zap size={14} color="var(--accent)" /> Blast Radius Analysis
               </div>
               <div style={{
                 fontSize: 14, fontWeight: 800,

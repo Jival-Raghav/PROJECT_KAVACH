@@ -55,46 +55,51 @@
 }
 
 :root[data-theme="light"] {
-  /* Backgrounds */
-  --bg:           #F5F4F0;
+  /* Backgrounds: Crisp clean whites with soft sage / emerald undertones */
+  --bg:           #F3F8F5;
   --surface:      #FFFFFF;
-  --surface-mid:  #F0EEEB;
-  --surface-high: #E6E4E1;
+  --surface-mid:  #EBF4EF;
+  --surface-high: #DCEDE4;
 
-  /* Borders */
-  --border:        #E2E2E2;
-  --border-subtle: rgba(0,0,0,0.06);
+  /* Borders: Soft sage and muted green borders */
+  --border:        #C8DCD1;
+  --border-subtle: rgba(5, 150, 105, 0.08);
 
-  /* Text */
-  --text-primary:   #111111;
-  --text-secondary: #5A5A5A;
-  --text-muted:     #9A9A9A;
+  /* Text: High-contrast deep dark forest green text */
+  --text-primary:   #0A2419;
+  --text-secondary: #214C3B;
+  --text-muted:     #4B7866;
 
-  /* SG Brand Red — same */
-  --sg-red:        #E3000B;
-  --sg-red-hover:  #C40009;
-  --sg-red-subtle: rgba(227,0,11,0.07);
-  --sg-red-border: rgba(227,0,11,0.20);
+  /* Brand Accent: Vibrant Emerald & Forest Green */
+  --accent:        #059669;
+  --accent-hover:  #047857;
+  --accent-subtle: rgba(5, 150, 105, 0.09);
+  --accent-border: rgba(5, 150, 105, 0.28);
+  --sg-red:        #059669;
+  --sg-red-hover:  #047857;
+  --sg-red-subtle: rgba(5, 150, 105, 0.09);
+  --sg-red-border: rgba(5, 150, 105, 0.28);
 
-  /* Semantic risk colours — same */
-  --c-critical:    #E3000B;
-  --c-review:      #E8870A;
-  --c-normal:      #1D9E75;
-  --c-info:        #378ADD;
+  /* Semantic risk colours: RED strictly for critical security alerts / high severity */
+  --c-critical:    #DC2626;
+  --c-critical-bg: rgba(220, 38, 38, 0.09);
+  --c-critical-bd: rgba(220, 38, 38, 0.28);
 
-  /* Semantic subtles — slightly lighter */
-  --c-critical-bg: rgba(227,0,11,0.07);
-  --c-critical-bd: rgba(227,0,11,0.20);
-  --c-review-bg:   rgba(232,135,10,0.08);
-  --c-review-bd:   rgba(232,135,10,0.22);
-  --c-normal-bg:   rgba(29,158,117,0.08);
-  --c-normal-bd:   rgba(29,158,117,0.22);
-  --c-info-bg:     rgba(55,138,221,0.08);
-  --c-info-bd:     rgba(55,138,221,0.22);
+  --c-review:      #D97706;
+  --c-review-bg:   rgba(217, 119, 6, 0.08);
+  --c-review-bd:   rgba(217, 119, 6, 0.24);
+
+  --c-normal:      #059669;
+  --c-normal-bg:   rgba(5, 150, 105, 0.09);
+  --c-normal-bd:   rgba(5, 150, 105, 0.25);
+
+  --c-info:        #0284C7;
+  --c-info-bg:     rgba(2, 132, 199, 0.08);
+  --c-info-bd:     rgba(2, 132, 199, 0.24);
 
   /* Misc */
-  --shadow:        0 1px 3px rgba(0,0,0,0.08);
-  --scrollbar:     rgba(0,0,0,0.14);
+  --shadow:        0 1px 3px rgba(10, 36, 25, 0.06), 0 1px 2px rgba(10, 36, 25, 0.04);
+  --scrollbar:     rgba(5, 150, 105, 0.20);
 }
 
 /* ══════════════════════════════════════════════════
@@ -129,8 +134,12 @@ html, body, #root {
 
 .sg-stripe {
   height: 2px;
-  background: linear-gradient(90deg, #00E5FF 0%, #6366F1 50%, #00E5FF 100%);
+  background: linear-gradient(90deg, #10B981 0%, #059669 50%, #10B981 100%);
   flex-shrink: 0;
+}
+
+:root[data-theme="dark"] .sg-stripe {
+  background: linear-gradient(90deg, #00E5FF 0%, #6366F1 50%, #00E5FF 100%);
 }
 
 .nav-bar {
