@@ -49,7 +49,7 @@ def get_insurer_summary() -> dict[str, Any]:
 
 @router.get("/export")
 def export_audit_pack(
-    format: str = Query("pdf", regex="^(pdf|json|csv)$"),
+    format: str = Query("pdf", pattern="^(pdf|json|csv)$"),
 ):
     """Generates and downloads formal compliance audit pack in PDF, JSON, or CSV."""
     bundle = load_legacy_as_canonical()

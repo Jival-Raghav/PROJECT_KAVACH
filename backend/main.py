@@ -1,6 +1,15 @@
 from __future__ import annotations
 
+import pathlib
+import sys
 from typing import Any
+
+# Ensure both backend and root are in sys.path
+_backend_dir = pathlib.Path(__file__).resolve().parent
+_root_dir = _backend_dir.parent
+for _p in (_backend_dir, _root_dir):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 from fastapi import FastAPI, HTTPException, Path
 from fastapi.middleware.cors import CORSMiddleware

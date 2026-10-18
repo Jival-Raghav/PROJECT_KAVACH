@@ -53,10 +53,19 @@ def wrap_untrusted_data(payload: dict[str, Any] | list[Any], nonce: str | None =
 
 def build_prosecutor_messages(
     profile: dict[str, Any],
-    findings: list[dict[str, Any]],
-    flagged_events: list[dict[str, Any]],
+    findings: list[dict[str, Any]] | None = None,
+    flagged_events: list[dict[str, Any]] | str | None = None,
+    breach_summary: str | None = None,
 ) -> list[dict[str, str]]:
     """Constructs prompt for Pass 1 (Prosecutor) using nonce data wrapping."""
+    if isinstance(flagged_events, str):
+        # Legacy caller passed (profile, flagged_events_list, breach_summary_str)
+        breach_summary = flagged_events
+        actual_events = findings if isinstance(findings, list) else []
+        actual_findings: list[dict[str, Any]] = []
+    else:
+        actual_findings = findings if isinstance(findings, list) else []
+        actual_events = flagged_events if isinstance(flagged_events, list) else []
     data_payload = {
         "user_profile": {
             "user_id": profile.get("user_id"),
@@ -69,7 +78,7 @@ def build_prosecutor_messages(
             "peer_group": profile.get("peer_group"),
             "peer_zscore": profile.get("peer_zscore"),
         },
-        "findings": findings,
+        "findings": actual_findings,
         "flagged_events": [
             {
                 "event_id": e.get("event_id"),
@@ -81,7 +90,7 @@ def build_prosecutor_messages(
                 "success": e.get("success"),
                 "source_ip": e.get("source_ip"),
             }
-            for e in flagged_events[:20]
+            for e in actual_events[:20]
         ],
     }
 
@@ -202,4 +211,92 @@ def build_adjudicator_messages(
     return [
         {"role": "system", "content": SYSTEM_ADJUDICATOR},
         {"role": "user", "content": user_instructions},
+    ]
+
+
+# ─── Legacy Narrator Compatibility ──────────────────────────────────────────
+
+SEVERITY_DOWNGRADE: dict[str, str] = {
+    "CRITICAL": "HIGH",
+    "HIGH": "REVIEW",
+    "REVIEW": "INFORMATIONAL",
+    "INFORMATIONAL": "INFORMATIONAL",
+}
+
+
+def apply_doubt_gate(prosecution_severity: str, doubt_score: float) -> str:
+    """If doubt_score > 0.65, downgrade severity by one tier. If > 0.85, two tiers."""
+    severity = (prosecution_severity or "REVIEW").upper()
+    if doubt_score > 0.85:
+        severity = SEVERITY_DOWNGRADE.get(severity, severity)
+        severity = SEVERITY_DOWNGRADE.get(severity, severity)
+    elif doubt_score > 0.65:
+        severity = SEVERITY_DOWNGRADE.get(severity, severity)
+    return severity
+
+
+def build_devils_advocate_messages(
+    profile: dict[str, Any],
+    flagged_events: list[dict[str, Any]],
+    prosecution_result: dict[str, Any],
+) -> list[dict[str, str]]:
+    """Builds the message list for the legacy Devil's Advocate LLM call."""
+    context = (
+        f"ACCUSED USER:\n"
+        f"  user_id: {profile.get('user_id')}\n"
+        f"  username: {profile.get('username')}\n"
+        f"  department: {profile.get('department')}\n"
+        f"  job_title: {profile.get('job_title')}\n"
+        f"  privilege: {profile.get('privilege_level')}\n\n"
+        f"PROSECUTION FINDING:\n"
+        f"  severity: {prosecution_result.get('severity')}\n"
+        f"  narrative: {prosecution_result.get('prosecution', '')[:600]}\n"
+        f"  evidence: {'; '.join(prosecution_result.get('key_evidence', [])[:5])}"
+    )
+
+    return [
+        {"role": "system", "content": SYSTEM_DEVILS_ADVOCATE},
+        {
+            "role": "user",
+            "content": (
+                f"Review this security finding and challenge it as defence counsel.\n\n"
+                f"{context}\n\n"
+                "Respond with JSON in exactly this schema:\n"
+                "{\n"
+                '  "challenge": "<150-300 word defence narrative with legitimate explanations>",\n'
+                '  "doubt_score": <float 0.0 to 1.0>,\n'
+                '  "mitigating_factors": ["<factor 1>", "<factor 2>", ...],\n'
+                '  "final_recommendation": "<specific, actionable next step for the analyst>"\n'
+                "}"
+            ),
+        },
+    ]
+
+
+SYSTEM_INFERENCE = (
+    "You are a senior security analyst writing the FINAL VERDICT after hearing "
+    "both the prosecution's case and the defence counsel's challenge.\n"
+    "Respond with valid JSON only."
+)
+
+
+def build_inference_messages(
+    profile: dict[str, Any],
+    prosecution_text: str,
+    da_text: str,
+    doubt_score: float | None = None,
+    final_severity: str | None = None,
+) -> list[dict[str, str]]:
+    """Builds the message list for the legacy Inference (Pass 3) LLM call."""
+    context = (
+        f"USER: {profile.get('username')} | dept: {profile.get('department')} | role: {profile.get('job_title')}\n"
+        f"PROSECUTION: {prosecution_text[:600]}\n"
+        f"DEFENCE: {da_text[:600]}"
+    )
+    return [
+        {"role": "system", "content": SYSTEM_INFERENCE},
+        {
+            "role": "user",
+            "content": f"Synthesise into a final verdict JSON:\n{context}",
+        },
     ]

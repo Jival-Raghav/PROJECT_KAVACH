@@ -132,7 +132,7 @@ def change_proposal_status(proposal_id: str, req: TransitionRequest) -> dict[str
 @router.get("/{proposal_id}/export")
 def export_dryrun(
     proposal_id: str,
-    format: str = Query("ticket", regex="^(ticket|csv|aws|entra|okta|ad)$"),
+    format: str = Query("ticket", pattern="^(ticket|csv|aws|entra|okta|ad)$"),
 ):
     """Exports dry-run remediation artifact in specified format."""
     props = [p for p in list_proposals() if p.proposal_id == proposal_id]
