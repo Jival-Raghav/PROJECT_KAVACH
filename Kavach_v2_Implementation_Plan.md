@@ -1,4 +1,4 @@
-# ISPAD v2 — Implementation Plan (for Antigravity)
+# Kavach v2 — Implementation Plan (for Antigravity)
 
 Schema-agnostic identity-risk platform: point it at any company's identity data, confirm an auto-proposed schema mapping, and get resolved identities, evidence-grounded alerts, blast-radius analysis, a posture score and an audit pack.
 
@@ -16,7 +16,7 @@ Schema-agnostic identity-risk platform: point it at any company's identity data,
 ### Master Prompt (paste first)
 
 ```text
-You are extending an existing hackathon project called ISPAD (Identity Sprawl & Access Detection) into ISPAD v2.
+You are extending an existing hackathon project called Kavach (Identity Sprawl & Access Detection) into Kavach v2.
 Stack: Python 3.10+, FastAPI, pandas, scikit-learn, Pydantic v2, SQLAlchemy+SQLite, networkx; React + Vite + D3 frontend; local LLMs via Ollama (:11434) and LM Studio (:1234, OpenAI-compatible).
 Read PLAN.md fully before writing code. First audit the existing repo (backend/, frontend/, data/) and summarize its structure, then wait for my phase instruction.
 Rules: (1) never break the existing pipeline—add regression tests before refactoring; (2) never execute LLM-generated code; LLMs only emit validated JSON; (3) no hard-coded column names outside the adapter layer; (4) every LLM call goes through the LLM client wrapper with schema validation, retries, timeout, and disk cache; (5) the system must run end-to-end with NO LLM available (deterministic fallback); (6) pseudonymise PII before any LLM call; (7) write pytest tests for every module; (8) keep the dark "command center" UI aesthetic; (9) every human edit to the unified schema is an operation in a versioned, reversible, audited edit log, and fields excluded or flagged PII must never reach any LLM prompt.
@@ -270,7 +270,7 @@ GET  /api/runs/{id}/validation
 Step 1 upload/connect (multi-file drag-drop; label each file's role) → Step 2 mapping table (canonical field | source column dropdown | transform | confidence chip green/amber/red | sample values) → Step 3 **Unified Schema Review (editable, see 1.10)** → Step 4 preview of normalized rows + validation report + "disabled detectors" list → Step 5 "Confirm & Run" with live progress.
 
 ### 1.9 Test datasets (create in `scripts/gen_datasets.py`, with ground truth)
-- **A:** original ISPAD schema.
+- **A:** original Kavach schema.
 - **B:** "Workday-style HR export" + "Okta-system-log-style JSON events" (nested JSON, ISO timestamps, `actor.alternateId`, `outcome.result`, `client.ipAddress`).
 - **C:** "AWS CloudTrail/IAM-style" (`eventTime`, `userIdentity.arn`, `eventName`, `sourceIPAddress`, IAM role/policy entitlements, epoch timestamps in one variant).
 - **D (stress):** weird headers (`col_1…`), mixed date formats, Y/N flags, no HR file, snake/camel mix.

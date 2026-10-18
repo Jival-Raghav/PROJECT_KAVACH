@@ -1,7 +1,7 @@
 # Current Architecture & Seam Audit (Phase 0)
 
 ## 1. Overview
-This document audits the legacy state of the ISPAD repository prior to the v2 refactor, identifying the existing data flow, where hard-coded column names exist, where ML models are trained, and how LLMs are invoked.
+This document audits the legacy state of the Kavach repository prior to the v2 refactor, identifying the existing data flow, where hard-coded column names exist, where ML models are trained, and how LLMs are invoked.
 
 ## 2. Legacy Data Flow
 1. **Raw Ingestion**:

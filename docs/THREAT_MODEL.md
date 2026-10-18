@@ -1,4 +1,4 @@
-# ISPAD v2 LLM & Non-Human Identity Security Threat Model
+# Kavach v2 LLM & Non-Human Identity Security Threat Model
 
 **Document Version:** 2.0  
 **Status:** Enforced  
