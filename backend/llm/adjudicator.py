@@ -1,5 +1,5 @@
 """backend/llm/adjudicator.py
-Pass 3: CISO Adjudication & Remediation Synthesis Agent for ISPAD v2.
+Pass 3: CISO Adjudication & Remediation Synthesis Agent for Kavach v2.
 
 Synthesizes prosecutor's claims, defense rebuttals, cited evidence rows, and doubt score
 into a binding final verdict with a corroborated timeline and actionable remediation steps.
@@ -13,7 +13,8 @@ from typing import Any
 
 from config import get_settings
 from core.models import CanonicalBundle
-from llm.client import get_llm_client
+from llm.client import get_adjudicator_client
+from llm.jsonutil import parse_llm_json
 from llm.devils_advocate import DAResult
 from llm.prompts import build_adjudicator_messages
 from llm.prosecutor import ProsecutorClaim
@@ -61,6 +62,8 @@ def run_deterministic_adjudicator(
     # 1. Determine final binding verdict
     if has_hard_rule:
         verdict = "CONFIRMED_THREAT"
+    elif not claims:
+        verdict = "NEEDS_REVIEW"  # nothing was prosecuted, so there is nothing to confirm or clear
     elif doubt >= 0.75 and all(r.status in ("refuted", "weakened") for r in da_result.rebuttals):
         verdict = "MITIGATED_BENIGN"
     elif doubt <= 0.35:
@@ -187,7 +190,7 @@ def run_adjudicator(
         return run_deterministic_adjudicator(bundle, profile, claims, da_result)
 
     try:
-        client = get_llm_client()
+        client = get_adjudicator_client()
         messages = build_adjudicator_messages(
             profile=profile,
             claims=[c.model_dump() for c in claims],
@@ -197,24 +200,39 @@ def run_adjudicator(
             adjusted_severity=da_result.adjusted_severity,
         )
 
-        response = client.chat(messages, temperature=0.2)
-        clean_json = response.strip()
+        parsed = parse_llm_json(client.chat(messages, temperature=0.2, max_tokens=3000))
+        if not parsed or not str(parsed.get("summary", "")).strip():
+            raise ValueError("adjudicator returned no usable verdict")
 
-        if "```json" in clean_json:
-            clean_json = clean_json.split("```json")[1].split("```")[0].strip()
-        elif "```" in clean_json:
-            clean_json = clean_json.split("```")[1].split("```")[0].strip()
-
-        parsed = json.loads(clean_json)
+        verdict = str(parsed.get("verdict", "")).upper()
+        if verdict not in ("CONFIRMED_THREAT", "MITIGATED_BENIGN", "NEEDS_REVIEW"):
+            raise ValueError(f"invalid verdict {verdict!r}")
+        severity = str(parsed.get("severity", "")).upper()
+        if severity not in ("CRITICAL", "HIGH", "REVIEW", "INFORMATIONAL"):
+            severity = da_result.adjusted_severity
+        if any(c.hard_rule for c in claims):
+            verdict = "CONFIRMED_THREAT"  # hard rules cannot be dismissed, whatever the model says
+        elif verdict == "MITIGATED_BENIGN" and da_result.doubt_score < 0.75:
+            verdict = "NEEDS_REVIEW"  # benign requires verified rebuttals, same bar as the deterministic path
+        timeline = [
+            TimelineEntry(timestamp=str(t.get("timestamp", "")), description=str(t.get("description", "")),
+                          type=str(t.get("type", "alert")))
+            for t in parsed.get("timeline", []) if isinstance(t, dict)
+        ]
+        steps = [
+            RemediationStep(action=str(r.get("action", "UPDATE_TICKET")), target=str(r.get("target", "")),
+                            rationale=str(r.get("rationale", "")))
+            for r in parsed.get("remediation_steps", []) if isinstance(r, dict)
+        ]
 
         return AdjudicationVerdict(
             user_id=str(profile.get("user_id", "")),
-            verdict=parsed.get("verdict", "NEEDS_REVIEW"),
-            severity=parsed.get("severity", da_result.adjusted_severity),
-            doubt_score=float(parsed.get("doubt_score", da_result.doubt_score)),
-            summary=parsed.get("summary", ""),
-            timeline=[TimelineEntry(**t) for t in parsed.get("timeline", [])],
-            remediation_steps=[RemediationStep(**r) for r in parsed.get("remediation_steps", [])],
+            verdict=verdict,
+            severity=severity,
+            doubt_score=da_result.doubt_score,  # computed deterministically; the model may not alter it
+            summary=str(parsed["summary"]).strip(),
+            timeline=timeline,
+            remediation_steps=steps,
             claims=[c.model_dump() for c in claims],
             rebuttals=[r.model_dump() for r in da_result.rebuttals],
             tool_results=da_result.tool_results,

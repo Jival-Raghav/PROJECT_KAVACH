@@ -1,5 +1,5 @@
 """backend/llm/prosecutor.py
-Pass 1: Security Prosecution Agent for ISPAD v2.
+Pass 1: Security Prosecution Agent for Kavach v2.
 
 Formulates structured, evidence-grounded claims against an accused user profile.
 Deterministic security violations (Separation of Duties, Leaver-Active, Stale Privileged)
@@ -7,13 +7,13 @@ are tagged with hard_rule=True and cannot be dismissed by downstream defense cou
 """
 from __future__ import annotations
 
-import json
 import logging
 from typing import Any
 
 from config import get_settings
 from core.models import CanonicalBundle, CanonicalEvent
 from llm.client import get_prosecutor_client
+from llm.jsonutil import parse_llm_json
 from llm.prompts import build_prosecutor_messages
 from pydantic import BaseModel, Field
 
@@ -69,6 +69,8 @@ def run_deterministic_prosecutor(
         norm_type = "anomaly"
         if "sod" in f_type:
             norm_type = "sod_conflict"
+        elif "leaver" in f_type:
+            norm_type = "leaver_active"
         elif "stale" in f_type:
             norm_type = "stale_privileged"
         elif "sensitive" in f_type:
@@ -163,17 +165,12 @@ def run_prosecutor(
             for e in events[:20]
         ]
         messages = build_prosecutor_messages(profile, findings, flagged_events_dicts)
-        raw_resp = client.chat(messages, temperature=0.2)
-
-        # Parse JSON from response
-        clean_json = raw_resp.strip()
-        if "```json" in clean_json:
-            clean_json = clean_json.split("```json")[1].split("```")[0].strip()
-        elif "```" in clean_json:
-            clean_json = clean_json.split("```")[1].split("```")[0].strip()
-
-        parsed = json.loads(clean_json)
-        raw_claims = parsed.get("claims", [])
+        parsed = None
+        for _ in range(2):
+            parsed = parse_llm_json(client.chat(messages, temperature=0.2, max_tokens=3000))
+            if parsed and isinstance(parsed.get("claims"), list) and parsed["claims"]:
+                break
+        raw_claims = [c for c in (parsed or {}).get("claims", []) if isinstance(c, dict)]
 
         claims: list[ProsecutorClaim] = []
         for c in raw_claims:
@@ -191,7 +188,9 @@ def run_prosecutor(
                     type=c.get("type", "anomaly"),
                     statement=c.get("statement", ""),
                     event_ids=c.get("event_ids", []),
-                    severity=c.get("severity", "medium").lower(),
+                    severity=(str(c.get("severity", "medium")).lower()
+                              if str(c.get("severity", "medium")).lower() in ("low", "medium", "high", "critical")
+                              else "medium"),
                     hard_rule=is_hard,
                 )
             )

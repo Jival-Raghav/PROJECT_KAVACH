@@ -1,5 +1,5 @@
 """backend/detect/__init__.py
-Phase 3: Detection Core Generalization package for ISPAD v2.
+Phase 3: Detection Core Generalization package for Kavach v2.
 """
 from detect.features import extract_canonical_features
 from detect.heuristics import evaluate_heuristics, load_sod_rules

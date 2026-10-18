@@ -1,5 +1,5 @@
 """backend/llm/devils_advocate.py
-Pass 2: Evidence-Grounded Devil's Advocate Agent for ISPAD v2.
+Pass 2: Evidence-Grounded Devil's Advocate Agent for Kavach v2.
 
 Features:
 - Bounded tool execution loop (max 6 calls per case).
@@ -20,6 +20,7 @@ from typing import Any
 from config import get_settings
 from core.models import CanonicalBundle, CanonicalEvent
 from llm.client import get_da_client
+from llm.jsonutil import parse_llm_json
 from llm.prompts import build_da_tool_loop_messages
 from llm.prosecutor import ProsecutorClaim
 from llm.tools import TOOL_METADATA, execute_tool
@@ -375,7 +376,7 @@ def run_devils_advocate(
     claims: list[ProsecutorClaim],
     events: list[CanonicalEvent],
     use_llm: bool = True,
-    max_tool_iterations: int = 6,
+    max_tool_iterations: int = 8,
 ) -> DAResult:
     """Executes Pass 2 (Devil's Advocate) iterative tool loop with citation enforcement."""
     cfg = get_settings()
@@ -388,6 +389,16 @@ def run_devils_advocate(
         conversation_history: list[dict[str, str]] = []
 
         claims_payload = [c.model_dump() for c in claims]
+        timestamps = sorted(e.timestamp for e in events if e.timestamp)
+        case_context = {
+            "user": str(profile.get("user_id", "")),
+            "first_event_ts": timestamps[0] if timestamps else None,
+            "last_event_ts": timestamps[-1] if timestamps else None,
+            "entitlements": sorted({e.system for e in bundle.entitlements
+                                    if e.extra.get("identity_id") == str(profile.get("user_id", ""))}),
+            "systems": sorted({e.system for e in events if e.system and e.resource_sensitivity == "high"})
+            or sorted({e.system for e in events if e.system})[:5],
+        }
 
         # Iterative tool calling loop (bounded at max_tool_iterations)
         for _ in range(max_tool_iterations):
@@ -395,17 +406,13 @@ def run_devils_advocate(
                 claims=claims_payload,
                 available_tools=TOOL_METADATA,
                 history=conversation_history,
+                context=case_context,
             )
 
-            response = client.chat(messages, temperature=0.2)
-            clean_resp = response.strip()
-
-            if "```json" in clean_resp:
-                clean_resp = clean_resp.split("```json")[1].split("```")[0].strip()
-            elif "```" in clean_resp:
-                clean_resp = clean_resp.split("```")[1].split("```")[0].strip()
-
-            parsed = json.loads(clean_resp)
+            parsed = parse_llm_json(client.chat(messages, temperature=0.2, max_tokens=3000))
+            if parsed is None:
+                break
+            clean_resp = json.dumps(parsed)
 
             # Check if model requested a tool call
             if "tool" in parsed and "args" in parsed:

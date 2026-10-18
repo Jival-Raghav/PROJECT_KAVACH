@@ -40,6 +40,9 @@ class ProviderNotConfiguredError(ProviderError):
 class LLMClient(ABC):
     """Common interface all provider clients must implement."""
 
+    # Provider-specific kwargs merged into every completion call (see GroqClient).
+    _extra: dict[str, Any] = {}
+
     @abstractmethod
     def chat(
         self,
@@ -112,6 +115,7 @@ class LMStudioClient(LLMClient):
                 messages=messages,  # type: ignore[arg-type]
                 temperature=temperature,
                 max_tokens=max_tokens,
+                **self._extra,
             )
             return response.choices[0].message.content or ""
         except Exception as exc:
@@ -127,6 +131,7 @@ class LMStudioClient(LLMClient):
                 temperature=temperature,
                 max_tokens=max_tokens,
                 stream=True,
+                **self._extra,
             )
             for chunk in stream:
                 delta = chunk.choices[0].delta.content
@@ -139,6 +144,23 @@ class LMStudioClient(LLMClient):
 
 
 # ─── Groq ────────────────────────────────────────────────────────────────────
+
+def _recover_rejected_tool_call(exc: Exception) -> str | None:
+    """gpt-oss sometimes emits a native tool call even when none are declared; Groq rejects it with
+    tool_use_failed. Turn the rejected generation back into the plain {"tool", "args"} JSON we ask for."""
+    body = getattr(exc, "body", None)
+    err = body.get("error", body) if isinstance(body, dict) else {}
+    if err.get("code") != "tool_use_failed":
+        return None
+    try:
+        call = json.loads(err.get("failed_generation", ""))
+        args = call.get("arguments", {})
+        if isinstance(args, dict) and "tool" in args and "args" in args:
+            return json.dumps(args)
+        return json.dumps({"tool": call["name"], "args": args})
+    except (ValueError, KeyError, TypeError):
+        return None
+
 
 class GroqClient(LLMClient):
     def __init__(self) -> None:
@@ -154,8 +176,10 @@ class GroqClient(LLMClient):
             raise ProviderError(
                 "groq package is not installed. Run: pip install groq"
             )
-        self._client = Groq(api_key=cfg.GROQ_API_KEY)
+        self._client = Groq(api_key=cfg.GROQ_API_KEY, max_retries=4)
         self._model = cfg.GROQ_MODEL
+        # Reasoning models (gpt-oss) spend max_tokens on hidden thinking; keep it short.
+        self._extra = {"reasoning_effort": "low"} if "gpt-oss" in self._model else {}
         logger.info("GroqClient ready — model: %s", self._model)
 
     def chat(self, messages, temperature=0.3, max_tokens=1024) -> str:
@@ -165,9 +189,13 @@ class GroqClient(LLMClient):
                 messages=messages,  # type: ignore[arg-type]
                 temperature=temperature,
                 max_tokens=max_tokens,
+                **self._extra,
             )
             return response.choices[0].message.content or ""
         except Exception as exc:
+            recovered = _recover_rejected_tool_call(exc)
+            if recovered is not None:
+                return recovered
             raise ProviderError(
                 f"Groq API request failed. Check GROQ_API_KEY and network. Error: {exc}"
             ) from exc
@@ -180,6 +208,7 @@ class GroqClient(LLMClient):
                 temperature=temperature,
                 max_tokens=max_tokens,
                 stream=True,
+                **self._extra,
             )
             for chunk in stream:
                 delta = chunk.choices[0].delta.content
@@ -219,6 +248,7 @@ class HuggingFaceClient(LLMClient):
                 messages=messages,  # type: ignore[arg-type]
                 temperature=temperature,
                 max_tokens=max_tokens,
+                **self._extra,
             )
             return response.choices[0].message.content or ""
         except Exception as exc:
@@ -234,6 +264,7 @@ class HuggingFaceClient(LLMClient):
                 temperature=temperature,
                 max_tokens=max_tokens,
                 stream=True,
+                **self._extra,
             )
             for chunk in stream:
                 delta = chunk.choices[0].delta.content
@@ -295,6 +326,7 @@ class OllamaClient(LLMClient):
                 messages=messages,  # type: ignore[arg-type]
                 temperature=temperature,
                 max_tokens=max_tokens,
+                **self._extra,
             )
             return response.choices[0].message.content or ""
         except Exception as exc:
@@ -310,6 +342,7 @@ class OllamaClient(LLMClient):
                 temperature=temperature,
                 max_tokens=max_tokens,
                 stream=True,
+                **self._extra,
             )
             for chunk in stream:
                 delta = chunk.choices[0].delta.content
@@ -389,3 +422,10 @@ def get_da_client() -> LLMClient:
     cfg = get_settings()
     logger.info("Initialising Devil's Advocate client: %s", cfg.DA_PROVIDER)
     return _build_client(cfg.DA_PROVIDER)
+
+
+def get_adjudicator_client() -> LLMClient:
+    """Returns the client for Pass 3 (Adjudicator), configured via ADJUDICATOR_PROVIDER."""
+    cfg = get_settings()
+    logger.info("Initialising Adjudicator client: %s", cfg.ADJUDICATOR_PROVIDER)
+    return _build_client(cfg.ADJUDICATOR_PROVIDER)

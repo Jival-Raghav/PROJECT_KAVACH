@@ -87,7 +87,7 @@ def get_sod_rules() -> dict[str, Any]:
         return {
             "status": "success",
             "rules_count": len(rules),
-            "rules": rules,
+            "rules": [vars(r) for r in rules],
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load SoD rules: {e}") from e

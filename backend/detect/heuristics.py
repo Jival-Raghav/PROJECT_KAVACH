@@ -1,5 +1,5 @@
 """backend/detect/heuristics.py
-Configurable Separation of Duties (SoD) and Security Heuristics for ISPAD v2.
+Configurable Separation of Duties (SoD) and Security Heuristics for Kavach v2.
 
 Evaluates:
 - YAML-configurable SoD conflicts across entitlements and actions.
@@ -170,6 +170,12 @@ def evaluate_heuristics(
 
     findings_by_user: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
+    terminated_on = {
+        i.identity_id: dt
+        for i in identities
+        if str(i.employment_status).lower() == "terminated" and (dt := parse_iso_dt(i.termination_date))
+    }
+
     for uid in all_users:
         u_accs = user_accounts.get(uid, [])
         u_evs = user_events.get(uid, [])
@@ -230,6 +236,24 @@ def evaluate_heuristics(
                         "score_weight": 20.0,
                     })
                     break
+
+        # ── 2b. Leaver Still Active (HR says terminated, activity continues) ──
+        term = terminated_on.get(uid)
+        if term:
+            post_term = [e for e in u_evs if (dt := parse_iso_dt(e.timestamp)) and dt > term]
+            if post_term:
+                findings_by_user[uid].append({
+                    "id": "LEAVER_ACTIVE",
+                    "type": "leaver_active",
+                    "name": "Leaver Still Active",
+                    "severity": "critical",
+                    "description": (
+                        f"HR terminated this employee on {term.date()} but the account is still live "
+                        f"and made {len(post_term)} access events afterwards"
+                    ),
+                    "hard_rule": True,
+                    "score_weight": 30.0,
+                })
 
         # ── 3. Privilege Creep (Outlier vs Peers) ─────────────────────────────
         gid = (user_peer_map or {}).get(uid, "general")

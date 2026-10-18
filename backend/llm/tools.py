@@ -256,6 +256,8 @@ def recent_role_change(bundle: CanonicalBundle, user: str, ts: str, window_days:
 
     for h in bundle.org_context.hr_events:
         if _match_user(user, h.get("user", "")):
+            if str(h.get("event_type", "")).upper() in ("TERMINATION", "RESIGNATION", "SEPARATION"):
+                continue  # leaving the company is not a role change that explains new access
             eff_dt = parse_iso_dt(h.get("effective_date"))
             if eff_dt and cutoff <= eff_dt <= target_dt:
                 evidence.append(h)
@@ -271,11 +273,13 @@ def approved_exception(bundle: CanonicalBundle, user: str, entitlement: str, ts:
 
     evidence = []
     ent_norm = entitlement.strip().lower()
+    ident = next((i for i in bundle.identities if i.identity_id == user or i.email == user), None)
+    held = {e.system.lower() for e in bundle.entitlements if ident and e.extra.get("identity_id") == ident.identity_id}
 
     for exc in bundle.org_context.exceptions:
         if _match_user(user, exc.get("user", "")):
             rec_ent = str(exc.get("entitlement", "")).strip().lower()
-            if ent_norm in rec_ent or rec_ent in ent_norm:
+            if ent_norm in rec_ent or rec_ent in ent_norm or rec_ent in held:
                 exp_dt = parse_iso_dt(exc.get("expiry_date"))
                 if not exp_dt or (target_dt and exp_dt >= target_dt):
                     evidence.append(exc)
@@ -286,22 +290,72 @@ def approved_exception(bundle: CanonicalBundle, user: str, entitlement: str, ts:
     return False, [], f"No approved security exception for '{user}' and entitlement '{entitlement}'"
 
 
-def peer_comparison(bundle: CanonicalBundle, user: str, feature: str) -> tuple[bool, list[dict], str]:
-    # Check if user's metric is within normal 1.5 standard deviations of peer group
-    ident = next((i for i in bundle.identities if i.identity_id == user or i.email == user), None)
-    dept = ident.department if ident and ident.department else "general"
+def _feature_value(events: list, feature: str) -> float | None:
+    """Computes a behavioural feature from raw events; None when the feature is unknown."""
+    if not events:
+        return 0.0
+    if feature == "event_count":
+        return float(len(events))
+    if feature == "distinct_systems":
+        return float(len({e.system for e in events if e.system}))
+    if feature == "failure_rate":
+        return sum(1 for e in events if not e.success) / len(events)
+    if feature == "after_hours_ratio":
+        off = 0
+        for e in events:
+            dt = parse_iso_dt(e.timestamp)
+            if dt and (dt.hour < 8 or dt.hour >= 18 or dt.weekday() >= 5):
+                off += 1
+        return off / len(events)
+    return None
 
-    # Mock peer evaluation metric
-    evidence = [{"department": dept, "peer_median": 0.15, "user_value": 0.18, "deviation_z": 0.4}]
-    return True, evidence, f"User metric '{feature}' aligns with peer baseline in department '{dept}'"
+
+_FEATURES = "event_count, distinct_systems, failure_rate, after_hours_ratio"
+
+
+def peer_comparison(bundle: CanonicalBundle, user: str, feature: str) -> tuple[bool, list[dict], str]:
+    """True only when the user's value sits within 1.5 standard deviations of department peers."""
+    ident = next((i for i in bundle.identities if i.identity_id == user or i.email == user), None)
+    if not ident:
+        return False, [], f"User '{user}' not found; cannot build a peer group"
+    dept = ident.department or "general"
+    by_user: dict[str, list] = {}
+    for e in bundle.events:
+        by_user.setdefault(e.user_key, []).append(e)
+    peers = [i.identity_id for i in bundle.identities if i.department == ident.department and i.identity_id != ident.identity_id]
+    peer_vals = [v for p in peers if (v := _feature_value(by_user.get(p, []), feature)) is not None]
+    user_val = _feature_value(by_user.get(ident.identity_id, []), feature)
+    if user_val is None:
+        return False, [], f"Unknown feature '{feature}'; supported: {_FEATURES}"
+    if len(peer_vals) < 5:
+        return False, [], f"Too few peers in department '{dept}' to compare '{feature}'"
+    mean = sum(peer_vals) / len(peer_vals)
+    std = (sum((v - mean) ** 2 for v in peer_vals) / len(peer_vals)) ** 0.5
+    z = 0.0 if std == 0 and user_val == mean else (user_val - mean) / (std or 1e-9)
+    evidence = [{"department": dept, "peer_count": len(peer_vals), "peer_mean": round(mean, 3),
+                 "user_value": round(user_val, 3), "deviation_z": round(z, 2)}]
+    if abs(z) <= 1.5:
+        return True, evidence, f"User '{feature}' ({user_val:.2f}) is within peer range in '{dept}' (z={z:.1f})"
+    return False, evidence, f"User '{feature}' ({user_val:.2f}) deviates from '{dept}' peers (z={z:.1f})"
 
 
 def own_history_baseline(bundle: CanonicalBundle, user: str, feature: str) -> tuple[bool, list[dict], str]:
-    u_events = bundle.get_events_for_user(user)
-    if len(u_events) >= 10:
-        evidence = [{"user": user, "historical_events_count": len(u_events), "consistent_pattern": True}]
-        return True, evidence, f"Historical telemetry shows user routinely executes actions in feature '{feature}'"
-    return False, [], f"Insufficient historical telemetry (<10 events) for user '{user}'"
+    """True only when the last 30 days match the user's own earlier baseline (>=10 prior events)."""
+    u_events = [e for e in bundle.get_events_for_user(user) if parse_iso_dt(e.timestamp)]
+    if not u_events:
+        return False, [], f"No telemetry for user '{user}'"
+    cutoff = max(parse_iso_dt(e.timestamp) for e in u_events) - timedelta(days=30)
+    prior = [e for e in u_events if parse_iso_dt(e.timestamp) < cutoff]
+    recent = [e for e in u_events if parse_iso_dt(e.timestamp) >= cutoff]
+    if len(prior) < 10:
+        return False, [], f"No established baseline: only {len(prior)} events before the last 30 days"
+    base, now = _feature_value(prior, feature), _feature_value(recent, feature)
+    if base is None:
+        return False, [], f"Unknown feature '{feature}'; supported: {_FEATURES}"
+    evidence = [{"user": user, "baseline_events": len(prior), "baseline": round(base, 3), "last_30d": round(now, 3)}]
+    if now <= base * 1.5 + 0.05:
+        return True, evidence, f"Last-30-day '{feature}' ({now:.2f}) matches the user's own baseline ({base:.2f})"
+    return False, evidence, f"Last-30-day '{feature}' ({now:.2f}) is well above the user's own baseline ({base:.2f})"
 
 
 def is_privileged_by_title(job_title: str) -> tuple[bool, list[dict], str]:
