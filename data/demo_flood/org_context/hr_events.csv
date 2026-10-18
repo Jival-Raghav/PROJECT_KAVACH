@@ -1,0 +1,3 @@
+user,event_type,old_role,new_role,effective_date
+USR9104,ROLE_TRANSFER,Marketing Analyst,Financial Analyst,2026-03-10
+USR9202,TERMINATION,Financial Analyst,,2026-03-31
