@@ -1,0 +1,2 @@
+project_id,user,system,start_date,end_date,role
+PRJ-FIN-INTEGRATION,U_PROJECT_MEMBER,FINANCE_LAKE,2026-01-01,2026-12-31,Data Engineer
