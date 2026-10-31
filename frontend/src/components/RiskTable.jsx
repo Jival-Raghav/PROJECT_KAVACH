@@ -18,8 +18,9 @@ function RiskBadge({ score }) {
 }
 
 function FlagTag({ flag }) {
-  const isAmber = ['AFTER_HOURS_ADMIN_OP', 'BULK_EXPORT', 'CROSS_DEPT_ACCESS'].includes(flag)
-  const cls = isAmber ? 'flag-tag amber' : 'flag-tag'
+  const isCritical = flag.includes('SoD') || flag.includes('CRITICAL') || flag.includes('Stale Privileged')
+  const isAmber = ['AFTER_HOURS_ADMIN_OP', 'BULK_EXPORT', 'CROSS_DEPT_ACCESS'].includes(flag) || flag.includes('Peer Outlier') || flag.includes('Org Anomaly')
+  const cls = isCritical ? 'flag-tag critical' : (isAmber ? 'flag-tag amber' : 'flag-tag')
   return <span className={cls}>{flag.replace(/_/g, ' ')}</span>
 }
 

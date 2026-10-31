@@ -1,0 +1,38 @@
+[
+  {
+    "eventTime": "2026-03-21T04:12:00Z",
+    "userIdentity": {
+      "type": "IAMUser",
+      "principalId": "AIDA12345EXAMPLE",
+      "arn": "arn:aws:iam::123456789012:user/rohan.verma",
+      "userName": "rohan.verma"
+    },
+    "eventName": "GetSecretValue",
+    "eventSource": "secretsmanager.amazonaws.com",
+    "sourceIPAddress": "54.240.196.18",
+    "requestParameters": {
+      "resourceName": "prod/db/master_credentials"
+    },
+    "responseElements": {
+      "status": "SUCCESS"
+    }
+  },
+  {
+    "eventTime": "2026-03-21T05:30:15Z",
+    "userIdentity": {
+      "type": "AssumedRole",
+      "principalId": "AROA98765:admin-session",
+      "arn": "arn:aws:sts::123456789012:assumed-role/SecOpsAdmin/admin-session",
+      "userName": "admin-session"
+    },
+    "eventName": "DeleteBucketPolicy",
+    "eventSource": "s3.amazonaws.com",
+    "sourceIPAddress": "13.235.12.90",
+    "requestParameters": {
+      "resourceName": "finance-crown-jewel-backup"
+    },
+    "responseElements": {
+      "status": "SUCCESS"
+    }
+  }
+]

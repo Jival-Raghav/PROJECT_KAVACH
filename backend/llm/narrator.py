@@ -158,7 +158,7 @@ def generate_narrative(
     key_evidence = prosecution_result.get("key_evidence", [])
     breach_impact = prosecution_result.get(
         "breach_impact",
-        f"Systems at risk: {', '.join(profile.get('systems_access', [])[:5])}."
+        f"Systems at risk: {', '.join(profile.get('systems', [])[:5])}."
     )
 
     # ── Pass 2: Devil's Advocate (Ollama) ───────────────────────────────────

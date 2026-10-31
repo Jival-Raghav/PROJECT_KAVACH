@@ -1,0 +1,58 @@
+{
+  "dataset_a_users": {
+    "user_id": "identity_id",
+    "username": "full_name",
+    "department": "department",
+    "job_title": "job_title",
+    "is_active": "employment_status",
+    "hire_date": "hire_date"
+  },
+  "dataset_a_events": {
+    "timestamp": "timestamp",
+    "user_id": "user_key",
+    "action": "action",
+    "resource": "resource",
+    "resource_sensitivity": "resource_sensitivity",
+    "status": "success",
+    "source_ip": "source_ip"
+  },
+  "dataset_b_workday": {
+    "Worker_ID": "employee_id",
+    "Full_Name": "full_name",
+    "Corporate_Email": "email",
+    "Department_Name": "department",
+    "Job_Role": "job_title",
+    "Worker_Status": "employment_status",
+    "Hire_Date": "hire_date",
+    "Location_Name": "location"
+  },
+  "dataset_b_okta": {
+    "published": "timestamp",
+    "actor.alternateId": "user_key",
+    "action.message": "action",
+    "target.alternateId": "resource",
+    "client.ipAddress": "source_ip",
+    "outcome.result": "success"
+  },
+  "dataset_c_cloudtrail": {
+    "eventTime": "timestamp",
+    "userIdentity.arn": "user_key",
+    "eventName": "action",
+    "sourceIPAddress": "source_ip",
+    "requestParameters.resourceName": "resource"
+  },
+  "dataset_c_iam": {
+    "User_ARN": "account_id",
+    "System_Name": "system",
+    "Policy_Name": "entitlement",
+    "Privilege_Level": "privilege_weight"
+  },
+  "dataset_d_stress": {
+    "ts_event": "timestamp",
+    "usr_key": "user_key",
+    "op_verb": "action",
+    "target_res": "resource",
+    "ip_addr": "source_ip",
+    "is_ok_yn": "success"
+  }
+}

@@ -1,4 +1,4 @@
-import { Shield, ShieldAlert, Cpu, Database, KeyRound, Building2, Calendar, FileWarning, X } from 'lucide-react'
+import { Shield, ShieldAlert, Cpu, Database, KeyRound, Building2, Calendar, FileWarning, X, Scale } from 'lucide-react'
 
 /* ── Helpers ──────────────────────────────────────────── */
 
@@ -10,7 +10,7 @@ function privilegeColor(level) {
 
 /* ── Component ─────────────────────────────────────────── */
 
-export default function UserCard({ user, onClose }) {
+export default function UserCard({ user, onClose, onInvestigate }) {
   if (!user) return null
 
   const isHighRisk = user.risk_score >= 60
@@ -60,11 +60,48 @@ export default function UserCard({ user, onClose }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
         <Field icon={Building2}  label="Department" value={user.department} />
         <Field icon={KeyRound}   label="Privilege"  value={user.privilege_level} highlight={user.privilege_level === 'admin'} />
-        <Field icon={Database}   label="Cluster"    value={user.cluster_description || 'Unknown'} />
-        <Field icon={FileWarning}label="Events"     value={`${user.event_count || 0} analysed`} />
+        <Field icon={Database}   label="Peer Group" value={user.peer_group || user.cluster_description || 'General'} highlight={user.is_peer_outlier} />
+        <Field icon={FileWarning}label="Peer Z-Score" value={user.peer_zscore ? `${user.peer_zscore.toFixed(2)}σ` : '0.00σ'} highlight={user.is_peer_outlier} />
         {user.last_login   && <Field icon={Calendar} label="Last Login"    value={new Date(user.last_login).toLocaleDateString()} />}
         {user.days_inactive !== undefined && <Field icon={Calendar} label="Days Inactive" value={user.days_inactive} highlight={user.days_inactive > 30} />}
       </div>
+
+      {/* Score Fusion Breakdown */}
+      {user.ml_score !== undefined && (
+        <div style={{ marginTop: 10, padding: '8px 10px', background: 'var(--surface-mid)', borderRadius: 4, border: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', marginBottom: 4 }}>
+            <span>Score Fusion (60% ML / 40% Heuristics)</span>
+            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Risk {user.risk_score}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 8, fontSize: 11 }}>
+            <div>ML Isolation: <strong className="mono">{user.ml_score}</strong></div>
+            <div style={{ color: 'var(--border)' }}>|</div>
+            <div>Heuristics/SoD: <strong className="mono">{user.heuristic_score}</strong></div>
+          </div>
+        </div>
+      )}
+
+      {/* Security Findings & SoD Violations */}
+      {user.findings?.length > 0 && (
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', marginBottom: 6 }}>
+            Security Findings & SoD Violations ({user.findings.length})
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {user.findings.map((f, i) => (
+              <div key={i} style={{
+                fontSize: 11, padding: '5px 8px', borderRadius: 4,
+                background: f.severity === 'critical' ? 'var(--c-critical-bg)' : 'var(--surface-high)',
+                border: `1px solid ${f.severity === 'critical' ? 'var(--c-critical-bd)' : 'var(--border)'}`,
+                color: f.severity === 'critical' ? 'var(--c-critical)' : 'var(--text-primary)',
+              }}>
+                <div style={{ fontWeight: 600 }}>{f.name}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>{f.description}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Systems access */}
       {user.systems_access?.length > 0 && (
@@ -78,6 +115,18 @@ export default function UserCard({ user, onClose }) {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Investigate Case CTA */}
+      {onInvestigate && (
+        <button
+          className="btn-primary"
+          style={{ width: '100%', marginTop: 12, justifyContent: 'center', gap: 6 }}
+          onClick={() => onInvestigate(user)}
+        >
+          <Scale size={13} />
+          Investigate Case (3-Pass Arena)
+        </button>
       )}
     </section>
   )

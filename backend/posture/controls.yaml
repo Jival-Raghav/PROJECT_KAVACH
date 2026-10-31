@@ -1,0 +1,81 @@
+# ==============================================================================
+# ISPAD v2 Compliance Control Catalog
+# NOTICE: Automated mappings are provided as audit evidence aids. Verify wording
+# against official regulatory and standards text before formal external reporting.
+# ==============================================================================
+
+controls:
+  # ── NIST SP 800-53 Rev. 5 ────────────────────────────────────────────────────
+  - id: "NIST-AC-2"
+    framework: "NIST SP 800-53"
+    title: "Account Management (Lifecycle & Deprovisioning)"
+    description: "Manage system accounts including establishing, activating, modifying, reviewing, disabling, and removing accounts."
+    target_metric: "leaver_active == 0 and orphan_pct < 0.05"
+    pass_threshold: 100
+    partial_threshold: 70
+
+  - id: "NIST-AC-5"
+    framework: "NIST SP 800-53"
+    title: "Separation of Duties"
+    description: "Enforce separation of duties through assigned access privileges to prevent single-person fraud or security compromise."
+    target_metric: "sod_violations == 0"
+    pass_threshold: 100
+    partial_threshold: 80
+
+  - id: "NIST-AC-6"
+    framework: "NIST SP 800-53"
+    title: "Least Privilege"
+    description: "Employ the principle of least privilege, allowing only authorized accesses for users which are necessary to accomplish assigned tasks."
+    target_metric: "dormant_privileged == 0 and creep_pct < 0.05"
+    pass_threshold: 90
+    partial_threshold: 65
+
+  - id: "NIST-IA-5"
+    framework: "NIST SP 800-53"
+    title: "Authenticator Management"
+    description: "Verify and enforce multifactor authenticators for privileged and administrative system accounts."
+    target_metric: "mfa_coverage >= 0.90"
+    pass_threshold: 90
+    partial_threshold: 70
+
+  # ── ISO/IEC 27001:2022 Annex A ───────────────────────────────────────────────
+  - id: "ISO-5.15"
+    framework: "ISO/IEC 27001:2022"
+    title: "Access Control"
+    description: "Rules to control physical and logical access to information and other associated assets shall be established and implemented."
+    target_metric: "blast_radius_p95 < 50"
+    pass_threshold: 80
+    partial_threshold: 60
+
+  - id: "ISO-5.16"
+    framework: "ISO/IEC 27001:2022"
+    title: "Identity Management"
+    description: "The full life cycle of identities shall be managed to prevent unauthorized account creation and persistence."
+    target_metric: "orphan_pct < 0.05 and leaver_active == 0"
+    pass_threshold: 95
+    partial_threshold: 75
+
+  - id: "ISO-5.18"
+    framework: "ISO/IEC 27001:2022"
+    title: "Access Rights"
+    description: "Access rights to information and other associated assets shall be provisioned, reviewed, modified, and removed in accordance with access control policy."
+    target_metric: "creep_pct < 0.10"
+    pass_threshold: 85
+    partial_threshold: 70
+
+  - id: "ISO-8.2"
+    framework: "ISO/IEC 27001:2022"
+    title: "Privileged Access Rights"
+    description: "The allocation and use of privileged access rights shall be restricted and strictly managed."
+    target_metric: "dormant_privileged == 0 and mfa_coverage >= 0.90"
+    pass_threshold: 95
+    partial_threshold: 75
+
+  # ── India DPDP Act 2023 ───────────────────────────────────────────────────────
+  - id: "DPDP-s8(5)"
+    framework: "India DPDP Act 2023"
+    title: "Reasonable Security Safeguards (Section 8(5))"
+    description: "A Data Fiduciary shall protect personal data in its possession or under its control by taking reasonable security safeguards to prevent personal data breach."
+    target_metric: "crown_jewels_monitored and sod_violations == 0"
+    pass_threshold: 90
+    partial_threshold: 70

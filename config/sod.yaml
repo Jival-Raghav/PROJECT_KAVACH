@@ -1,0 +1,81 @@
+# config/sod.yaml — Separation of Duties (SoD) Conflict Matrix for ISPAD v2
+# Configures mutually exclusive entitlements and actions to prevent fraud,
+# unauthorized access, and change-control violations.
+
+version: 1.0
+rules:
+  - id: SOD_001
+    name: "Procurement & Payment Conflict"
+    description: "User possesses permissions to both create vendor accounts and approve payment disbursements."
+    severity: "critical"
+    entitlement_conflicts:
+      - ["vendor_create", "payment_approve"]
+      - ["procurement_admin", "accounts_payable_approve"]
+      - ["sap_vendor_maint", "sap_payment_run"]
+    action_conflicts:
+      - ["create_vendor", "approve_payment"]
+      - ["vendor_onboard", "wire_transfer"]
+
+  - id: SOD_002
+    name: "Code Commit & Production Deploy"
+    description: "User can author code changes and directly deploy to production environments without four-eyes review."
+    severity: "high"
+    entitlement_conflicts:
+      - ["git_commit_write", "prod_release_deploy"]
+      - ["github_developer", "aws_prod_admin"]
+      - ["ci_build_author", "prod_deployer"]
+    action_conflicts:
+      - ["git_push", "deploy_production"]
+      - ["merge_pull_request", "promote_to_prod"]
+
+  - id: SOD_003
+    name: "Access Grant & Audit Log Alteration"
+    description: "User can grant elevated permissions and delete or tamper with audit/telemetry logs."
+    severity: "critical"
+    entitlement_conflicts:
+      - ["iam_user_create", "cloudtrail_delete"]
+      - ["okta_super_admin", "log_retention_manage"]
+      - ["active_directory_admin", "security_log_clear"]
+    action_conflicts:
+      - ["grant_role", "delete_log"]
+      - ["create_user", "clear_audit_stream"]
+
+  - id: SOD_004
+    name: "User Provisioning & Approval Conflict"
+    description: "User can request user accounts or entitlements and self-approve the grant."
+    severity: "high"
+    entitlement_conflicts:
+      - ["access_request_create", "access_request_approve"]
+      - ["jira_requester", "jira_approver"]
+    action_conflicts:
+      - ["request_access", "approve_access"]
+
+  - id: SOD_005
+    name: "Trading & Settlement Conflict"
+    description: "User can enter financial trades and execute post-trade clearing or settlement."
+    severity: "critical"
+    entitlement_conflicts:
+      - ["trader_execute", "backoffice_settle"]
+      - ["fx_trade_entry", "fx_trade_confirm"]
+    action_conflicts:
+      - ["execute_trade", "confirm_settlement"]
+
+  - id: SOD_006
+    name: "Billing Management & Refund Issuance"
+    description: "User can adjust customer invoices and issue cash refunds or ledger credits."
+    severity: "medium"
+    entitlement_conflicts:
+      - ["invoice_modify", "refund_issue"]
+      - ["stripe_billing_admin", "stripe_refund_operator"]
+    action_conflicts:
+      - ["edit_invoice", "issue_refund"]
+
+  - id: SOD_007
+    name: "Admin Operation & Data Export Conflict"
+    description: "User performs both admin operations and data export on sensitive enterprise resources."
+    severity: "high"
+    entitlement_conflicts:
+      - ["admin", "export"]
+    action_conflicts:
+      - ["admin_operation", "export_data"]
+

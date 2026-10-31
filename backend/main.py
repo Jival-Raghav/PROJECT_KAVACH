@@ -24,6 +24,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from api.sources import router as sources_router
+from api.schema import router as schema_router
+from api.resolution import router as resolution_router
+from api.detect import router as detect_router
+from api.investigate import router as investigate_router
+from api.graph import router as graph_router
+from api.remediation import router as remediation_router
+from api.posture import router as posture_router
+from api.security import router as security_router
+
+app.include_router(sources_router)
+app.include_router(schema_router)
+app.include_router(resolution_router)
+app.include_router(detect_router)
+app.include_router(investigate_router)
+app.include_router(graph_router)
+app.include_router(remediation_router)
+app.include_router(posture_router)
+app.include_router(security_router)
+
 
 class FeedbackPayload(BaseModel):
     action: str = Field(..., pattern="^(suppress|unflag)$")

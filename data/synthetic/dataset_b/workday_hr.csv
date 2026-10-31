@@ -1,0 +1,6 @@
+Worker_ID,Full_Name,Corporate_Email,Department_Name,Job_Role,Worker_Status,Hire_Date,Location_Name
+W101,Aarav Patel,aarav.patel@acme.corp,Engineering,Senior Software Engineer,Active,2022-03-15,Bangalore
+W102,Priya Sharma,priya.sharma@acme.corp,Finance,Financial Analyst,Active,2021-08-01,Mumbai
+W103,Rohan Verma,rohan.verma@acme.corp,IT Infrastructure,Cloud DevOps Lead,Active,2020-01-10,Bangalore
+W104,Ananya Iyer,ananya.iyer@acme.corp,Human Resources,HR Business Partner,Terminated,2019-06-20,Delhi
+W105,Vikram Singh,vikram.singh@acme.corp,Security Operations,SecOps Analyst,Active,2023-11-05,Hyderabad

@@ -1,0 +1,24 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = [
+    ".git",
+    ".venv",
+    "backend/benchmark.py",
+    "backend/data_loader.py",
+    "backend/eval.py",
+    "backend/llm",
+    "backend/main.py",
+    "backend/models",
+    "backend/pipeline.py",
+    "backend/preprocessing",
+    "backend/schemas.py",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501", "E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["backend"]

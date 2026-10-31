@@ -1,0 +1,355 @@
+# Synonyms dictionary for Schema Autopilot canonical mapping (>=180 entries)
+# Format: canonical_field -> list of common raw column aliases / synonyms
+
+events:
+  timestamp:
+    - time
+    - ts
+    - ts_event
+    - event_ts
+    - eventTime
+    - event_time
+    - event_timestamp
+    - "@timestamp"
+    - created
+    - created_at
+    - datetime
+    - date_time
+    - logged_at
+    - occurred_at
+    - generation_time
+    - published
+    - record_date
+    - log_time
+    - start_time
+    - event_date
+  user_key:
+    - user
+    - username
+    - user_id
+    - userId
+    - usr_key
+    - actor
+    - actor.alternateId
+    - actor.displayName
+    - actor.id
+    - principal
+    - principalId
+    - userIdentity.arn
+    - userIdentity.principalId
+    - userIdentity.userName
+    - upn
+    - login
+    - account_name
+    - user_login
+    - identity
+    - subject
+    - employee_id
+    - user_mail
+    - uid
+  action:
+    - event_name
+    - eventName
+    - op_verb
+    - action.message
+    - operation
+    - operationName
+    - activity
+    - activity_type
+    - verb
+    - action_name
+    - method
+    - request_type
+    - command
+    - call
+    - api_call
+    - access_type
+    - event_type
+    - transaction_type
+    - audit_action
+  resource:
+    - object
+    - target
+    - target.alternateId
+    - target_resource
+    - target_res
+    - resourceName
+    - resource_name
+    - requestParameters.resourceName
+    - asset
+    - entity
+    - item
+    - file_path
+    - endpoint
+    - uri
+    - url
+    - request_uri
+    - object_id
+    - resource_id
+    - table_name
+    - bucket_name
+    - system_accessed
+    - accessed_resource
+  system:
+    - system_name
+    - app
+    - application
+    - app_name
+    - service
+    - serviceName
+    - platform
+    - host
+    - hostname
+    - database
+    - data_store
+    - target_system
+    - environment
+    - domain
+    - client
+  resource_sensitivity:
+    - sensitivity
+    - tier
+    - data_classification
+    - criticality
+    - sensitivity_level
+    - security_tier
+    - risk_level
+    - crown_jewel
+    - confidentiality
+  success:
+    - status
+    - outcome
+    - outcome.result
+    - result
+    - is_ok_yn
+    - is_success
+    - successful
+    - allowed
+    - decision
+    - access_result
+    - return_code
+    - status_code
+  source_ip:
+    - ip
+    - ip_addr
+    - ip_address
+    - client_ip
+    - client.ipAddress
+    - sourceIPAddress
+    - remote_ip
+    - caller_ip
+    - src_ip
+    - network_ip
+    - host_ip
+
+identities:
+  identity_id:
+    - id
+    - user_id
+    - uid
+    - person_id
+    - uuid
+    - global_id
+  employee_id:
+    - emp_id
+    - employee_number
+    - emp_no
+    - staff_id
+    - badge_id
+    - worker_id
+    - Worker_ID
+    - payroll_id
+  full_name:
+    - name
+    - username
+    - user_name
+    - display_name
+    - displayName
+    - employee_name
+    - worker_name
+    - Full_Name
+    - full_user_name
+    - staff_name
+  email:
+    - mail
+    - email_address
+    - work_email
+    - corporate_email
+    - Corporate_Email
+    - primary_email
+    - user_email
+    - contact_email
+  department:
+    - dept
+    - department_name
+    - Department_Name
+    - division
+    - business_unit
+    - org_unit
+    - team
+    - cost_center
+    - group_name
+  job_title:
+    - title
+    - position
+    - role
+    - job_role
+    - Job_Role
+    - designation
+    - occupation
+    - function
+  manager_id:
+    - manager
+    - supervisor_id
+    - manager_employee_id
+    - reports_to
+    - lead_id
+    - approver_id
+  employment_status:
+    - status
+    - is_active
+    - employee_status
+    - active_status
+    - employment_type
+    - Worker_Status
+    - worker_status
+    - state
+  hire_date:
+    - start_date
+    - joining_date
+    - date_of_joining
+    - onboarding_date
+    - hired_at
+    - Hire_Date
+  termination_date:
+    - end_date
+    - departure_date
+    - exit_date
+    - offboarding_date
+    - resigned_date
+  location:
+    - office
+    - country
+    - city
+    - site
+    - work_location
+    - location_name
+    - Location_Name
+    - region
+    - geo_location
+
+accounts:
+  account_id:
+    - id
+    - acct_id
+    - account_number
+    - login_id
+    - user_arn
+    - User_ARN
+  system:
+    - application
+    - app
+    - platform
+    - target_system
+    - service
+    - system_name
+    - System_Name
+  username:
+    - user
+    - login
+    - user_name
+    - user_key
+    - account_name
+    - principal
+  email:
+    - mail
+    - account_email
+    - user_email
+  employee_id_hint:
+    - employee_id
+    - emp_id
+    - staff_id
+    - owner_id
+  account_type:
+    - type
+    - category
+    - acct_type
+    - kind
+    - user_type
+  status:
+    - state
+    - account_status
+    - is_active
+    - enabled
+  last_login:
+    - last_sign_in
+    - last_active
+    - last_access
+    - last_login_time
+    - last_event
+  mfa_enabled:
+    - mfa
+    - 2fa
+    - multi_factor
+    - two_factor_auth
+    - mfa_status
+  privilege_level:
+    - privilege
+    - role_level
+    - admin_level
+    - is_admin
+    - elevation
+
+entitlements:
+  account_id:
+    - user_account
+    - acct_id
+    - username
+    - login
+    - user_arn
+    - User_ARN
+    - user_id
+  system:
+    - app
+    - application
+    - service
+    - system_name
+    - System_Name
+  entitlement:
+    - permission
+    - privilege
+    - role
+    - group
+    - policy
+    - policy_name
+    - Policy_Name
+    - access_right
+    - scope
+    - capability
+  privilege_weight:
+    - weight
+    - risk_score
+    - priority
+    - severity
+    - score
+    - privilege_level
+    - Privilege_Level
+
+systems:
+  system:
+    - name
+    - system_name
+    - application
+    - app_id
+  sensitivity:
+    - classification
+    - tier
+    - criticality
+    - crown_jewel
+    - security_level
+  owner:
+    - system_owner
+    - lead
+    - custodian
+    - team_owner
+    - manager

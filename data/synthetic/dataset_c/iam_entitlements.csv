@@ -1,0 +1,4 @@
+User_ARN,System_Name,Policy_Name,Privilege_Level
+arn:aws:iam::123456789012:user/rohan.verma,AWS,AdministratorAccess,10
+arn:aws:iam::123456789012:user/aarav.patel,AWS,ReadOnlyAccess,2
+arn:aws:iam::123456789012:user/vikram.singh,AWS,SecurityAudit,6
