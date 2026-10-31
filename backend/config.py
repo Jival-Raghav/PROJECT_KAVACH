@@ -111,6 +111,9 @@ class Settings:
     KILLCHAIN_ASSETS_PATH: str = os.getenv(
         "KILLCHAIN_ASSETS_PATH", str(root_dir / "config" / "assets.yaml")
     )
+    KILLCHAIN_CONTROLS_PATH: str = os.getenv(
+        "KILLCHAIN_CONTROLS_PATH", str(root_dir / "config" / "firewall_controls.yaml")
+    )
     KILLCHAIN_GT_PATH: str = os.getenv(
         "KILLCHAIN_GT_PATH", str(root_dir / "data" / "ground_truth" / "firex_planted.yaml")
     )

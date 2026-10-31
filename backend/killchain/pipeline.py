@@ -7,15 +7,22 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
+from killchain.accounts import audit_accounts
+from killchain.actors import build_actors, link_incidents
+from killchain.anomaly import incident_entities, score_entities, split_scores
+from config import get_settings
+from killchain.compliance import incident_controls, load_controls
 from killchain.correlate import correlate
+from killchain.response import build_actions
 from killchain.ingest import ingest_log, peak_rss_mb
 from killchain.models import Incident
 from killchain.pathgraph import build_path, build_timeline, format_ts
 from killchain.reach import build_network_graph, load_assets, next_reach
 from killchain.report import render_report
+from killchain.review import build_review
 from killchain.rules import load_rules, run_rules
 from killchain.scoring import rank
-from killchain.store import open_events, sql_str
+from killchain.store import load_clock_stalls, open_events, sql_str
 
 _CACHE: dict[str, tuple[float, dict[int, dict]]] = {}
 
@@ -73,19 +80,45 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
     assets = load_assets(assets_path)
     graph = build_network_graph(con, assets)
     out = [_incident_json(inc, graph, assets) for inc in incidents]
-    (run_dir / "incidents.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     seconds["enrich"] = round(time.perf_counter() - t, 2)
+
+    say("anomaly")
+    t = time.perf_counter()
+    named = set().union(*(incident_entities(inc) for inc in incidents)) if incidents else set()
+    leads, context = split_scores(score_entities(con, named), incidents)
+    seconds["anomaly"] = round(time.perf_counter() - t, 2)
+
+    say("actors")
+    t = time.perf_counter()
+    actors = build_actors(con)
+    actor_links = link_incidents(actors, incidents)
+    seconds["actors"] = round(time.perf_counter() - t, 2)
+
+    controls = load_controls(Path(get_settings().KILLCHAIN_CONTROLS_PATH))
+    for data in out:  # context only: risk scores and the incident list are already final
+        data["anomaly"] = context.get(data["incident_id"], [])
+        data["actors"] = actor_links.get(data["incident_id"], [])
+        data["review"] = build_review(data)
+        data["response"] = build_actions(data)
+        data["compliance"] = incident_controls(data, controls)
+    (run_dir / "anomalies.json").write_text(json.dumps(leads, indent=1), encoding="utf-8")
+    (run_dir / "actors.json").write_text(json.dumps(actors, indent=1), encoding="utf-8")
+    (run_dir / "accounts.json").write_text(
+        json.dumps(audit_accounts(con, actors), indent=1), encoding="utf-8")
+    (run_dir / "incidents.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
 
     meta = {
         "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "log_path": str(log_path) if not skip_ingest else old.get("log_path", str(log_path)),
         "ingest": ingest,
+        "clock_stalls": load_clock_stalls(run_dir),
         "seconds": seconds,
         "total_seconds": round(sum(seconds.values()), 2),
         "peak_rss_mb": round(max(peak_rss_mb(), float((ingest or {}).get("peak_rss_mb", 0))), 1),
         "rule_count": len(rules),
         "detection_count": len(detections),
         "incident_count": len(incidents),
+        "anomaly_lead_count": len(leads),
         "raw_alerts_merged": sum(i.raw_alert_count for i in incidents),
     }
     meta_path.write_text(json.dumps(meta, indent=1), encoding="utf-8")
@@ -106,6 +139,21 @@ def load_run(run_dir: Path) -> dict[int, dict]:
     data = {inc["incident_id"]: inc for inc in json.loads(path.read_text(encoding="utf-8"))}
     _CACHE[str(run_dir)] = (mtime, data)
     return data
+
+
+def load_anomalies(run_dir: Path) -> list[dict]:
+    path = Path(run_dir) / "anomalies.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
+
+
+def load_accounts(run_dir: Path) -> list[dict]:
+    path = Path(run_dir) / "accounts.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
+
+
+def load_actors(run_dir: Path) -> list[dict]:
+    path = Path(run_dir) / "actors.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
 
 
 def load_meta(run_dir: Path) -> dict:

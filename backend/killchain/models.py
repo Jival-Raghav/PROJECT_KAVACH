@@ -15,6 +15,7 @@ class IngestStats(BaseModel):
     lines_read: int
     lines_parsed: int
     lines_skipped: int
+    lines_stalled: int = 0  # parsed, but under a frozen clock: kept out of detection
     parts: int
     seconds: float
     peak_rss_mb: float

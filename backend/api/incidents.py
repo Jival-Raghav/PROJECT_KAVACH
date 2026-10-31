@@ -6,13 +6,18 @@ from pathlib import Path
 from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import PlainTextResponse
+from pydantic import BaseModel, Field
 
 from config import get_settings
+from killchain import response
+from killchain.compliance import evaluate_controls, load_controls
 from killchain.models import Incident
 from killchain.pathgraph import TimelineStep
-from killchain.pipeline import load_meta, load_run, run_killchain
+from killchain.pipeline import load_accounts, load_actors, load_anomalies, load_meta, load_run, run_killchain
 from killchain.reach import ReachResult
 from killchain.report import render_report
+from killchain.review import build_review
 from killchain.rules import load_rules
 
 router = APIRouter(prefix="/api", tags=["Kill Chain"])
@@ -71,6 +76,79 @@ def get_incident_report(incident_id: int, run_id: RunId = "firex", llm: bool = F
     model = Incident.model_validate({k: v for k, v in inc.items() if k in Incident.model_fields})
     return render_report(model, [TimelineStep(**s) for s in inc["timeline"]],
                          ReachResult(**inc["reach"]), use_llm=True)
+
+
+@router.get("/incidents/{incident_id}/review")
+def get_incident_review(incident_id: int, run_id: RunId = "firex", llm: bool = False) -> dict:
+    inc = _incident(incident_id, run_id)
+    return build_review(inc, _run_dir(run_id), use_llm=True) if llm else inc["review"]
+
+
+class ResponseTransition(BaseModel):
+    action_id: str = Field(max_length=300)
+    to_status: str
+    note: str = Field(default="", max_length=500)
+
+
+@router.get("/response/actions")
+def get_response_actions(run_id: RunId = "firex") -> list[dict]:
+    return response.all_actions(load_run(_run_dir(run_id)), _run_dir(run_id))
+
+
+@router.post("/response/transition")
+def post_response_transition(body: ResponseTransition, run_id: RunId = "firex") -> dict:
+    run_dir = _run_dir(run_id)
+    known = {a["action_id"] for a in response.all_actions(load_run(run_dir), run_dir)}
+    try:
+        status = response.transition(run_dir, body.action_id, body.to_status, known, note=body.note)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Unknown action") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {"action_id": body.action_id, "status": status}
+
+
+@router.post("/response/export", response_class=PlainTextResponse)
+def post_response_export(run_id: RunId = "firex") -> str:
+    return response.export_script(load_run(_run_dir(run_id)), _run_dir(run_id))
+
+
+@router.get("/response/audit")
+def get_response_audit(run_id: RunId = "firex") -> list[dict]:
+    return response.read_audit(_run_dir(run_id))
+
+
+@router.get("/killchain/compliance")
+def get_compliance(run_id: RunId = "firex") -> dict:
+    controls = load_controls(Path(get_settings().KILLCHAIN_CONTROLS_PATH))
+    return evaluate_controls(load_run(_run_dir(run_id)), controls)
+
+
+@router.get("/anomalies")
+def list_anomalies(run_id: RunId = "firex", limit: int = Query(50, ge=1, le=500),
+                   offset: int = Query(0, ge=0)) -> dict:
+    rows = load_anomalies(_run_dir(run_id))
+    return {"total": len(rows), "items": rows[offset:offset + limit]}
+
+
+@router.get("/accounts")
+def list_accounts(run_id: RunId = "firex") -> list[dict]:
+    return load_accounts(_run_dir(run_id))
+
+
+@router.get("/killchain/llm-safety")
+def get_llm_safety(run_id: RunId = "firex") -> dict:
+    incidents = load_run(_run_dir(run_id)).values()
+    flagged = [{"incident_id": i["incident_id"], "evidence": i["review"]["injection_flags"]}
+               for i in incidents if i.get("review", {}).get("injection_flags")]
+    return {"incidents_scanned": len(incidents),
+            "evidence_items_scanned": sum(len(i.get("review", {}).get("evidence", [])) for i in incidents),
+            "incidents_with_suspected_injection": flagged}
+
+
+@router.get("/actors")
+def list_actors(run_id: RunId = "firex") -> list[dict]:
+    return load_actors(_run_dir(run_id))
 
 
 @router.get("/killchain/rules")

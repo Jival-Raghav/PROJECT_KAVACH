@@ -5,6 +5,7 @@ import logging
 
 from config import get_settings
 from llm.client import StubClient, get_adjudicator_client
+from security.injection_detect import detect_and_redact_injection
 from security.sanitize import sanitize_output_narrative, sanitize_text
 
 from killchain.models import Incident
@@ -31,7 +32,8 @@ _ACTIONS = {
 
 
 def _clean(text: str, n: int = 240) -> str:
-    return sanitize_text(text, max_length=n).replace("{{", "{").replace("}}", "}")
+    full = sanitize_text(text, max_length=len(str(text)) + 1).replace("{{", "{").replace("}}", "}")
+    return detect_and_redact_injection(full).sanitized_text[:n]
 
 
 def _template(inc: Incident, timeline: list[TimelineStep], reach: ReachResult) -> tuple[str, str]:

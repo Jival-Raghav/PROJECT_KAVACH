@@ -18,10 +18,15 @@ import Remediation      from './pages/Remediation'
 import ComplianceView   from './pages/Compliance'
 import AISecurityView   from './pages/AISecurity'
 import KillChain, { KillChainRules } from './pages/KillChain'
+import Anomalies        from './pages/Anomalies'
+import Actors           from './pages/Actors'
+import Accounts         from './pages/Accounts'
+import ResponsePlan     from './pages/ResponsePlan'
+import ControlFindings  from './pages/ControlFindings'
 import {
   Cpu, Loader2, Moon, Play, Shield, Sun, User, MessageSquareText, Network,
   Workflow, Fingerprint, ShieldAlert, FolderSearch, ListChecks, ClipboardCheck, Bot, Layers,
-  Crosshair, FileCode2,
+  Crosshair, FileCode2, Radar,
 } from 'lucide-react'
 
 /* ── Constants ─────────────────────────────────────────── */
@@ -30,6 +35,11 @@ import {
 const NAV_GROUPS = [
   { label: 'Kill Chain', items: [
     { id: 'kc-incidents', label: 'Attack Incidents', icon: Crosshair, hint: 'Firewall logs turned into ranked, MITRE-labelled attack paths: timeline, graph, reach and report.' },
+    { id: 'kc-anomalies', label: 'Anomalies',        icon: Radar,     hint: 'Unusual hosts, IPs and users outside any incident. Leads to look at, not confirmed attacks.' },
+    { id: 'kc-actors',    label: 'Actors',           icon: Fingerprint, hint: 'One actor across source IPs and accounts, linked by proven activity only.' },
+    { id: 'kc-accounts',  label: 'Accounts & LLM Safety', icon: Bot, hint: 'Service, shared and person accounts proven active in the log, and prompt-injection checks on log text.' },
+    { id: 'kc-response',  label: 'Response Plan',    icon: ListChecks, hint: 'Proposed actions to approve. Exported as a dry-run script, never run by Kavach.' },
+    { id: 'kc-controls',  label: 'Control Findings', icon: ClipboardCheck, hint: 'Security controls that this log shows failing or being tested.' },
     { id: 'kc-rules',     label: 'Detection Rules',  icon: FileCode2, hint: 'YAML / Sigma-style rules mapped to ATT&CK. Edit config, not code.' },
   ]},
   { label: 'Onboard', items: [
@@ -188,6 +198,11 @@ export default function App() {
       }
     }
     if (activeTab === 'kc-incidents') return <KillChain />
+    if (activeTab === 'kc-anomalies') return <Anomalies />
+    if (activeTab === 'kc-actors') return <Actors />
+    if (activeTab === 'kc-accounts') return <Accounts />
+    if (activeTab === 'kc-response') return <ResponsePlan />
+    if (activeTab === 'kc-controls') return <ControlFindings />
     if (activeTab === 'kc-rules') return <KillChainRules />
     if (activeTab === 'resolution') return <ResolutionView />
     if (activeTab === 'investigate') {

@@ -144,3 +144,6 @@ Process/
 pyrightconfig.json
 .superpowers/
 backend/data/killchain/
+
+# Firewall logs are never committed
+REAL_10G_DATA/

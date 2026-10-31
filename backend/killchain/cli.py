@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from config import get_settings
@@ -35,16 +36,23 @@ def _run_dir(run_id: str) -> Path:
 def cmd_run(a: argparse.Namespace) -> None:
     from killchain.pipeline import run_killchain
 
-    meta = run_killchain(Path(a.log or get_settings().KILLCHAIN_LOG_PATH), _run_dir(a.run_id),
+    log = Path(a.log or get_settings().KILLCHAIN_LOG_PATH)
+    if not a.skip_ingest and not log.is_file():
+        raise SystemExit(f"Log not found: {log}\nPass --log PATH or set KILLCHAIN_LOG_PATH in .env.")
+    meta = run_killchain(log, _run_dir(a.run_id),
                          Path(get_settings().KILLCHAIN_RULES_DIR), skip_ingest=a.skip_ingest,
                          progress=lambda s: print(f"[killchain] {s}", flush=True))
     print(json.dumps(meta, indent=1))
 
 
 def render_benchmark(m, meta: dict) -> str:
+    ingest = meta.get("ingest") or {}
+    parsed = ingest.get("lines_parsed", 0)
+    stalled = sum(s["lines"] for s in meta.get("clock_stalls", []))
     lines = ["# Kill Chain & Attack Path — Benchmark", "",
-             f"Dataset: `{Path(meta.get('log_path', '')).name}` — "
-             f"{(meta.get('ingest') or {}).get('lines_parsed', 0):,} events. "
+             f"Dataset: `{Path(meta.get('log_path', '')).name}` — {parsed:,} events parsed, "
+             f"{parsed - stalled:,} analysed, {stalled:,} left out under a frozen clock, "
+             f"{ingest.get('lines_skipped', 0):,} malformed lines skipped. "
              f"Ground truth: `data/ground_truth/firex_planted.yaml` "
              f"({m.paths_total} scenarios, {m.steps_total} steps; recovered by our own hunt — "
              "the dataset shipped without labels).", "",
@@ -52,7 +60,10 @@ def render_benchmark(m, meta: dict) -> str:
     for name, get, good, great, wording, fmt in _TARGETS:
         v = get(m)
         rating = "🟢 Great" if great(v) else "🟡 Good" if good(v) else "🔴 Below target"
-        lines.append(f"| {name} | **{fmt(v)}** | {wording} | {rating} |")
+        shown = fmt(v)
+        if name == "Peak memory" and v <= 0:
+            shown, rating = "not measured", "⚪ Not measured"
+        lines.append(f"| {name} | **{shown}** | {wording} | {rating} |")
     s = meta.get("seconds", {})
     lines += ["", f"Attack paths: {m.paths_rebuilt}/{m.paths_total} scenarios rebuilt, of which "
               f"{m.paths_multistep_rebuilt}/{m.paths_multistep_total} are multi-step chains "
@@ -86,8 +97,10 @@ def render_benchmark(m, meta: dict) -> str:
               "(periodic 300 s beacons; repeated ~20 KB transfers to the same attacker IPs), so "
               "5 steps were added (GT-07 beacon + exfil, GT-16 scan + exfil, GT-20). The 0% "
               "false-alarm figure is measured against that widened ground truth.",
-              "- The supplied file was truncated: its last 1.7 GB was random bytes and was "
-              "removed; 9.1M clean lines remain.",
+              "- The supplied file ends in about 1.7 GB of random bytes; those lines are skipped "
+              "and counted. Lines sharing one frozen timestamp are kept out of detection, "
+              "baselines and the reach graph; processing time and memory still include reading "
+              "them.",
               "- Timestamps are the firewall's local clock (+05:30)."]
     return "\n".join(lines) + "\n"
 
@@ -109,6 +122,8 @@ def cmd_bench(a: argparse.Namespace) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
+    if hasattr(sys.stdout, "reconfigure"):  # Windows consoles default to a non-UTF-8 code page
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     p = argparse.ArgumentParser(prog="killchain")
     sub = p.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run", help="ingest + detect + correlate + enrich")

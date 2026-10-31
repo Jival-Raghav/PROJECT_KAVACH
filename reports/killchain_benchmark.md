@@ -1,6 +1,6 @@
 # Kill Chain & Attack Path — Benchmark
 
-Dataset: `firex-10G.log` — 9,125,382 events. Ground truth: `data/ground_truth/firex_planted.yaml` (20 scenarios, 28 steps; recovered by our own hunt — the dataset shipped without labels).
+Dataset: `firex-10G.log` — 9,125,382 events parsed, 3,848,247 analysed, 5,277,135 left out under a frozen clock, 6,722,658 malformed lines skipped. Ground truth: `data/ground_truth/firex_planted.yaml` (20 scenarios, 28 steps; recovered by our own hunt — the dataset shipped without labels).
 
 | What we measure | Result | Good / Great | Rating |
 |---|---|---|---|
@@ -8,15 +8,15 @@ Dataset: `firex-10G.log` — 9,125,382 events. Ground truth: `data/ground_truth/
 | Correct labels (strict) | **100.0%** | > 60% / > 85% | 🟢 Great |
 | Attack path | **100%** | half / all | 🟢 Great |
 | False alarms | **0.0%** | < 30% / < 10% | 🟢 Great |
-| Processing time | **3.0 min** | < 3 h / < 1 h | 🟢 Great |
-| Peak memory | **3.19 GB** | < 16 GB / < 8 GB | 🟢 Great |
-| Investigation speed (p95 open) | **0.01 ms** | < 2 s / < 500 ms | 🟢 Great |
+| Processing time | **4.6 min** | < 3 h / < 1 h | 🟢 Great |
+| Peak memory | **1.67 GB** | < 16 GB / < 8 GB | 🟢 Great |
+| Investigation speed (p95 open) | **0.02 ms** | < 2 s / < 500 ms | 🟢 Great |
 
 Attack paths: 20/20 scenarios rebuilt, of which 4/4 are multi-step chains where step order is actually tested. A scenario only counts as rebuilt when its incident contains no other scenario. Incidents spanning more than one scenario: 0. Incident purity (share of an incident's events that are planted): 100.0%.
 
-Steps found 28/28; lenient label accuracy 100.0%; 20 incidents, 0 false alarms; 11,078 raw alerts merged into 20 incidents (B-3). Cold load of all incidents: 3.39 ms.
+Steps found 28/28; lenient label accuracy 100.0%; 20 incidents, 0 false alarms; 11,078 raw alerts merged into 20 incidents (B-3). Cold load of all incidents: 6.2 ms.
 
-Stage timings (s): ingest 177.21, detect 4.72, correlate 0.0, enrich 0.3
+Stage timings (s): ingest 255.71, detect 7.2, correlate 0.0, enrich 0.46, anomaly 10.98, actors 0.15
 
 ## Per scenario
 
@@ -80,5 +80,5 @@ Stage timings (s): ingest 177.21, detect 4.72, correlate 0.0, enrich 0.3
 
 - The ground truth was reconstructed by us from the logs (rare events, the `crscore` field planted lines carry, periodicity and repeated-pair analysis). Rules are tested to contain none of its IPs, users or domains.
 - The ground truth was widened once during tuning: the first rule run produced 4 detections outside the then-ground-truth (a false-alarm rate of 4/20 at that point). On inspection they were planted activity without the `crscore` marker (periodic 300 s beacons; repeated ~20 KB transfers to the same attacker IPs), so 5 steps were added (GT-07 beacon + exfil, GT-16 scan + exfil, GT-20). The 0% false-alarm figure is measured against that widened ground truth.
-- The supplied file was truncated: its last 1.7 GB was random bytes and was removed; 9.1M clean lines remain.
+- The supplied file ends in about 1.7 GB of random bytes; those lines are skipped and counted. Lines sharing one frozen timestamp are kept out of detection, baselines and the reach graph; processing time and memory still include reading them.
 - Timestamps are the firewall's local clock (+05:30).

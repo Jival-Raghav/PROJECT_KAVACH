@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import { ArrowLeft, Loader2, Sparkles } from 'lucide-react'
-import { getIncident, getIncidentReport } from '../api'
+import { getIncident, getIncidentReport, getIncidentReview } from '../api'
 import { SeverityBadge, StageStrip } from './KillChain'
+import { ActorTable } from './Actors'
+import { ControlTable } from './ControlFindings'
 
 const KIND_COLOR = {
   external_ip: '#C8412F', host: '#0369A1', user: '#B45309', firewall: '#7C3AED', domain: '#6B6E68',
@@ -97,6 +99,67 @@ function Markdown({ text }) {
   )
 }
 
+const REVIEW_SOURCE = { llm: 'live LLM', cached: 'saved LLM answer', template: 'built-in template' }
+
+function Arguments({ title, items, evidence }) {
+  const text = Object.fromEntries(evidence.map(e => [e.id, e.text]))
+  return (
+    <div>
+      <h4>{title}</h4>
+      {items.map((a, i) => (
+        <div key={i} className="kc-md-li">
+          • {a.text}{' '}
+          {a.evidence.map(id => <span key={id} className="chip kc-chip mono" title={text[id]}>{id}</span>)}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function Review({ incidentId, initial }) {
+  const [review, setReview] = useState(initial)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  const runLive = () => {
+    setBusy(true)
+    setError('')
+    getIncidentReview(incidentId, true).then(setReview).catch(e => setError(String(e)))
+      .finally(() => setBusy(false))
+  }
+
+  if (!review) return null
+  const v = review.verdict
+  return (
+    <section className="card kc-section">
+      <div className="kc-section-head">
+        <h3>Prosecutor vs Devil's Advocate</h3>
+        <button className="btn-ghost" onClick={runLive} disabled={busy}>
+          {busy ? <Loader2 size={13} className="spin-slow" /> : <Sparkles size={13} />} Run live review
+        </button>
+      </div>
+      {error && <div className="kc-error">{error}</div>}
+      {review.injection_flags?.length > 0 && (
+        <div className="kc-error">Suspected prompt injection redacted in {review.injection_flags.join(', ')}.</div>
+      )}
+      <Arguments title="Prosecutor" items={review.prosecution} evidence={review.evidence} />
+      <Arguments title="Devil's Advocate" items={review.defence} evidence={review.evidence} />
+      <h4>Verdict: {v.final_priority} priority{v.lowered ? ` (lowered from ${v.risk_level})` : ''}</h4>
+      <p>{v.reason} The incident stays on the board either way.</p>
+      {v.verify.length > 0 && (
+        <div>
+          <b>To confirm:</b>
+          {v.verify.map(q => <div key={q} className="kc-md-li">• {q}</div>)}
+        </div>
+      )}
+      <div className="kc-muted">
+        Written by: {REVIEW_SOURCE[review.generated_by] || review.generated_by}
+        {review.note ? ` · ${review.note}` : ''}. The verdict is computed by a fixed rule, not by the LLM.
+      </div>
+    </section>
+  )
+}
+
 export default function IncidentDetail({ incidentId, onBack }) {
   const [inc, setInc] = useState(null)
   const [report, setReport] = useState(null)
@@ -173,6 +236,52 @@ export default function IncidentDetail({ incidentId, onBack }) {
           )}
           {inc.reach.targets.length > 15 && <div className="kc-muted">+ {inc.reach.targets.length - 15} more</div>}
         </section>
+
+        <Review key={inc.incident_id} incidentId={inc.incident_id} initial={inc.review} />
+
+        {inc.response?.length > 0 && (
+          <section className="card kc-section">
+            <h3>What to do</h3>
+            {inc.response.slice(0, 12).map(a => (
+              <div key={a.action_id} className="kc-md-li">• {a.title}. <span className="kc-muted">{a.why}</span></div>
+            ))}
+            {inc.response.length > 12 && <div className="kc-muted">+ {inc.response.length - 12} more</div>}
+            <div className="kc-muted">Approve these on the Response Plan page.</div>
+          </section>
+        )}
+
+        {inc.compliance?.length > 0 && (
+          <section className="card kc-section">
+            <h3>Controls affected</h3>
+            <ControlTable controls={inc.compliance} />
+          </section>
+        )}
+
+        {inc.actors?.length > 0 && (
+          <section className="card kc-section">
+            <h3>Linked actors</h3>
+            <ActorTable actors={inc.actors} />
+          </section>
+        )}
+
+        {inc.anomaly?.length > 0 && (
+          <section className="card kc-section">
+            <h3>Unusual behaviour</h3>
+            <p className="kc-muted">Context only: anomaly scores do not change this incident's risk score.</p>
+            <table className="kc-table static compact">
+              <thead><tr><th>Entity</th><th>Anomaly score</th><th>Why</th></tr></thead>
+              <tbody>
+                {inc.anomaly.slice(0, 15).map(a => (
+                  <tr key={`${a.kind}:${a.entity}`}>
+                    <td className="mono">{a.entity}</td>
+                    <td className="mono">{a.score.toFixed(1)}</td>
+                    <td>{a.reasons.map(r => <div key={r}>{r}</div>)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
 
         <section className="card kc-section">
           <div className="kc-section-head">

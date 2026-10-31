@@ -14,10 +14,10 @@
   "false_alarms": 0,
   "steps_total": 28,
   "steps_found": 28,
-  "processing_seconds": 182.23,
-  "peak_memory_mb": 3271.6,
-  "cold_open_ms": 3.39,
-  "p95_open_ms": 0.007,
+  "processing_seconds": 274.5,
+  "peak_memory_mb": 1712.7,
+  "cold_open_ms": 6.2,
+  "p95_open_ms": 0.018,
   "per_step": [
    {
     "step": "GT-01-1",
@@ -551,27 +551,39 @@
   ]
  },
  "run_meta": {
-  "generated_at": "2026-10-31T09:33:31+00:00",
-  "log_path": "/Users/sumeet/Desktop/PROJECT_KAVACH/REAL_10G_DATA/firex-10G.log",
+  "generated_at": "2026-10-31T11:44:28+00:00",
+  "log_path": "C:\\Users\\jival\\Desktop\\jival\\mitigata\\firex-10G.log",
   "ingest": {
-   "lines_read": 9125382,
+   "lines_read": 15848040,
    "lines_parsed": 9125382,
-   "lines_skipped": 0,
+   "lines_skipped": 6722658,
+   "lines_stalled": 5277135,
    "parts": 46,
-   "seconds": 177.14,
-   "peak_rss_mb": 621.2
+   "seconds": 255.53,
+   "peak_rss_mb": 768.2
   },
+  "clock_stalls": [
+   {
+    "ts_us": 1793350105999999,
+    "lines": 5277135,
+    "first_line": 3848248,
+    "last_line": 9125382
+   }
+  ],
   "seconds": {
-   "ingest": 177.21,
-   "detect": 4.72,
+   "ingest": 255.71,
+   "detect": 7.2,
    "correlate": 0.0,
-   "enrich": 0.3
+   "enrich": 0.46,
+   "anomaly": 10.98,
+   "actors": 0.15
   },
-  "total_seconds": 182.23,
-  "peak_rss_mb": 3271.6,
+  "total_seconds": 274.5,
+  "peak_rss_mb": 1712.7,
   "rule_count": 20,
   "detection_count": 29,
   "incident_count": 20,
+  "anomaly_lead_count": 3724,
   "raw_alerts_merged": 11078
  }
 }

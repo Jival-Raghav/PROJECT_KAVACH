@@ -1,3 +1,4 @@
+import json
 import time
 
 import pytest
@@ -29,6 +30,55 @@ def test_no_run_returns_empty_list(client):
     c, _ = client
     r = c.get("/api/incidents")
     assert r.status_code == 200 and r.json() == []
+
+
+def test_review_endpoint_works_with_and_without_llm(client, tmp_path, monkeypatch):
+    from config import get_settings
+
+    c, run_dir = client
+    _populate(run_dir, tmp_path)
+    monkeypatch.setattr(get_settings(), "LLM_REPLAY_ONLY", True)
+    for url in ("/api/incidents/1/review", "/api/incidents/1/review?llm=true"):
+        body = c.get(url).json()
+        assert body["generated_by"] == "template" and body["prosecution"] and body["verdict"]
+    assert c.get("/api/incidents/999/review").status_code == 404
+
+
+def test_response_approval_and_export_flow(client, tmp_path):
+    c, run_dir = client
+    _populate(run_dir, tmp_path)
+    action = c.get("/api/response/actions").json()[0]
+    assert action["status"] == "proposed"
+    assert c.post("/api/response/export").text.count("set subnet") == 0
+    body = {"action_id": action["action_id"], "to_status": "approved"}
+    assert c.post("/api/response/transition", json=body).json()["status"] == "approved"
+    assert c.post("/api/response/transition", json=body).status_code == 409
+    missing = {"action_id": "block_ip:0.0.0.0", "to_status": "approved"}
+    assert c.post("/api/response/transition", json=missing).status_code == 404
+    assert "DRY RUN" in c.post("/api/response/export").text
+    assert [e["to"] for e in c.get("/api/response/audit").json()] == ["approved", "exported"]
+
+
+def test_compliance_endpoint(client, tmp_path):
+    c, run_dir = client
+    assert c.get("/api/killchain/compliance").json()["counts"]["gap"] == 0
+    _populate(run_dir, tmp_path)
+    body = c.get("/api/killchain/compliance").json()
+    assert sum(body["counts"].values()) == len(body["controls"]) and body["notice"]
+
+
+def test_anomalies_empty_without_a_run(client):
+    c, _ = client
+    assert c.get("/api/anomalies").json() == {"total": 0, "items": []}
+
+
+def test_anomalies_are_paged(client):
+    c, run_dir = client
+    run_dir.mkdir(parents=True)
+    rows = [{"entity": f"e{i}", "kind": "user", "score": 90 - i, "reasons": ["r"]} for i in range(5)]
+    (run_dir / "anomalies.json").write_text(json.dumps(rows), encoding="utf-8")
+    page = c.get("/api/anomalies?limit=2&offset=2").json()
+    assert page["total"] == 5 and [r["entity"] for r in page["items"]] == ["e2", "e3"]
 
 
 def test_list_sorted_by_risk(client, tmp_path):

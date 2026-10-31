@@ -275,7 +275,7 @@ flowchart TD
   - **Unicode & BiDi Obfuscation**: NFKC normalization, strips zero-width spaces (`\u200b`, `\ufeff`) and right-to-left override markers (`\u202e`).
   - **Markdown Exfiltration Protection**: Strips markdown image tags, tracking beacons, raw external URLs, and HTML tags.
   - **Cryptographic Nonce Enclosure**: Wraps untrusted data inside tamper-evident cryptographic nonce blocks (`<data nonce="...">`).
-  - **Data Pseudonymization**: Hashes PII and internal identifiers (`USER_0042`) before LLM inference.
+  - **Data Pseudonymization** (identity pipeline only): Hashes PII and internal identifiers (`USER_0042`) before LLM inference. Kill-chain reviews do not pseudonymize; see Security & Privacy Disclosures.
   - **Verdict Invariance Guarantee**: Security assertion prohibiting the model from demoting severity if untrusted input contains injection patterns.
 - **Non-Human Identity (NHI) Governance**:
   - Dedicated auditing of service accounts, CI/CD runners, and API keys.
@@ -592,7 +592,7 @@ All detailed results are recorded in the [`reports/`](reports/) directory.
 
 ## 🛡️ Security & Privacy Disclosures
 
-- **Zero PII Leakage**: PII and internal identifiers are pseudonymized (`USER_0042`) before passing to external LLM providers.
+- **What reaches the LLM**: Kill-chain reviews and report rewrites send real IPs, usernames and log details to the configured LLM provider, without pseudonymization. They run only when an analyst asks for them. Use a local provider or `LLM_REPLAY_ONLY=true` if this data must not leave your network. The older identity pipeline pseudonymizes identifiers (`USER_0042`) before LLM calls.
 - **Excluded Fields**: Excluded fields marked in schema mapping never reach LLM prompts (`tests/test_prompt_leak.py`).
 - **Secret Isolation**: Secret keys and environment configurations are excluded from version control via `.gitignore`.
 - **Third-Party Libraries**: Detailed third-party disclosures, licenses, and rationale are documented in [`THIRD_PARTY.md`](THIRD_PARTY.md).
