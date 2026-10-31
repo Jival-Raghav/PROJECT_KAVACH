@@ -241,3 +241,15 @@ export const triggerResolution = (runId = 'default') =>
     body: JSON.stringify({ run_id: runId }),
   }).then(err).then(json)
 
+
+/* ── Kill chain & attack path (hackathon PRD) ───────────────────────────── */
+const kc = path => fetch(`${BASE_URL}${path}`).then(err).then(json)
+export const getIncidents       = (minRisk = 0) => kc(`/api/incidents?min_risk=${minRisk}`)
+export const getIncident        = id => kc(`/api/incidents/${id}`)
+export const getIncidentPath    = id => kc(`/api/incidents/${id}/path`)
+export const getIncidentNext    = id => kc(`/api/incidents/${id}/next`)
+export const getIncidentReport  = (id, llm = false) => kc(`/api/incidents/${id}/report?llm=${llm}`)
+export const getKillchainRules  = () => kc('/api/killchain/rules')
+export const getKillchainStatus = () => kc('/api/killchain/status')
+export const runKillchain       = (skipIngest = true) =>
+  fetch(`${BASE_URL}/api/killchain/run?skip_ingest=${skipIngest}`, { method: 'POST' }).then(err).then(json)
