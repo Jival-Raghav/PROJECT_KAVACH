@@ -135,7 +135,7 @@ export default function RiskTable({ users, onSelectUser, selectedUser }) {
                   key={user.user_id}
                   onClick={() => onSelectUser(user)}
                   className={`cursor-pointer border-b border-white/5 transition-colors ${
-                    isSelected ? 'bg-cyan-500/8 ring-1 ring-inset ring-cyan-500/20' : 'hover:bg-white/4'
+                    isSelected ? 'bg-cyan-500/8 ring-1 ring-inset ring-cyan-500/20' : user.suppressed ? 'opacity-40 hover:opacity-60' : 'hover:bg-white/4'
                   }`}
                   style={{ animationDelay: `${i * 12}ms` }}
                 >
@@ -146,7 +146,12 @@ export default function RiskTable({ users, onSelectUser, selectedUser }) {
                         {user.privilege_level === 'admin' ? <Shield size={12} /> : <User size={12} />}
                       </div>
                       <div>
-                        <div className="font-medium text-white">{user.username}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium text-white">{user.username}</div>
+                          {user.suppressed && (
+                            <span className="chip border border-white/15 bg-white/5 text-[10px] text-slate-400">SUPPRESSED</span>
+                          )}
+                        </div>
                         <div className="text-[11px] text-slate-500 mono">{user.user_id}</div>
                       </div>
                     </div>

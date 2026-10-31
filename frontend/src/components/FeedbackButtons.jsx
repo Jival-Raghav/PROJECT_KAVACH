@@ -42,10 +42,10 @@ export default function FeedbackButtons({ user }) {
             <CheckCircle2 size={14} /> Legitimate (Suppress)
           </button>
           <button
-            onClick={() => handleAction('escalate')}
+            onClick={() => handleAction('unflag')}
             className="flex items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 py-2.5 text-xs font-medium text-rose-300 transition hover:bg-rose-500/20"
           >
-            <AlertCircle size={14} /> Escalate (Investigate)
+            <AlertCircle size={14} /> Confirm Threat (Unflag)
           </button>
         </div>
       ) : (
@@ -75,7 +75,7 @@ export default function FeedbackButtons({ user }) {
               } disabled:opacity-50`}
             >
               {loading ? <Loader2 size={14} className="spin-slow" /> : <Send size={14} />}
-              Confirm {actionType === 'suppress' ? 'Suppression' : 'Escalation'}
+              Confirm {actionType === 'suppress' ? 'Suppression' : 'Threat (Unflag)'}
             </button>
           </div>
         </div>

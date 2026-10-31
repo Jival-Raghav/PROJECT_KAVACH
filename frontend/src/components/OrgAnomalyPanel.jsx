@@ -95,12 +95,15 @@ export default function OrgAnomalyPanel({ anomalies, stats }) {
                 {user.org_anomaly?.reason || 'Statistical outlier in department risk distribution.'}
               </div>
             </div>
-            {user.org_anomaly?.dept_avg_score !== undefined && (
-              <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
-                <span>Dept avg: {Number(user.org_anomaly.dept_avg_score).toFixed(1)}</span>
-                <span className="text-rose-400">+{(user.risk_score - user.org_anomaly.dept_avg_score).toFixed(1)} above</span>
-              </div>
-            )}
+            {user.org_anomaly?.dept_baseline?.avg_risk_score !== undefined && (() => {
+              const deptAvg = user.org_anomaly?.dept_baseline?.avg_risk_score
+              return (
+                <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+                  <span>Dept avg: {Number(deptAvg).toFixed(1)}</span>
+                  <span className="text-rose-400">+{(user.risk_score - deptAvg).toFixed(1)} above</span>
+                </div>
+              )
+            })()}
           </article>
         ))}
       </div>
