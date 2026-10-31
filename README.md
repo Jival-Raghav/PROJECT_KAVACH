@@ -9,6 +9,95 @@
 
 ---
 
+## 🎯 Kill Chain & Attack Path Analysis (Hackathon PRD)
+
+Kavach reads a raw FortiGate firewall log, finds the attacks hidden in it, labels every step
+with a **MITRE ATT&CK technique and kill-chain stage**, links the steps into **incidents across
+hosts, users, IPs and time**, and shows each one as a **timeline, an attack-path graph, what
+the attacker can reach next, and a plain-English report**.
+
+### Results on `firex-10G.log` (9,125,382 events)
+
+| What we measure | Result | PRD Good / Great | |
+|---|---|---|---|
+| Detection (planted steps found) | **100%** (28/28) | > 70% / > 90% | 🟢 Great |
+| Correct ATT&CK labels | **100%** (28/28) | > 60% / > 85% | 🟢 Great |
+| Attack paths rebuilt in order | **20 / 20** | half / all | 🟢 Great |
+| False alarms | **0%** (0 of 20 incidents) | < 30% / < 10% | 🟢 Great |
+| Processing time (cold, whole file) | **3.0 min** | < 3 h / < 1 h | 🟢 Great |
+| Peak memory | **3.2 GB** | < 16 GB / < 8 GB | 🟢 Great |
+| Open one incident's path (API) | **< 1 ms** | < 2 s / < 500 ms | 🟢 Great |
+
+**11,078 raw alerts were merged into 20 incidents.** Full per-step scorecard:
+[`reports/killchain_benchmark.md`](reports/killchain_benchmark.md).
+
+![Incident investigation view](docs/images/killchain-incident-20.jpg)
+
+### Quick start (judges)
+
+```bash
+# 1. Put the log at REAL_10G_DATA/firex-10G.log
+# 2. Build the incidents (≈3 min, streams the file, < 4 GB RAM)
+./run.sh --killchain          # sets up venv + deps, runs the pipeline, then starts API + UI
+# 3. Open http://localhost:5173  →  Kill Chain › Attack Incidents
+```
+
+Or with Docker: `docker compose up --build` (API on :8000, UI on :5173). Or by hand:
+
+```bash
+cd backend
+python -m killchain.cli run     # ingest → detect → correlate → score → path/reach/report
+python -m killchain.cli bench   # score against the ground truth → reports/killchain_benchmark.md
+```
+
+### PRD requirement → where it lives
+
+| PRD | Feature | Code / endpoint |
+|---|---|---|
+| FR-1 | Streams the log in 200k-line batches into Parquet; never loads the file | `backend/killchain/ingest.py` |
+| FR-2 | 19 behavioural detection rules (bursts, fan-out, periodicity, rarity, sequences) | `config/detection_rules/fortigate.yaml` |
+| FR-3 | Every detection → ATT&CK technique + tactic + kill-chain stage | `config/mitre_techniques.yaml` |
+| FR-4 | Links detections by attacker IP/user/domain, same host, and pivot host + time | `backend/killchain/correlate.py` |
+| FR-5 | Timeline + host/user/attacker graph | `GET /api/incidents/{id}/path` |
+| FR-6 | What the attacker can reach next (observed flows, same segment, firewall admin control) | `GET /api/incidents/{id}/next` |
+| FR-7 | REST API + web UI + this README | `GET /api/incidents`, `/docs` |
+| B-1 | Risk score (progression, breadth, success, severity, volume); worst on top | `backend/killchain/scoring.py` |
+| B-2 | Plain-English report; optional LLM rewrite | `GET /api/incidents/{id}/report?llm=true` |
+| B-3 | Raw alerts merged per incident | `raw_alert_count` on every incident |
+| B-4 | New rule = edit YAML (SQL `where` or Sigma-style `selection`), no code | `config/detection_rules/` |
+
+### Add a detection rule (B-4)
+
+```yaml
+# config/detection_rules/fortigate.yaml
+  - id: KC-CUSTOM-001
+    title: Outbound SSH from the DMZ
+    technique: T1021.004          # must exist in config/mitre_techniques.yaml
+    severity: high
+    kind: threshold               # match | threshold | rare_for_entity | sequence
+    where: "type='traffic' AND action='accept' AND srcintfrole='dmz' AND dstintfrole='wan'"
+    selection: {dstport: 22}      # Sigma-style: field, field|contains, |startswith, |re, lists = IN
+    group_by: [srcip]
+    window_minutes: 30
+    min_count: 5
+    entities: {src_ip: srcip, dst_ip: dstip}
+```
+
+Then press **Re-run detection** in the UI (or `python -m killchain.cli run --skip-ingest`, ~5 s).
+
+### Honest limits
+
+- **The dataset came without labels.** We rebuilt the ground truth ourselves
+  ([`data/ground_truth/firex_planted.yaml`](data/ground_truth/firex_planted.yaml)) from rare
+  events, the `crscore` field that planted lines carry, and periodicity and repeated-pair
+  analysis. A test checks that no rule contains any of its IPs, users or domains.
+- **The supplied file was damaged.** Its last 1.7 GB was random bytes. We cut the file at the
+  last complete line; 9.1M clean lines remain.
+- Timestamps are the firewall's local clock (+05:30).
+- B-5 (live mode) is not built yet.
+
+---
+
 ## 🚀 Overview
 
 **Kavach v2** is an enterprise-grade **Identity Threat Detection and Response (ITDR)** platform designed to eliminate identity sprawl, detect stealthy credential abuse, and cut through alert fatigue.

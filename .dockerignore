@@ -1,0 +1,8 @@
+.venv
+.git
+.superpowers
+REAL_10G_DATA
+backend/data/killchain
+frontend/node_modules
+frontend/dist
+**/__pycache__

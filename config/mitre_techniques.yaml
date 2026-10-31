@@ -30,6 +30,7 @@ techniques:
   T1021:     {name: Remote Services, tactic: lateral-movement, stage: Actions on Objectives}
   T1021.001: {name: "Remote Services: Remote Desktop Protocol", tactic: lateral-movement, stage: Actions on Objectives}
   T1021.002: {name: "Remote Services: SMB/Windows Admin Shares", tactic: lateral-movement, stage: Actions on Objectives}
+  T1021.004: {name: "Remote Services: SSH", tactic: lateral-movement, stage: Actions on Objectives}
   T1078:     {name: Valid Accounts, tactic: initial-access, stage: Exploitation}
   T1133:     {name: External Remote Services, tactic: initial-access, stage: Exploitation}
   T1110:     {name: Brute Force, tactic: credential-access, stage: Actions on Objectives}

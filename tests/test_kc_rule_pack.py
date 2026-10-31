@@ -169,3 +169,13 @@ def test_noise_produces_no_detections(tmp_path):
     con = open_events(ingest_lines(tmp_path, _noise()))
     dets = run_rules(con, load_rules(RULES_DIR))
     assert [d.summary for d in dets] == []
+
+
+def test_readme_example_rule_loads(tmp_path):
+    text = (REPO / "README.md").read_text()
+    block = text.split("# config/detection_rules/fortigate.yaml\n", 1)[1].split("```", 1)[0]
+    d = tmp_path / "r"
+    d.mkdir()
+    (d / "x.yaml").write_text("rules:\n" + block)
+    (rule,) = load_rules(d)
+    assert rule.id == "KC-CUSTOM-001"
