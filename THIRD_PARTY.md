@@ -1,6 +1,6 @@
 # Third-Party Disclosures & Attribution
 
-This document lists all third-party libraries, machine learning frameworks, models, and datasets utilized by ISPAD v2 in compliance with hackathon submission guidelines.
+This document lists all third-party libraries, machine learning frameworks, models, and datasets utilized by Kavach v2 in compliance with hackathon submission guidelines.
 
 ---
 
@@ -46,7 +46,7 @@ This document lists all third-party libraries, machine learning frameworks, mode
 
 ## 3. Large Language Models (LLMs)
 
-| Model Name | Provider / Engine | License | Role in ISPAD |
+| Model Name | Provider / Engine | License | Role in Kavach |
 |---|---|---|---|
 | **Llama 3.3 70B Versatile** | Groq Cloud API | Llama 3 Community | Primary testing & verification model for Prosecutor, DA, and Adjudicator |
 | **Llama 3 8B Instruct** | LM Studio (Local :1234) | Llama 3 Community | Local Prosecutor and Mapper pass |

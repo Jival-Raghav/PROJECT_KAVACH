@@ -1,4 +1,4 @@
-# ISPAD v2 (Mitigata)
+# Kavach v2
 ### Identity Security & Posture Anomaly Detection (ITDR) Platform
 
 [![Tests](https://img.shields.io/badge/pytest-96%20passed-brightgreen.svg)](tests/)
@@ -11,15 +11,15 @@
 
 ## 🚀 Overview
 
-**ISPAD v2** is an enterprise-grade **Identity Threat Detection and Response (ITDR)** platform designed to eliminate identity sprawl, detect stealthy credential abuse, and cut through alert fatigue.
+**Kavach v2** is an enterprise-grade **Identity Threat Detection and Response (ITDR)** platform designed to eliminate identity sprawl, detect stealthy credential abuse, and cut through alert fatigue.
 
-Traditional Identity and Access Management (IAM) tools generate hundreds of low-context alerts. ISPAD v2 replaces alert fatigue with an **adversarial dual-LLM adjudication engine**, a **schema-agnostic ingestion pipeline**, **multi-source identity resolution**, **graph-based attack path modeling**, **automated remediation playbooks**, and **continuous compliance auditing** (SOC 2, ISO 27001, NIST CSF) — all fortified with a **hardened AI security perimeter**.
+Traditional Identity and Access Management (IAM) tools generate hundreds of low-context alerts. Kavach v2 replaces alert fatigue with an **adversarial dual-LLM adjudication engine**, a **schema-agnostic ingestion pipeline**, **multi-source identity resolution**, **graph-based attack path modeling**, **automated remediation playbooks**, and **continuous compliance auditing** (SOC 2, ISO 27001, NIST CSF) — all fortified with a **hardened AI security perimeter**.
 
 ---
 
 ## 🏆 Key Benchmark Highlights (vs Legacy Baseline)
 
-| Capability / Benchmark | Baseline (Legacy Prototype) | ISPAD v2 (Ours) | Real-World Impact |
+| Capability / Benchmark | Baseline (Legacy Prototype) | Kavach v2 (Ours) | Real-World Impact |
 | :--- | :--- | :--- | :--- |
 | **Devil's Advocate FP Suppression** | 0% reduction (9 alerts, 5 FP) | **80.0% FP Reduction** (5 alerts, 1 FP) | F₁ Score improved from **0.615 $\to$ 0.889** |
 | **Malicious Attacks Wrongly Dismissed**| Vulnerable to hallucination | **Strictly ZERO (0)** | 100% security invariant on true attacks |
@@ -207,7 +207,7 @@ flowchart TD
 ## 📁 Repository Structure
 
 ```
-ISPAD/
+Kavach/
 ├── backend/                        # FastAPI Backend Application
 │   ├── api/                        # REST API Routers
 │   │   ├── detect.py               # Detection & anomaly endpoints
@@ -329,6 +329,23 @@ ISPAD/
 ---
 
 ## ⚡ Quickstart Guide (For Teammates)
+
+### 🟢 One-Command Run (macOS / Linux)
+
+Requires Python 3.10+ and Node.js 18+. From the project root:
+
+```bash
+chmod +x run.sh   # first time only
+./run.sh          # sets up venv, deps, .env, then starts backend + frontend
+```
+
+- Frontend: http://localhost:5173
+- Backend API docs: http://localhost:8000/docs
+- First run creates `.env` with `LLM_REPLAY_ONLY=true`, so **no API key is needed**. For live LLM calls, add your `GROQ_API_KEY` to `.env` and set `LLM_REPLAY_ONLY=0`.
+- `./run.sh --test` runs the test suite instead of starting the servers.
+- Press `Ctrl+C` to stop both servers.
+
+Prefer to do it by hand (or on Windows)? Follow the manual steps below.
 
 ### 1. Prerequisites
 - **Python 3.10+** (Python 3.11 recommended)
@@ -489,6 +506,7 @@ All detailed results are recorded in the [`reports/`](reports/) directory.
 ## 👥 Contributors & Team
 
 - **Jival Raghav Balaji** ([@Jival-Raghav](https://github.com/Jival-Raghav))
+- **Sumeet Tummaramatti** ([@sumeettummarmatti](https://github.com/sumeettummarmatti))
 - **Mitigata Hackathon Team**
 
 ---

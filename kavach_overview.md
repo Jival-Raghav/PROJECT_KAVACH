@@ -1,4 +1,4 @@
-# ISPAD v2 (Mitigata) — Comprehensive Presentation & Slide Deck Specification
+# Kavach v2 — Comprehensive Presentation & Slide Deck Specification
 
 > **Purpose of this Document**:  
 > This specification is designed as the master source material for generating a high-impact, competition-winning pitch presentation and slide deck (e.g., via Claude, Gamma, PowerPoint, or Keynote). It contains the problem statement, technical differentiators, architectural diagrams, benchmark data, slide-by-slide structure, talking points, and Q&A defense.
@@ -7,10 +7,10 @@
 
 ## Executive Summary & Elevator Pitch
 
-- **Product Name**: ISPAD v2 (*Identity Security & Posture Anomaly Detection*), developed under the **Mitigata** project.
+- **Product Name**: Kavach v2 (*Identity Security & Posture Anomaly Detection*), developed under the **Kavach** project.
 - **Category**: Next-Generation Identity Threat Detection and Response (**ITDR**) & Identity Governance and Administration (**IGA**).
 - **Core Value Proposition**:  
-  ISPAD v2 replaces the broken paradigm of brittle, alert-fatigued identity security with an **intelligent, schema-agnostic, adversarial AI platform**. By pairing a self-calibrating machine learning core with an **adversarial Dual-LLM adjudication engine (Prosecutor vs. Devil’s Advocate)**, graph-based attack path modeling, closed-loop remediation, and an impenetrable AI security boundary, ISPAD v2 reduces false-positive alerts by **80.0%** while maintaining a **100% security invariant** (zero missed true attacks) and **0.0% attack success rate** against prompt injections.
+  Kavach v2 replaces the broken paradigm of brittle, alert-fatigued identity security with an **intelligent, schema-agnostic, adversarial AI platform**. By pairing a self-calibrating machine learning core with an **adversarial Dual-LLM adjudication engine (Prosecutor vs. Devil’s Advocate)**, graph-based attack path modeling, closed-loop remediation, and an impenetrable AI security boundary, Kavach v2 reduces false-positive alerts by **80.0%** while maintaining a **100% security invariant** (zero missed true attacks) and **0.0% attack success rate** against prompt injections.
 
 ---
 
@@ -21,10 +21,10 @@ Here is the exact slide-by-slide flow designed to take judges or executive buyer
 ---
 
 ### Slide 1: Title & Hook
-- **Slide Title**: ISPAD v2 (Mitigata)
+- **Slide Title**: Kavach v2
 - **Subtitle**: Next-Generation Identity Threat Detection & Response (ITDR) Powered by Adversarial Dual-LLM Reasoning & Graph Analytics
 - **Visual Suggestion**: Dark command-center backdrop, glowing identity graph network visualization, sleek badges: `96/96 Pytest Verified` | `80% FP Suppression` | `0.0% Defended ASR`.
-- **Presenter Soundbite**: *"Modern enterprises don't have a lack of security logs—they have a crisis of identity sprawl and alert fatigue. ISPAD v2 cuts through the noise using adversarial AI to deliver verified, actionable identity security."*
+- **Presenter Soundbite**: *"Modern enterprises don't have a lack of security logs—they have a crisis of identity sprawl and alert fatigue. Kavach v2 cuts through the noise using adversarial AI to deliver verified, actionable identity security."*
 
 ---
 
@@ -42,7 +42,7 @@ Here is the exact slide-by-slide flow designed to take judges or executive buyer
 - **Slide Title**: Legacy Tools vs. Today's Reality
 - **Comparison Grid**:
 
-| Dimension | Legacy SIEM / UEBA | Single-LLM AI Copilots | **ISPAD v2 (Mitigata)** |
+| Dimension | Legacy SIEM / UEBA | Single-LLM AI Copilots | **Kavach v2** |
 | :--- | :--- | :--- | :--- |
 | **Data Ingestion** | Locked into rigid schemas | Fragile text formatting | **Universal schema-agnostic pipeline** (CSV/JSON/Parquet) with auto-mapping |
 | **Identity Stitching** | Manual account correlation | No correlation | **Automated fuzzy identity resolution** across HR & cloud providers |
@@ -53,7 +53,7 @@ Here is the exact slide-by-slide flow designed to take judges or executive buyer
 
 ---
 
-### Slide 4: Introducing ISPAD v2 — The 4 Architectural Pillars
+### Slide 4: Introducing Kavach v2 — The 4 Architectural Pillars
 - **Slide Title**: A Unified, Self-Defending ITDR Architecture
 - **The 4 Cornerstones**:
   1. **Schema-Agnostic Ingestion & Resolution**: Ingests any format (Okta, CloudTrail, Workday, custom logs), automatically maps columns via hybrid heuristics + LLM fallback, and stitches fragmented usernames into unified human and non-human entities.
@@ -118,7 +118,7 @@ Here is the exact slide-by-slide flow designed to take judges or executive buyer
   5. **Verdict Invariance Enforcement**: Strict mathematical assertion guaranteeing that if untrusted inputs contain injection markers, the model is physically forbidden from downgrading severity.
 - **Red-Team Results**: Tested against **32 adversarial injection payloads** across 8 attack categories:
   - Baseline Vulnerable ASR: **100.0%**
-  - ISPAD v2 Defended ASR: **0.0% (32/32 Attacks Blocked)**
+  - Kavach v2 Defended ASR: **0.0% (32/32 Attacks Blocked)**
   - Benign Text False Positive Redaction: **0.0%**
 
 ---
@@ -171,7 +171,7 @@ Here is the exact slide-by-slide flow designed to take judges or executive buyer
 - **Slide Title**: Validated By the Numbers — Benchmark Results
 - **Hard Data Comparison**:
 
-| Benchmark / Evaluation | Baseline Prototype | ISPAD v2 (Ours) | Delta / Improvement |
+| Benchmark / Evaluation | Baseline Prototype | Kavach v2 (Ours) | Delta / Improvement |
 | :--- | :--- | :--- | :--- |
 | **Devil's Advocate FP Suppression** | 0% (9 alerts, 5 FP) | **80.0% FP Reduction** | **+80% Alert Fatigue Reduction** |
 | **False-Dismissal Invariant** | Vulnerable | **0 False Dismissals** | **100% Security Retention** |
@@ -243,7 +243,7 @@ Here is the exact slide-by-slide flow designed to take judges or executive buyer
   - **Prevents Catastrophic Breaches**: Identifies complex multi-hop lateral movement and toxic privilege combinations before adversaries reach crown jewels.
   - **Trustworthy AI SecOps**: Solves the AI hallucination and prompt injection crises through structured adversarial debate and cryptographic defense barriers.
   - **Audit-Ready by Default**: Continuous automated compliance tracking turns annual audit dread into real-time posture confidence.
-- **Closing Punchline**: *"ISPAD v2 is not just another dashboard that rings an alarm. It is an autonomous, self-defending identity analyst that investigates the facts, checks the context, and hands you the solution."*
+- **Closing Punchline**: *"Kavach v2 is not just another dashboard that rings an alarm. It is an autonomous, self-defending identity analyst that investigates the facts, checks the context, and hands you the solution."*
 
 ---
 
@@ -339,7 +339,7 @@ Use this section if Claude or the presenter needs deeper technical specifics for
 These exact tables can be copied directly onto presentation slides to provide undeniable credibility.
 
 ### Table 1: Devil's Advocate False-Positive Ablation Study (`reports/da_ablation.md`)
-| Metric | Baseline (Prosecutor Only) | ISPAD v2 (Prosecutor + DA + Adjudicator) | Impact |
+| Metric | Baseline (Prosecutor Only) | Kavach v2 (Prosecutor + DA + Adjudicator) | Impact |
 | :--- | :---: | :---: | :--- |
 | **Total Alerts Surfaced** | 9 | **5** | **44.4% Alert Volume Reduction** |
 | **True Positives (Real Attacks)** | 4 | **4** | **100% Retention (0 Missed Attacks)** |
@@ -349,7 +349,7 @@ These exact tables can be copied directly onto presentation slides to provide un
 | **$F_1$ Score** | 0.615 | **0.889** | **+0.274 Quality Improvement** |
 
 ### Table 2: Adversarial Red-Team Injection Results (`reports/redteam.md`)
-| Attack Category | Test Payloads | Baseline Vulnerable ASR | ISPAD v2 Defended ASR | Status |
+| Attack Category | Test Payloads | Baseline Vulnerable ASR | Kavach v2 Defended ASR | Status |
 | :--- | :---: | :---: | :---: | :---: |
 | Role Hijacking (`[SYSTEM]` tags) | 4 | 100.0% | **0.0%** | BLOCKED |
 | Metric & Severity Forgery | 4 | 100.0% | **0.0%** | BLOCKED |
@@ -363,7 +363,7 @@ These exact tables can be copied directly onto presentation slides to provide un
 | **Benign Text False Redaction** | **100** | **N/A** | **0.0% (0/100 FP)** | **ZERO FP IMPACT** |
 
 ### Table 3: Detection Core Quality Across Multi-Source Datasets (`reports/detection.md`)
-| Dataset / Source | Samples | Baseline $F_1$ | ISPAD v2 $F_1$ | Key Capabilities Demonstrated |
+| Dataset / Source | Samples | Baseline $F_1$ | Kavach v2 $F_1$ | Key Capabilities Demonstrated |
 | :--- | :---: | :---: | :---: | :--- |
 | **Dataset A** (Legacy Baseline) | 300 users | 0.518 | **0.789** | Graceful degradation, knee calibration |
 | **Dataset B** (Workday + Okta) | 150 users | 0.490 | **0.765** | Multi-source stitching, SoD checks |
@@ -392,7 +392,7 @@ These exact tables can be copied directly onto presentation slides to provide un
 
 ### Q4: *"How easy is it for an enterprise to deploy this alongside existing tools like Splunk or Sentinel?"*
 > **Answer**:  
-> *"ISPAD v2 is completely schema-agnostic. It does not force you to replace your SIEM or change your logging schemas. Through our Smart Schema Mapper and Transformation DSL, it ingests CSV, JSON, or Parquet exports from Okta, AWS CloudTrail, Microsoft Entra ID, or Snowflake, maps them to canonical models, and feeds detections directly into existing SOAR workflows via REST API."*
+> *"Kavach v2 is completely schema-agnostic. It does not force you to replace your SIEM or change your logging schemas. Through our Smart Schema Mapper and Transformation DSL, it ingests CSV, JSON, or Parquet exports from Okta, AWS CloudTrail, Microsoft Entra ID, or Snowflake, maps them to canonical models, and feeds detections directly into existing SOAR workflows via REST API."*
 
 ---
 
@@ -415,4 +415,4 @@ These exact tables can be copied directly onto presentation slides to provide un
 1. **Start with the Story**: Don't start with code; start with the overworked SOC analyst getting paged at 2 AM for an executive who logged in from an airport lounge while on approved travel.
 2. **Demonstrate the Courtroom Dynamic**: When talking about the Dual-LLM, emphasize the tension between the Prosecutor and Devil's Advocate. People instantly grasp the courtroom metaphor.
 3. **Show, Don't Just Tell**: Refer to the live Red-Team bench (`0.0% ASR`) and the What-If graph simulation. These are concrete capabilities judges rarely see in hackathon prototypes.
-4. **End on the Closed Loop**: Highlight that ISPAD v2 doesn't just stop at detection—it produces human-approvable remediation plans and generates one-click CLI rollback scripts.
+4. **End on the Closed Loop**: Highlight that Kavach v2 doesn't just stop at detection—it produces human-approvable remediation plans and generates one-click CLI rollback scripts.
