@@ -29,8 +29,8 @@ export const postFeedback = (userId, action, note) =>
  * onDone()         → called when [DONE] arrives
  * Returns the EventSource so caller can close it.
  */
-export function streamNarrative(userId, { onSection, onChunk, onError, onDone } = {}) {
-  const source = new EventSource(`${BASE_URL}/users/${userId}/narrative`)
+export function streamNarrative(userId, { onSection, onChunk, onError, onDone, refresh = false } = {}) {
+  const source = new EventSource(`${BASE_URL}/users/${userId}/narrative${refresh ? '?refresh=true' : ''}`)
   let currentSection = null  // track active section inside the SSE handler
 
   source.onmessage = ({ data }) => {

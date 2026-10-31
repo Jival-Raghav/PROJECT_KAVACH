@@ -17,20 +17,39 @@ import GraphView        from './pages/GraphView'
 import Remediation      from './pages/Remediation'
 import ComplianceView   from './pages/Compliance'
 import AISecurityView   from './pages/AISecurity'
-import { Cpu, Loader2, Moon, Play, Shield, Sun } from 'lucide-react'
+import {
+  Cpu, Loader2, Moon, Play, Shield, Sun, User, MessageSquareText, Network,
+  Workflow, Fingerprint, ShieldAlert, FolderSearch, ListChecks, ClipboardCheck, Bot, Layers,
+} from 'lucide-react'
 
 /* ── Constants ─────────────────────────────────────────── */
 
-const TABS = [
-  { id: 'autopilot',   label: 'Schema Autopilot' },
-  { id: 'resolution',  label: 'Identity Resolution' },
-  { id: 'risks',       label: 'Identity Risks' },
-  { id: 'investigate', label: 'Case Investigation' },
-  { id: 'graph',       label: 'Access Graph & Paths' },
-  { id: 'remediation', label: 'Remediation Queue' },
-  { id: 'compliance',  label: 'Posture & Compliance' },
-  { id: 'security',    label: 'AI & NHI Security' },
-  { id: 'clusters',    label: 'Behavior Clusters' },
+// Grouped by the analyst's journey: bring data in, find risk, dig in, then act.
+const NAV_GROUPS = [
+  { label: 'Onboard', items: [
+    { id: 'autopilot',  label: 'Schema Autopilot',     icon: Workflow,       hint: 'Connect sources, map fields and build the unified schema.' },
+    { id: 'resolution', label: 'Identity Resolution',  icon: Fingerprint,    hint: 'Match accounts across systems to one person.' },
+  ]},
+  { label: 'Detect', items: [
+    { id: 'risks',      label: 'Identity Risks',       icon: ShieldAlert,    hint: 'Every identity ranked by fused ML and rule-based risk.' },
+    { id: 'clusters',   label: 'Behavior Clusters',    icon: Layers,         hint: 'Peer groups and outliers by access behavior.' },
+  ]},
+  { label: 'Investigate', items: [
+    { id: 'investigate', label: 'Case Investigation',  icon: FolderSearch,   hint: 'Prosecutor vs devil\'s advocate, with a binding final level.' },
+    { id: 'graph',       label: 'Access Graph & Paths', icon: Network,       hint: 'Trace privilege paths to crown-jewel resources.' },
+  ]},
+  { label: 'Respond', items: [
+    { id: 'remediation', label: 'Remediation Queue',   icon: ListChecks,     hint: 'Prioritised fixes ready to approve.' },
+    { id: 'compliance',  label: 'Posture & Compliance', icon: ClipboardCheck, hint: 'Controls, framework coverage and gaps.' },
+    { id: 'security',    label: 'AI & NHI Security',   icon: Bot,            hint: 'Non-human identities and AI agent exposure.' },
+  ]},
+]
+const NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items)
+
+const INSPECTOR_TABS = [
+  { id: 'profile',   label: 'Profile',   icon: User },
+  { id: 'narrative', label: 'Narrative', icon: MessageSquareText },
+  { id: 'impact',    label: 'Impact',    icon: Network },
 ]
 
 const emptyStats = {
@@ -42,11 +61,11 @@ const emptyStats = {
 
 export default function App() {
   /* Theme */
-  const [theme, setTheme] = useState(() => localStorage.getItem('ispad-theme') || 'dark')
+  const [theme, setTheme] = useState(() => localStorage.getItem('kavach-theme-v2') || 'light')
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('ispad-theme', theme)
+    localStorage.setItem('kavach-theme-v2', theme)
   }, [theme])
 
   /* Pipeline state */
@@ -64,6 +83,7 @@ export default function App() {
 
   /* UI state */
   const [selectedUser, setSelectedUser] = useState(null)
+  const [inspectorTab, setInspectorTab]   = useState('profile')
   const [activeTab,    setActiveTab]    = useState('autopilot')
   const [wizardStep,   setWizardStep]   = useState('connect')
   const [ingestedSources, setIngestedSources] = useState([])
@@ -86,6 +106,19 @@ export default function App() {
   }
 
   useEffect(() => { loadDashboard() }, [])
+
+  // After analyst feedback, refetch so the row, stats and inspector reflect the new suppressed state.
+  const onFeedbackChanged = async (userId) => {
+    try {
+      const [fresh, freshStats] = await Promise.all([getUserRisks(), getStats()])
+      setUsers(fresh)
+      setStats(freshStats)
+      const updated = fresh.find(u => u.user_id === userId)
+      if (updated) setSelectedUser(updated)
+    } catch (e) {
+      console.error('Failed to refresh after feedback:', e)
+    }
+  }
 
   /* ── Pipeline polling ───────────────────────────────────── */
   useEffect(() => {
@@ -178,128 +211,151 @@ export default function App() {
 
   const isRunning = pipelineStatus === 'running'
 
+  const activeItem = NAV_ITEMS.find(i => i.id === activeTab)
+
   /* ── Render ─────────────────────────────────────────────── */
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
+    <div className="app">
 
-      {/* ── Cyan/Indigo gradient stripe ── */}
-      <div className="sg-stripe" />
-
-      {/* ══════════════════ NAV BAR ══════════════════ */}
-      <nav className="nav-bar">
-
-        {/* Left: Logo + subtitle + status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flexShrink: 0 }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: 28, height: 28, borderRadius: 6,
-            background: theme === 'dark' ? 'linear-gradient(135deg, #00E5FF, #6366F1)' : 'linear-gradient(135deg, #059669, #10B981)',
-            flexShrink: 0,
-          }}>
-            <Shield size={15} color={theme === 'dark' ? '#090D16' : '#FFFFFF'} strokeWidth={2.5} />
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div className="nav-logo">AEGIS</div>
-            <div className="nav-subtitle">Identity Threat Detection &amp; Response</div>
-          </div>
-          {/* Status dot */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginLeft: 8, flexShrink: 0 }}>
-            <span className={`status-dot ${pipelineStatus}${isRunning ? ' pulse-dot' : ''}`} />
-            <span style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-              {isRunning
-                ? (pipelineMessage || 'Running…')
-                : pipelineStatus === 'complete'
-                  ? `Ready · ${lastRun ? new Date(lastRun).toLocaleTimeString() : ''}`
-                  : 'Idle'}
-            </span>
-          </div>
+      {/* ══════════════════ TOP BAR ══════════════════ */}
+      <header className="topbar">
+        <div className="brand">
+          <span className="brand-mark"><Shield size={16} strokeWidth={2.4} /></span>
+          <span className="brand-name display">Kavach</span>
+          <span className="brand-sub">Identity threat detection &amp; response</span>
         </div>
 
-        {/* Center: Tab navigation */}
-        <div className="nav-tabs" style={{ flex: 1, justifyContent: 'center' }}>
-          {TABS.map(t => (
-            <button
-              key={t.id}
-              className={`nav-tab${activeTab === t.id ? ' active' : ''}`}
-              onClick={() => setActiveTab(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div className={`run-status ${pipelineStatus}`} aria-live="polite">
+          <span className={`status-dot ${pipelineStatus}${isRunning ? ' pulse-dot' : ''}`} />
+          <span>
+            {isRunning
+              ? (pipelineMessage || 'Running…')
+              : pipelineStatus === 'complete'
+                ? `Ready${lastRun ? ` · ${new Date(lastRun).toLocaleTimeString()}` : ''}`
+                : 'Idle'}
+          </span>
         </div>
 
-        {/* Right: LLM pills + theme toggle + run button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <div className="topbar-right">
           {llmStatus && (
-            <>
-              <LLMPill label="LM Studio" ok={llmStatus.prosecutor?.available}      role="Prosecutor" />
-              <LLMPill label="Ollama"    ok={llmStatus.devils_advocate?.available}  role="Devil's Advocate" />
-            </>
+            <LLMPill
+              label="Groq"
+              ok={llmStatus.prosecutor?.available && llmStatus.devils_advocate?.available}
+              role="Prosecutor + Devil's Advocate"
+            />
           )}
-
           <button
             className="theme-toggle"
             onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label="Toggle theme"
           >
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           </button>
-
-          <button
-            id="run-pipeline-btn"
-            onClick={onRunPipeline}
-            disabled={isRunning}
-            className="btn-primary"
-          >
+          <button id="run-pipeline-btn" onClick={onRunPipeline} disabled={isRunning} className="btn-primary">
             {isRunning ? <Loader2 size={13} className="spin-slow" /> : <Play size={13} />}
-            {isRunning ? 'Running…' : 'Run Pipeline'}
+            {isRunning ? 'Running…' : 'Run pipeline'}
           </button>
         </div>
 
-        {/* Progress bar at bottom of nav when running */}
         {isRunning && (
           <div className="pipeline-progress">
             <div className="pipeline-progress-fill" style={{ width: `${pipelineProgress}%` }} />
           </div>
         )}
-      </nav>
+      </header>
 
-      {/* ══════════════════ STAT BAR ══════════════════ */}
-      <div className="stat-bar">
-        <StatCard label="Total Users"   value={stats.total_users}                    variant="total"    />
-        <StatCard label="Critical Risk" value={stats.critical_count}                  variant="critical" />
-        <StatCard label="High Risk"     value={stats.high_count}                      variant="high"     />
-        <StatCard label="To Review"     value={stats.review_count}                    variant="review"   />
-        <StatCard label="Avg Score"     value={stats.avg_risk_score?.toFixed(1) ?? 0} variant="avg"      />
-      </div>
+      <div className="app-body">
 
-      {/* ══════════════════ CONTENT AREA ══════════════════ */}
-      <div className="content-area">
-
-        {/* Left panel — scrollable tab content */}
-        <main className="left-panel">
-          {visiblePanel}
-        </main>
-
-        {/* Right panel — slides in when a user is selected */}
-        {selectedUser && (
-          <aside className="right-panel slide-in-right">
-            <UserCard
-              user={selectedUser}
-              onClose={() => setSelectedUser(null)}
-              onInvestigate={(u) => {
-                setSelectedUser(u)
-                setActiveTab('investigate')
-              }}
-            />
-            <NarrativePanel  user={selectedUser} />
-            <BreachImpactPanel user={selectedUser} />
-            <FeedbackButtons user={selectedUser} />
-            <div style={{ paddingTop: 4, textAlign: 'center', fontSize: 10, color: 'var(--text-muted)' }}>
-              ISPAD v2 · Enterprise Identity Risk Platform
+        {/* ══════════════════ SIDEBAR ══════════════════ */}
+        <nav className="sidebar" aria-label="Primary">
+          {NAV_GROUPS.map(g => (
+            <div className="side-group" key={g.label}>
+              <div className="side-label">{g.label}</div>
+              {g.items.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  className={`side-item${activeTab === id ? ' active' : ''}`}
+                  onClick={() => setActiveTab(id)}
+                  title={label}
+                  aria-current={activeTab === id ? 'page' : undefined}
+                >
+                  <Icon size={16} />
+                  <span>{label}</span>
+                </button>
+              ))}
             </div>
-          </aside>
-        )}
+          ))}
+
+          <div className="side-footer">
+            <div className="side-footer-title">Workspace snapshot</div>
+            <div className="side-footer-row"><span>Identities</span><b>{stats.total_users ?? 0}</b></div>
+            <div className="side-footer-row"><span>Critical</span><b className="crit">{stats.critical_count ?? 0}</b></div>
+            <div className="side-footer-row"><span>To review</span><b>{stats.review_count ?? 0}</b></div>
+          </div>
+        </nav>
+
+        {/* ══════════════════ WORKSPACE ══════════════════ */}
+        <div className="workspace">
+          <div className="page-head">
+            <div className="page-title">
+              <h1 className="display">{activeItem?.label || 'Overview'}</h1>
+              {activeItem?.hint && <p>{activeItem.hint}</p>}
+            </div>
+            <div className="kpis">
+              <StatCard label="Total users"   value={stats.total_users}                    variant="total"    />
+              <StatCard label="Critical"      value={stats.critical_count}                  variant="critical" />
+              <StatCard label="High"          value={stats.high_count}                      variant="high"     />
+              <StatCard label="To review"     value={stats.review_count}                    variant="review"   />
+              <StatCard label="Avg score"     value={stats.avg_risk_score?.toFixed(1) ?? 0} variant="avg"      />
+            </div>
+          </div>
+
+          <div className="content-area">
+            <main className="left-panel">
+              {visiblePanel}
+            </main>
+
+            {selectedUser && (
+              <aside className="right-panel slide-in-right">
+                <div className="inspector-tabs" role="tablist">
+                  {INSPECTOR_TABS.map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      role="tab"
+                      aria-selected={inspectorTab === id}
+                      className={`inspector-tab${inspectorTab === id ? ' active' : ''}`}
+                      onClick={() => setInspectorTab(id)}
+                    >
+                      <Icon size={13} /> {label}
+                    </button>
+                  ))}
+                </div>
+                <div className="inspector-body">
+                  {/* All pages stay mounted so streaming narratives survive tab switches */}
+                  <div className="inspector-page" hidden={inspectorTab !== 'profile'}>
+                    <UserCard
+                      user={selectedUser}
+                      onClose={() => setSelectedUser(null)}
+                      onInvestigate={(u) => {
+                        setSelectedUser(u)
+                        setActiveTab('investigate')
+                      }}
+                    />
+                    <FeedbackButtons user={selectedUser} onChanged={onFeedbackChanged} />
+                  </div>
+                  <div className="inspector-page flush" hidden={inspectorTab !== 'narrative'}>
+                    <NarrativePanel user={selectedUser} />
+                  </div>
+                  <div className="inspector-page" hidden={inspectorTab !== 'impact'}>
+                    <BreachImpactPanel user={selectedUser} />
+                  </div>
+                </div>
+                <div className="inspector-foot">Kavach v2 · Enterprise Identity Risk Platform</div>
+              </aside>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -322,7 +378,7 @@ function LLMPill({ label, ok, role }) {
   return (
     <div title={role} className={`llm-pill${ok ? ' online' : ''}`}>
       <Cpu size={10} />
-      {label}
+      <span className="llm-pill-text">{label}</span>
       <span className={`llm-pill-dot${ok ? ' pulse-dot' : ''}`} />
     </div>
   )

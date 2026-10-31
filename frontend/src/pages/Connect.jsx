@@ -77,7 +77,7 @@ export default function Connect({ onNext, sources, setSources }) {
             onClick={onNext}
             className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
               sources.length > 0
-                ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-500/20 cursor-pointer'
+                ? 'bg-cyan-500 hover:bg-cyan-400 text-onaccent shadow-lg shadow-cyan-500/20 cursor-pointer'
                 : 'bg-slate-800 text-slate-500 cursor-not-allowed'
             }`}
           >
@@ -156,7 +156,7 @@ export default function Connect({ onNext, sources, setSources }) {
             <button
               type="submit"
               disabled={uploading}
-              className="px-4 py-1.5 rounded text-xs font-semibold bg-cyan-500 text-slate-950 hover:bg-cyan-400"
+              className="px-4 py-1.5 rounded text-xs font-semibold bg-cyan-500 text-onaccent hover:bg-cyan-400"
             >
               Connect & Profile
             </button>

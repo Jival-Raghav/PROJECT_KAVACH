@@ -155,7 +155,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
             <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>
               Adversarial Case Investigation & Remediation Co-Pilot
             </h2>
-            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-border)', fontWeight: 600 }}>
+            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'var(--accent-subtle)', color: 'var(--accent-ink)', border: '1px solid var(--accent-border)', fontWeight: 600 }}>
               3-PASS ADVERSARIAL
             </span>
           </div>
@@ -322,7 +322,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)' }}>
+                        <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-ink)' }}>
                           {claim.claim_id.toUpperCase()}
                         </span>
                         <span style={{ fontSize: 10, textTransform: 'uppercase', padding: '1px 6px', borderRadius: 3, background: 'var(--surface-high)', color: 'var(--text-secondary)' }}>
@@ -371,7 +371,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
                     Pass 2: Devil's Advocate Rebuttal ({caseData.rebuttals?.length || 0} Evaluations)
                   </span>
                 </div>
-                <span style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600 }}>Evidence-Grounded Defense</span>
+                <span style={{ fontSize: 10, color: 'var(--accent-ink)', fontWeight: 600 }}>Evidence-Grounded Defense</span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -423,7 +423,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
                                 style={{
                                   background: 'var(--accent-subtle)',
                                   border: '1px solid var(--accent-border)',
-                                  color: 'var(--accent)',
+                                  color: 'var(--accent-ink)',
                                   fontSize: 10,
                                   fontWeight: 600,
                                   padding: '2px 8px',
@@ -544,7 +544,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
                       }}>
                         {step.action}
                       </span>
-                      <span className="mono" style={{ fontSize: 11, color: 'var(--accent)' }}>
+                      <span className="mono" style={{ fontSize: 11, color: 'var(--accent-ink)' }}>
                         {step.target}
                       </span>
                     </div>
@@ -576,7 +576,7 @@ export default function CaseDetail({ currentUserId = 'USR00173', onSelectUser })
           <div className="card" style={{ maxWidth: 640, width: '100%', padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: 10 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 700 }}>
+                <div style={{ fontSize: 11, color: 'var(--accent-ink)', textTransform: 'uppercase', fontWeight: 700 }}>
                   Tool Evidence Dossier
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginTop: 2 }}>

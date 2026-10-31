@@ -304,7 +304,7 @@ export default function UnifiedSchemaView({ onBack, onRunComplete, sources }) {
           </button>
           <button
             onClick={handleConfirmAndRun}
-            className="px-4 py-2 rounded-lg text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+            className="px-4 py-2 rounded-lg text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-onaccent shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
           >
             <Play className="w-4 h-4 fill-current" />
             Confirm & Run
@@ -512,7 +512,7 @@ export default function UnifiedSchemaView({ onBack, onRunComplete, sources }) {
               <button
                 onClick={handleDescribeInWords}
                 disabled={aiLoading}
-                className="px-4 py-1.5 rounded text-xs font-semibold bg-cyan-500 text-slate-950 hover:bg-cyan-400 flex items-center gap-1.5"
+                className="px-4 py-1.5 rounded text-xs font-semibold bg-cyan-500 text-onaccent hover:bg-cyan-400 flex items-center gap-1.5"
               >
                 {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                 Generate Expression
@@ -530,7 +530,7 @@ export default function UnifiedSchemaView({ onBack, onRunComplete, sources }) {
                 <div className="flex justify-end gap-2 pt-2">
                   <button
                     onClick={acceptAiProposal}
-                    className="px-3 py-1 rounded text-xs font-semibold bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                    className="px-3 py-1 rounded text-xs font-semibold bg-emerald-500 text-onaccent hover:bg-emerald-400"
                   >
                     Accept & Add to Schema
                   </button>
@@ -579,7 +579,7 @@ export default function UnifiedSchemaView({ onBack, onRunComplete, sources }) {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={handleAddManualDerived}
-                className="px-4 py-1.5 rounded text-xs font-semibold bg-cyan-500 text-slate-950 hover:bg-cyan-400"
+                className="px-4 py-1.5 rounded text-xs font-semibold bg-cyan-500 text-onaccent hover:bg-cyan-400"
               >
                 Save Field
               </button>

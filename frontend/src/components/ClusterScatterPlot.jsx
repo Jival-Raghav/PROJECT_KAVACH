@@ -46,7 +46,7 @@ function UserPopup({ user, x, y, containerW, onClose, onInspect }) {
   const flip = x > containerW - 220
   const left = flip ? x - 210 : x + 14
 
-  const color = CLUSTER_COLORS[user.cluster_label] ?? '#94a3b8'
+  const color = CLUSTER_COLORS[user.cluster_label] ?? 'var(--text-secondary)'
 
   return (
     <div
@@ -227,7 +227,7 @@ export default function ClusterScatterPlot({ users, onSelectUser }) {
         .attr('x', W / 2)
         .attr('y', H + 38)
         .attr('text-anchor', 'middle')
-        .attr('fill', '#64748b')
+        .attr('fill', 'var(--text-muted)')
         .attr('font-size', '11px')
         .text('After-Hours Activity →')
 
@@ -236,7 +236,7 @@ export default function ClusterScatterPlot({ users, onSelectUser }) {
         .attr('x', -H / 2)
         .attr('y', -40)
         .attr('text-anchor', 'middle')
-        .attr('fill', '#64748b')
+        .attr('fill', 'var(--text-muted)')
         .attr('font-size', '11px')
         .text('← Risk Score')
 
@@ -249,9 +249,9 @@ export default function ClusterScatterPlot({ users, onSelectUser }) {
         .attr('cx', d => xScale(d.after_hours_ratio ?? 0) + d._jitter)
         .attr('cy', d => yScale(d.risk_score ?? 0))
         .attr('r',  d => baseRadius(d, activeCluster))
-        .attr('fill',         d => CLUSTER_COLORS[d.cluster_label] ?? '#94a3b8')
+        .attr('fill',         d => CLUSTER_COLORS[d.cluster_label] ?? 'var(--text-secondary)')
         .attr('fill-opacity', d => activeCluster === null || d.cluster_label === activeCluster ? 0.75 : 0.08)
-        .attr('stroke',       d => CLUSTER_COLORS[d.cluster_label] ?? '#94a3b8')
+        .attr('stroke',       d => CLUSTER_COLORS[d.cluster_label] ?? 'var(--text-secondary)')
         .attr('stroke-width', 1)
         .attr('stroke-opacity', d => activeCluster === null || d.cluster_label === activeCluster ? 1 : 0.05)
         .style('cursor', 'pointer')
@@ -335,7 +335,7 @@ export default function ClusterScatterPlot({ users, onSelectUser }) {
       {/* Interactive cluster legend */}
       <div className="flex flex-wrap gap-2">
         {presentClusters.map(label => {
-          const color   = CLUSTER_COLORS[label] ?? '#94a3b8'
+          const color   = CLUSTER_COLORS[label] ?? 'var(--text-secondary)'
           const isActive = activeCluster === label
           return (
             <button

@@ -152,7 +152,7 @@ export default function Mapping({ onBack, onNext, sources }) {
           </button>
           <button
             onClick={handleSaveAndContinue}
-            className="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+            className="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-onaccent shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
           >
             Review Unified Schema
             <ArrowRight className="w-4 h-4" />

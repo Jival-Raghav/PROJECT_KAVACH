@@ -140,7 +140,7 @@ export default function AISecurity() {
 
         <div className="card" style={{ padding: '12px 14px' }}>
           <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Threat Interception Rate</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--accent)', marginTop: 4 }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--accent-ink)', marginTop: 4 }}>
             {redteamData ? `${redteamData.detection_rate}%` : '100%'}
           </div>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -257,7 +257,7 @@ export default function AISecurity() {
               value={sampleText}
               onChange={e => setSampleText(e.target.value)}
               style={{
-                width: '100%', background: '#090D16', border: '1px solid var(--border)',
+                width: '100%', background: 'var(--bg-deep)', border: '1px solid var(--border)',
                 borderRadius: 4, padding: 10, fontSize: 12, color: '#38BDF8',
                 fontFamily: 'monospace', resize: 'vertical'
               }}
@@ -309,7 +309,7 @@ export default function AISecurity() {
                     Sanitized &amp; Redacted Prompt Data:
                   </div>
                   <pre className="mono" style={{
-                    margin: 0, padding: 10, borderRadius: 4, background: '#090D16',
+                    margin: 0, padding: 10, borderRadius: 4, background: 'var(--bg-deep)',
                     border: '1px solid var(--border)', fontSize: 11, color: '#10B981',
                     whiteSpace: 'pre-wrap', wordBreak: 'break-word'
                   }}>
@@ -338,7 +338,7 @@ export default function AISecurity() {
             <tbody>
               {nhiData?.records?.map(rec => (
                 <tr key={rec.account_id}>
-                  <td className="mono" style={{ fontWeight: 600, color: 'var(--accent)' }}>
+                  <td className="mono" style={{ fontWeight: 600, color: 'var(--accent-ink)' }}>
                     {rec.account_id}
                   </td>
                   <td>
