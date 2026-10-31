@@ -36,7 +36,8 @@ def _incident_json(inc: Incident, con_graph, assets) -> dict:
         d_json["first_seen"], d_json["last_seen"] = format_ts(d.first_seen), format_ts(d.last_seen)
     data["detection_count"] = len(inc.detections)
     data["timeline"] = [s.model_dump() for s in timeline]
-    data["path"] = build_path(inc, firewall_ip=assets.get("firewall_mgmt_ip", "")).model_dump()
+    data["path"] = build_path(inc, firewall_ip=assets.get("firewall_mgmt_ip", ""),
+                              assets=assets).model_dump()
     data["reach"] = reach.model_dump()
     data["report"] = render_report(inc, timeline, reach, use_llm=False)
     return data

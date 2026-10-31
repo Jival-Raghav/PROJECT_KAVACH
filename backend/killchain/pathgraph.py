@@ -6,6 +6,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from killchain.models import Detection, Incident
+from killchain.reach import segmenter
 
 DEVICE_TZ = "+05:30"  # FortiGate eventtime encodes the device's local wall clock
 _MAX_ACTORS = 50
@@ -46,27 +47,30 @@ def build_timeline(inc: Incident) -> list[TimelineStep]:
     return steps
 
 
-def _ip_node(ip: str, prefixes: tuple[str, ...], firewall_ip: str) -> dict:
+def _ip_node(ip: str, prefixes: tuple[str, ...], firewall_ip: str, seg_fn=None) -> dict:
+    named = seg_fn(ip)["name"] if seg_fn and seg_fn(ip) else None
     if ip == firewall_ip:
         return {"id": f"firewall:{ip}", "label": f"Firewall {ip}", "kind": "firewall",
-                "segment": None}
+                "segment": named}
     if ip.startswith(prefixes):
-        seg = ".".join(ip.split(".")[:3]) + ".0/24"
+        seg = named or ".".join(ip.split(".")[:3]) + ".0/24"
         return {"id": f"host:{ip}", "label": ip, "kind": "host", "segment": seg}
     return {"id": f"external_ip:{ip}", "label": ip, "kind": "external_ip", "segment": None}
 
 
 def build_path(inc: Incident, firewall_ip: str = "10.10.99.1",
-               internal_prefixes: tuple[str, ...] = ("10.",)) -> PathGraph:
+               internal_prefixes: tuple[str, ...] = ("10.",),
+               assets: dict | None = None) -> PathGraph:
     nodes: dict[str, dict] = {}
     edges: list[dict] = []
+    seg_fn = segmenter(assets) if assets else None
 
     def node(n: dict) -> str:
         nodes.setdefault(n["id"], n)
         return n["id"]
 
     def ip(v: str) -> str:
-        return node(_ip_node(v, internal_prefixes, firewall_ip))
+        return node(_ip_node(v, internal_prefixes, firewall_ip, seg_fn))
 
     def user(v: str) -> str:
         return node({"id": f"user:{v}", "label": v, "kind": "user", "segment": None})

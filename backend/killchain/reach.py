@@ -50,7 +50,12 @@ def load_assets(path: Path | None = None) -> dict:
     return yaml.safe_load(Path(path).read_text(encoding="utf-8"))
 
 
-def _segmenter(assets: dict):
+def segmenter(assets: dict):
+    """Build an `ip -> segment dict | None` lookup from `config/assets.yaml`.
+
+    Shared with `pathgraph.build_path` so a host gets the same segment name (e.g. "DMZ
+    servers") everywhere it is drawn, not just in the blast-radius graph.
+    """
     nets = [(ipaddress.ip_network(s["cidr"]), s) for s in assets["segments"]]
 
     def seg(ip: str) -> dict | None:
@@ -77,7 +82,7 @@ def _internal_sql(col: str, assets: dict) -> str:
 
 
 def build_network_graph(con, assets: dict) -> nx.DiGraph:
-    seg = _segmenter(assets)
+    seg = segmenter(assets)
     src_in, dst_in = _internal_sql("srcip", assets), _internal_sql("dstip", assets)
     g = nx.DiGraph()
     g.add_node("system:firewall", node_type="system", label="Firewall", system_name="Firewall",

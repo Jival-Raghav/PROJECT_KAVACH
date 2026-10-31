@@ -60,6 +60,22 @@ def test_path_network_detection_links_hosts():
     assert host["segment"] == "10.10.20.0/24" and host["kind"] == "host"
 
 
+def test_path_uses_asset_segment_names_when_given():
+    """Same host must get the same segment name in the attack-path graph as in blast radius
+    (reach.build_network_graph), instead of a raw CIDR string."""
+    assets = {"firewall_mgmt_ip": "10.10.99.1",
+              "segments": [{"cidr": "10.10.20.0/24", "name": "DMZ servers", "sensitivity": "high"},
+                          {"cidr": "10.10.99.0/24", "name": "Management", "sensitivity": "crown"}]}
+    (inc,) = correlate([det("W:1", "T1190", 0, src_ip="1.1.1.1", dst_ip="10.10.20.20")])
+    g = build_path(inc, firewall_ip=assets["firewall_mgmt_ip"], assets=assets)
+    host = next(n for n in g.nodes if n["id"] == "host:10.10.20.20")
+    assert host["segment"] == "DMZ servers"
+
+    fw = build_path(_admin_chain(), firewall_ip=assets["firewall_mgmt_ip"], assets=assets)
+    firewall = next(n for n in fw.nodes if n["id"] == "firewall:10.10.99.1")
+    assert firewall["segment"] == "Management"
+
+
 def test_format_ts_is_device_local():
     inc = _scan()
     assert format_ts(inc.first_seen) == "2026-10-28T10:00:00+05:30"
