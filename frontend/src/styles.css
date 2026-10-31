@@ -1259,47 +1259,39 @@ button.rv-cite:hover { color: var(--on-accent); background: var(--accent); borde
    RESPONSE PLAN
    ══════════════════════════════════════════════════ */
 
-.rp-summary { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; }
-.rp-tile { display: flex; flex-direction: column; gap: 3px; min-width: 116px; padding: 13px 17px; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: border-color .15s ease, background .15s ease; }
-.rp-tile b { font-size: 23px; line-height: 1.1; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--tone, var(--text-primary)); }
-.rp-tile span { font-size: 11.5px; color: var(--text-muted); }
-.rp-tile.tone-plain b { color: var(--text-primary); }
-.rp-tile:hover { border-color: var(--tone, var(--border)); }
-.rp-tile.on { background: color-mix(in srgb, var(--tone, var(--accent)) 10%, var(--surface)); border-color: var(--tone, var(--accent)); }
-.rp-export { display: flex; align-items: center; margin-left: auto; }
-.rp-bulk { margin-left: auto; }
+.rp-summary { display: flex; flex-wrap: wrap; gap: 10px; }
+.rp-stat { flex: 1; min-width: 150px; padding: 13px 17px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.rp-stat b { display: block; margin-bottom: 2px; font-size: 23px; line-height: 1.1; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+.rp-stat span { font-size: 11.5px; color: var(--text-muted); }
 .rp-pill-n { margin-left: 5px; opacity: .6; font-variant-numeric: tabular-nums; }
 
 .rp-groups { display: flex; flex-direction: column; gap: 10px; }
 .rp-group { padding: 0; overflow: hidden; }
 .rp-group-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 13px 18px; text-align: left; background: none; border: 0; cursor: pointer; }
 .rp-group-head:hover { background: var(--surface-mid); }
-.rp-group-head h4 { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
-.rp-group-head .kc-muted { margin-left: auto; }
+.rp-group-head h4 { margin: 0; font-size: 13.5px; font-weight: 600; white-space: nowrap; color: var(--text-primary); }
+.rp-group-head .kc-muted { flex: 1; min-width: 0; margin-left: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rp-rows { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }
-.rp-row { display: flex; align-items: center; gap: 12px; padding: 11px 18px; border-bottom: 1px solid var(--border-subtle); }
+.rp-row { border-bottom: 1px solid var(--border-subtle); }
 .rp-row:last-child { border-bottom: 0; }
-.rp-row:hover { background: var(--surface-mid); }
-.rp-row.status-rejected { opacity: .5; }
+.rp-row-top { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 18px; text-align: left; background: none; border: 0; cursor: pointer; }
+.rp-row-top:hover { background: var(--surface-mid); }
 .rp-row-icon { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; color: var(--tone, var(--text-muted)); background: color-mix(in srgb, var(--tone, var(--text-muted)) 12%, transparent); }
-.rp-row-main { flex: 1; min-width: 0; }
+.rp-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .rp-row-title { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
-.rp-row-why { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 4px; font-size: 12px; color: var(--text-muted); }
-.rp-exec { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; border-radius: 5px; color: var(--text-muted); background: var(--surface-high); }
+.rp-row-why { font-size: 12px; color: var(--text-muted); }
+.rp-exec { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; border-radius: 5px; color: var(--text-muted); background: var(--surface-high); }
 .rp-exec.auto { color: var(--accent-ink); background: var(--accent-subtle); }
+.rp-incs { flex: none; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; max-width: 190px; }
 .rp-inc { padding: 1px 7px; font-size: 11px; color: var(--text-secondary); background: var(--surface-high); border-radius: 5px; }
-.rp-status { flex: none; padding: 3px 11px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; border-radius: 999px; color: var(--tone, var(--text-muted)); background: color-mix(in srgb, var(--tone, var(--text-muted)) 13%, transparent); }
-.rp-row-actions { flex: none; display: flex; gap: 6px; }
-.rp-row-actions .btn-ghost { padding: 5px 11px; font-size: 12px; }
 
-.rp-script { padding: 16px 18px; }
-.rp-script-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-.rp-script-head h3 { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 14px; font-weight: 600; color: var(--text-primary); }
-.rp-script .rl-code { max-height: 340px; overflow-y: auto; }
-.rp-audit { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.rp-audit li { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 12px; }
-.rp-audit-actor { font-weight: 600; color: var(--text-secondary); }
-.rp-audit-id { color: var(--text-primary); }
+.rp-detail { padding: 4px 18px 18px 58px; }
+.rp-facts { display: flex; flex-direction: column; gap: 9px; margin: 0; }
+.rp-facts > div { display: flex; gap: 14px; align-items: baseline; }
+.rp-facts dt { flex: none; width: 118px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+.rp-facts dd { margin: 0; font-size: 13px; line-height: 1.55; color: var(--text-secondary); }
+.rp-check { display: flex; gap: 9px; align-items: flex-start; margin: 14px 0 0; padding: 11px 13px; font-size: 12.5px; line-height: 1.6; border-radius: 9px; color: var(--text-secondary); background: var(--c-review-bg); border: 1px solid var(--c-review-bd); }
+.rp-check svg { flex: none; margin-top: 2px; color: var(--c-review); }
 
 /* ══════════════════════════════════════════════════
    CONTROL FINDINGS

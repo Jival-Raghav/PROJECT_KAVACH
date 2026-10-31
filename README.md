@@ -115,7 +115,7 @@ All of these are context. **None can create an incident or change a risk score.*
 | Actors | Links IPs and accounts using successful logins, configuration changes and account creation. Failed logins never link anything. | `backend/killchain/actors.py` |
 | Accounts & LLM Safety | Audits accounts proven active in the log. Service and shared types are inferred from names. | `backend/killchain/accounts.py` |
 | Incident review | Prosecutor and Devil's Advocate argue from numbered evidence. Uses a live LLM, then the saved answer, then a built-in template. | `backend/killchain/review.py` |
-| Response Plan | Proposed actions, approvals, an audit trail and a dry-run script. **Kavach never changes the firewall.** | `backend/killchain/response.py` |
+| Response Plan | Proposed actions per incident, grouped by kind, each explained. Read-only: **Kavach never changes the firewall** and the UI carries nothing out. The approval, audit and dry-run-script endpoints still exist in the API. | `backend/killchain/response.py` |
 | Control Findings | Nine controls marked as gap, attempted or no failure seen. The standards mapping is ours and is not an audit. | `config/firewall_controls.yaml` |
 
 The review verdict is computed by a fixed rule, so log text and LLM answers cannot change it. It lowers
