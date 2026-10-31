@@ -64,10 +64,11 @@ function build3DGraph(reach, groups) {
     const basis = BASIS[g.basis]
     nodes.push({ id: g.id, col: 1, size: 5, title: g.segment, tone: SENS_TONE[sens] || 'plain' })
     edges.push({ id: `edge:${g.id}`, source: HUB, target: g.id, tone: basis?.tone, dashed: !basis?.proven })
+    const dense = g.targets.length > 8 // a handful stay lively; a whole segment just reads as a burst
     g.targets.slice(0, MAX_3D_PER_GROUP).forEach(t => {
       const id = `target:${g.id}|${t.node}`
       nodes.push({ id, col: 2, size: 2, title: t.label, tone: SENS_TONE[t.sensitivity] || 'plain', showLabel: false })
-      edges.push({ id: `edge:${id}`, source: g.id, target: id, tone: basis?.tone, dashed: !basis?.proven })
+      edges.push({ id: `edge:${id}`, source: g.id, target: id, tone: basis?.tone, dashed: !basis?.proven, particles: !dense })
     })
     const more = g.targets.length - MAX_3D_PER_GROUP
     if (more > 0) {

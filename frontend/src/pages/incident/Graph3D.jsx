@@ -75,8 +75,8 @@ export default function Graph3D({ nodes, edges, selected, onSelect, ariaLabel, p
       .nodeOpacity(1)
       .enableNodeDrag(false)
       .nodeThreeObjectExtend(false)
-      .linkCurvature(0.18)
-      .linkOpacity(0.5)
+      .linkCurvature(physics ? 0.03 : 0.18)
+      .linkOpacity(physics ? 0.38 : 0.5)
       .linkDirectionalParticleWidth(1.6)
       .linkDirectionalParticleSpeed(l => (l.tone === 'bad' ? 0.012 : 0.006))
       .onBackgroundClick(() => onSelect(null))
@@ -84,7 +84,7 @@ export default function Graph3D({ nodes, edges, selected, onSelect, ariaLabel, p
       .onLinkHover(l => { hoverRef.current.link = l?.id ?? null; applyHighlight() })
       .onNodeClick(n => {
         onSelect(n.id)
-        const d = 90
+        const d = 140
         const r = 1 + d / Math.hypot(n.x || 1, n.y || 1, n.z || 1)
         fg.cameraPosition({ x: (n.x || 0) * r, y: (n.y || 0) * r, z: (n.z || 0) * r }, n, 700)
       })
@@ -183,11 +183,13 @@ export default function Graph3D({ nodes, edges, selected, onSelect, ariaLabel, p
     })
     fg.linkWidth(l => {
       const on = l.id === hoverLinkId || l.id === selectedRef.current
-      return on ? 2.6 : 1.1
+      return on ? 2.6 : (physics ? 0.55 : 1.1)
     })
     fg.linkDirectionalParticles(l => {
-      if (l.dashed && l.tone !== 'bad') return anyActive && !(active.has(l.source?.id ?? l.source) && active.has(l.target?.id ?? l.target)) ? 0 : 2
-      return anyActive && !(active.has(l.source?.id ?? l.source) && active.has(l.target?.id ?? l.target)) ? 0 : 4
+      if (l.particles === false) return 0 // a dense burst of identical edges: motion there is noise, not signal
+      const within = active.has(l.source?.id ?? l.source) && active.has(l.target?.id ?? l.target)
+      if (l.dashed && l.tone !== 'bad') return anyActive && !within ? 0 : 2
+      return anyActive && !within ? 0 : 4
     })
   }
 
@@ -239,9 +241,9 @@ export default function Graph3D({ nodes, edges, selected, onSelect, ariaLabel, p
       group.add(glow, core)
       let label = null
       if (n.showLabel !== false) {
-        label = new SpriteText(n.title, r * 0.85, palette.text)
+        label = new SpriteText(n.title, r * 0.58, palette.text)
         label.fontWeight = '600'
-        label.position.set(0, -(r + 9), 0)
+        label.position.set(0, -(r * 1.8 + 8), 0)
         label.backgroundColor = false
         group.add(label)
       }
