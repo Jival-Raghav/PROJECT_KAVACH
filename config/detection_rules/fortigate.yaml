@@ -80,7 +80,7 @@ rules:
     group_by: [srcip, "regexp_extract(hostname, '([^.]+\\.[^.]+)$', 1)"]
     window_minutes: 30
     min_count: 50
-    entities: {src_ip: srcip, dst_ip: dstip, domain: "regexp_extract(hostname, '([^.]+\\.[^.]+)$', 1)"}
+    entities: {src_ip: srcip, domain: "regexp_extract(hostname, '([^.]+\\.[^.]+)$', 1)"}
 
   - id: KC-C2-003
     title: Periodic beaconing to one external host
