@@ -86,6 +86,12 @@ def _fixture(rule_id: str) -> list[str]:
     if rule_id == "KC-ID-004":
         return [_sys(at(0), logdesc="Admin login successful", user="newadmin", srcip="5.5.5.5",
                      srccountry="Brazil", status="success", action="login")]
+    if rule_id == "KC-ID-005":
+        base = [fg_line(at(i), type="event", subtype="vpn", action="ssl-login", user="ops",
+                        srcip="4.4.4.4", srccountry="Japan") for i in range(150)]
+        return base + [_sys(at(200), logdesc="Admin login successful", user="ops",
+                            srcip="5.5.5.5", srccountry="Japan", status="success",
+                            action="login")]
     if rule_id == "KC-ID-002":
         base = [fg_line(at(i), type="event", subtype="vpn", action="ssl-login", user="u1",
                         srcip="4.4.4.4", srccountry="Japan") for i in range(150)]
@@ -114,7 +120,7 @@ def _fixture(rule_id: str) -> list[str]:
 
 RULE_IDS = ["KC-RECON-001", "KC-RECON-002", "KC-WEB-001", "KC-WEB-002", "KC-C2-001",
             "KC-C2-002", "KC-C2-003", "KC-MAL-001", "KC-MAL-002", "KC-EXF-001", "KC-LAT-001", "KC-LAT-002",
-            "KC-ID-001", "KC-ID-002", "KC-ID-003", "KC-ID-004", "KC-PER-001", "KC-PER-002", "KC-DEF-001",
+            "KC-ID-001", "KC-ID-002", "KC-ID-003", "KC-ID-004", "KC-ID-005", "KC-PER-001", "KC-PER-002", "KC-DEF-001",
             "KC-DEF-002"]
 
 
@@ -185,6 +191,27 @@ def test_readme_example_rule_loads(tmp_path):
     (d / "x.yaml").write_text("rules:\n" + block, encoding="utf-8")
     (rule,) = load_rules(d)
     assert rule.id == "KC-CUSTOM-001"
+
+
+def _admin_login_rules(tmp_path, srcip, country):
+    base = [fg_line(at(i), type="event", subtype="vpn", action="ssl-login", user="ops",
+                    srcip="4.4.4.4", srccountry="Japan") for i in range(150)]
+    login = _sys(at(200), logdesc="Admin login successful", user="ops", srcip=srcip,
+                 srccountry=country, status="success", action="login")
+    con = open_events(ingest_lines(tmp_path, [*base, login]))
+    return {d.rule_id for d in run_rules(con, load_rules(RULES_DIR))}
+
+
+def test_admin_login_from_known_ip_stays_quiet(tmp_path):
+    assert _admin_login_rules(tmp_path, "4.4.4.4", "Japan") == set()
+
+
+def test_admin_login_from_new_ip_in_usual_country_fires_once(tmp_path):
+    assert _admin_login_rules(tmp_path, "5.5.5.5", "Japan") == {"KC-ID-005"}
+
+
+def test_admin_login_from_rare_country_is_not_counted_twice(tmp_path):
+    assert _admin_login_rules(tmp_path, "5.5.5.5", "Brazil") == {"KC-ID-001"}
 
 
 def test_new_admin_account_is_not_called_unusual_country(tmp_path):

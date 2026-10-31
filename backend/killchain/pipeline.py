@@ -59,7 +59,8 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
         seconds["ingest"] = float(old.get("seconds", {}).get("ingest", 0.0))
     else:
         say("ingest")
-        ingest = ingest_log(Path(log_path), run_dir).model_dump()
+        ingest = ingest_log(Path(log_path), run_dir,
+                            workers=get_settings().KILLCHAIN_INGEST_WORKERS).model_dump()
         seconds["ingest"] = round(time.perf_counter() - t, 2)
 
     say("detect")

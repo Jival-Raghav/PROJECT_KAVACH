@@ -24,6 +24,7 @@ router = APIRouter(prefix="/api", tags=["Kill Chain"])
 
 # run_id becomes a directory name and part of DuckDB file paths: allow-list it.
 RunId = Annotated[str, Query(pattern=r"^[A-Za-z0-9_-]{1,64}$")]
+DEFAULT_RUN = get_settings().KILLCHAIN_RUN_ID
 
 _SUMMARY_KEYS = ("incident_id", "title", "risk_score", "severity", "first_seen", "last_seen",
                  "tactics", "stages", "raw_alert_count", "detection_count", "entities")
@@ -43,7 +44,7 @@ def _incident(incident_id: int, run_id: str) -> dict:
 
 
 @router.get("/incidents")
-def list_incidents(run_id: RunId = "firex", limit: int = Query(100, ge=1, le=1000),
+def list_incidents(run_id: RunId = DEFAULT_RUN, limit: int = Query(100, ge=1, le=1000),
                    min_risk: float = 0.0) -> list[dict]:
     rows = [{k: inc.get(k) for k in _SUMMARY_KEYS} for inc in load_run(_run_dir(run_id)).values()
             if inc.get("risk_score", 0) >= min_risk]
@@ -52,24 +53,24 @@ def list_incidents(run_id: RunId = "firex", limit: int = Query(100, ge=1, le=100
 
 
 @router.get("/incidents/{incident_id}")
-def get_incident(incident_id: int, run_id: RunId = "firex") -> dict:
+def get_incident(incident_id: int, run_id: RunId = DEFAULT_RUN) -> dict:
     return _incident(incident_id, run_id)
 
 
 @router.get("/incidents/{incident_id}/path")
-def get_incident_path(incident_id: int, run_id: RunId = "firex") -> dict:
+def get_incident_path(incident_id: int, run_id: RunId = DEFAULT_RUN) -> dict:
     inc = _incident(incident_id, run_id)
     return {"incident_id": incident_id, "title": inc["title"], "timeline": inc["timeline"],
             "path": inc["path"]}
 
 
 @router.get("/incidents/{incident_id}/next")
-def get_incident_next(incident_id: int, run_id: RunId = "firex") -> dict:
+def get_incident_next(incident_id: int, run_id: RunId = DEFAULT_RUN) -> dict:
     return _incident(incident_id, run_id)["reach"]
 
 
 @router.get("/incidents/{incident_id}/report")
-def get_incident_report(incident_id: int, run_id: RunId = "firex", llm: bool = False) -> dict:
+def get_incident_report(incident_id: int, run_id: RunId = DEFAULT_RUN, llm: bool = False) -> dict:
     inc = _incident(incident_id, run_id)
     if not llm:
         return inc["report"]
@@ -79,7 +80,7 @@ def get_incident_report(incident_id: int, run_id: RunId = "firex", llm: bool = F
 
 
 @router.get("/incidents/{incident_id}/review")
-def get_incident_review(incident_id: int, run_id: RunId = "firex", llm: bool = False) -> dict:
+def get_incident_review(incident_id: int, run_id: RunId = DEFAULT_RUN, llm: bool = False) -> dict:
     inc = _incident(incident_id, run_id)
     return build_review(inc, _run_dir(run_id), use_llm=True) if llm else inc["review"]
 
@@ -91,12 +92,12 @@ class ResponseTransition(BaseModel):
 
 
 @router.get("/response/actions")
-def get_response_actions(run_id: RunId = "firex") -> list[dict]:
+def get_response_actions(run_id: RunId = DEFAULT_RUN) -> list[dict]:
     return response.all_actions(load_run(_run_dir(run_id)), _run_dir(run_id))
 
 
 @router.post("/response/transition")
-def post_response_transition(body: ResponseTransition, run_id: RunId = "firex") -> dict:
+def post_response_transition(body: ResponseTransition, run_id: RunId = DEFAULT_RUN) -> dict:
     run_dir = _run_dir(run_id)
     known = {a["action_id"] for a in response.all_actions(load_run(run_dir), run_dir)}
     try:
@@ -109,23 +110,23 @@ def post_response_transition(body: ResponseTransition, run_id: RunId = "firex") 
 
 
 @router.post("/response/export", response_class=PlainTextResponse)
-def post_response_export(run_id: RunId = "firex") -> str:
+def post_response_export(run_id: RunId = DEFAULT_RUN) -> str:
     return response.export_script(load_run(_run_dir(run_id)), _run_dir(run_id))
 
 
 @router.get("/response/audit")
-def get_response_audit(run_id: RunId = "firex") -> list[dict]:
+def get_response_audit(run_id: RunId = DEFAULT_RUN) -> list[dict]:
     return response.read_audit(_run_dir(run_id))
 
 
 @router.get("/killchain/compliance")
-def get_compliance(run_id: RunId = "firex") -> dict:
+def get_compliance(run_id: RunId = DEFAULT_RUN) -> dict:
     controls = load_controls(Path(get_settings().KILLCHAIN_CONTROLS_PATH))
     return evaluate_controls(load_run(_run_dir(run_id)), controls)
 
 
 @router.get("/anomalies")
-def list_anomalies(run_id: RunId = "firex", limit: int = Query(50, ge=1, le=500),
+def list_anomalies(run_id: RunId = DEFAULT_RUN, limit: int = Query(50, ge=1, le=500),
                    offset: int = Query(0, ge=0), kind: str = "", q: str = "",
                    notable_only: bool = True) -> dict:
     rows = load_anomalies(_run_dir(run_id))
@@ -143,12 +144,12 @@ def list_anomalies(run_id: RunId = "firex", limit: int = Query(50, ge=1, le=500)
 
 
 @router.get("/accounts")
-def list_accounts(run_id: RunId = "firex") -> list[dict]:
+def list_accounts(run_id: RunId = DEFAULT_RUN) -> list[dict]:
     return load_accounts(_run_dir(run_id))
 
 
 @router.get("/killchain/llm-safety")
-def get_llm_safety(run_id: RunId = "firex") -> dict:
+def get_llm_safety(run_id: RunId = DEFAULT_RUN) -> dict:
     incidents = load_run(_run_dir(run_id)).values()
     flagged = [{"incident_id": i["incident_id"], "evidence": i["review"]["injection_flags"]}
                for i in incidents if i.get("review", {}).get("injection_flags")]
@@ -158,7 +159,7 @@ def get_llm_safety(run_id: RunId = "firex") -> dict:
 
 
 @router.get("/actors")
-def list_actors(run_id: RunId = "firex") -> list[dict]:
+def list_actors(run_id: RunId = DEFAULT_RUN) -> list[dict]:
     return load_actors(_run_dir(run_id))
 
 
@@ -170,7 +171,7 @@ def get_rules() -> list[dict]:
 
 
 @router.get("/killchain/status")
-def get_status(run_id: RunId = "firex") -> dict:
+def get_status(run_id: RunId = DEFAULT_RUN) -> dict:
     meta = load_meta(_run_dir(run_id))
     status = _state["status"]
     if status == "idle" and meta:
@@ -179,7 +180,7 @@ def get_status(run_id: RunId = "firex") -> dict:
 
 
 @router.post("/killchain/run")
-def start_run(run_id: RunId = "firex", skip_ingest: bool = True) -> dict:
+def start_run(run_id: RunId = DEFAULT_RUN, skip_ingest: bool = True) -> dict:
     with _lock:
         if _state["status"] == "running":
             raise HTTPException(status_code=409, detail="A kill-chain run is already in progress")

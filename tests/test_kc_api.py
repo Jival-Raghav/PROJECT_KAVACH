@@ -19,7 +19,7 @@ def client(tmp_path, monkeypatch):
     clear_cache()
     app = FastAPI()
     app.include_router(router)
-    return TestClient(app), tmp_path / "kc" / "runs" / "firex"
+    return TestClient(app), tmp_path / "kc" / "runs" / get_settings().KILLCHAIN_RUN_ID
 
 
 def _populate(run_dir, tmp_path):

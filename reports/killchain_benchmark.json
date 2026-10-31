@@ -14,10 +14,10 @@
   "false_alarms": 0,
   "steps_total": 28,
   "steps_found": 28,
-  "processing_seconds": 272.97,
-  "peak_memory_mb": 1800.5,
-  "cold_open_ms": 5.62,
-  "p95_open_ms": 0.019,
+  "processing_seconds": 66.72,
+  "peak_memory_mb": 3174.1,
+  "cold_open_ms": 5.4,
+  "p95_open_ms": 0.018,
   "per_step": [
    {
     "step": "GT-01-1",
@@ -551,16 +551,17 @@
   ]
  },
  "run_meta": {
-  "generated_at": "2026-10-31T12:01:36+00:00",
+  "generated_at": "2026-10-31T20:26:02+00:00",
   "log_path": "C:\\Users\\jival\\Desktop\\jival\\mitigata\\firex-10G.log",
   "ingest": {
    "lines_read": 15848040,
    "lines_parsed": 9125382,
    "lines_skipped": 6722658,
    "lines_stalled": 5277135,
-   "parts": 46,
-   "seconds": 255.53,
-   "peak_rss_mb": 768.2
+   "parts": 54,
+   "seconds": 48.43,
+   "peak_rss_mb": 3174.1,
+   "workers": 6
   },
   "clock_stalls": [
    {
@@ -571,16 +572,16 @@
    }
   ],
   "seconds": {
-   "ingest": 255.71,
-   "detect": 6.44,
+   "ingest": 48.44,
+   "detect": 8.24,
    "correlate": 0.0,
-   "enrich": 0.68,
-   "anomaly": 9.95,
+   "enrich": 0.47,
+   "anomaly": 9.38,
    "actors": 0.19
   },
-  "total_seconds": 272.97,
-  "peak_rss_mb": 1800.5,
-  "rule_count": 20,
+  "total_seconds": 66.72,
+  "peak_rss_mb": 3174.1,
+  "rule_count": 21,
   "detection_count": 29,
   "incident_count": 20,
   "anomaly_lead_count": 3724,

@@ -181,6 +181,22 @@ rules:
     fire_without_baseline: true
     entities: {src_ip: srcip, dst_ip: dstip, user: user, country: srccountry}
 
+  - id: KC-ID-005
+    title: Firewall admin login from an IP this account has never used
+    technique: T1078
+    severity: critical
+    kind: rare_for_entity
+    # Same country as the user's VPN history, so KC-ID-001 stays quiet, but a source IP with no VPN history.
+    where: >-
+      logdesc='Admin login successful' AND EXISTS (SELECT 1 FROM events v WHERE v.subtype='vpn'
+      AND v.user=events.user AND v.srccountry=events.srccountry)
+    baseline_where: "subtype='vpn' AND user IS NOT NULL"
+    key: user
+    value: srcip
+    max_share: 0.000001  # above zero, so only an IP with no history at all qualifies
+    fire_without_baseline: false  # an account with no history is KC-ID-004
+    entities: {src_ip: srcip, dst_ip: dstip, user: user, country: srccountry}
+
   - id: KC-ID-002
     title: VPN login from an unusual country
     technique: T1133
