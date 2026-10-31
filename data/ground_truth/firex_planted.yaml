@@ -1,0 +1,177 @@
+# Ground truth for REAL_10G_DATA/firex-10G.log (FortiGate FGT60FTK00000000, 2026-10-23..30 +0530).
+# No official labels were supplied with this file; these scenarios were recovered by a manual
+# hunt on 2026-10-31 (rare logids, rare field values, the `crscore` field that only planted
+# lines carry, and behavioural aggregates). Each step's `where` is a DuckDB SQL predicate over
+# the `events` view; `expected_count` is the number of log lines it must select.
+# `techniques` lists acceptable ATT&CK ids, primary first (strict label metric uses the first).
+dataset: firex-10G.log
+derived_by: manual hunt 2026-10-31 (see docs/superpowers/plans/2026-10-31-kavach-killchain.md)
+
+scenarios:
+  - id: GT-01
+    name: XSS probing of the DMZ web portal
+    steps:
+      - id: GT-01-1
+        techniques: [T1190]
+        where: "subtype='ips' AND srcip='178.50.251.250' AND dstip='10.10.20.20'"
+        expected_count: 60
+
+  - id: GT-02
+    name: Mirai botnet C2 fan-in from the IoT segment
+    steps:
+      - id: GT-02-1
+        techniques: [T1071]
+        where: "subtype='ips' AND dstip='154.35.54.115' AND srcip LIKE '10.10.40.%' AND service='telnet'"
+        expected_count: 60
+
+  - id: GT-03
+    name: Malware download burst (invoice_2026.pdf.exe)
+    steps:
+      - id: GT-03-1
+        techniques: [T1105, T1204.002, T1036.007]
+        where: "subtype='virus' AND srcip='10.10.10.51' AND dstip='111.253.167.34'"
+        expected_count: 12
+
+  - id: GT-04
+    name: Firewall admin login from an unusual country (parul.sinha)
+    steps:
+      - id: GT-04-1
+        techniques: [T1078]
+        where: "logdesc='Admin login successful' AND user='parul.sinha'"
+        expected_count: 1
+
+  - id: GT-05
+    name: DNS tunnelling to doqotobitum.com
+    steps:
+      - id: GT-05-1
+        techniques: [T1071.004, T1048.003]
+        where: "subtype='dns' AND srcip='10.10.10.88' AND hostname LIKE '%.doqotobitum.com'"
+        expected_count: 1500
+
+  - id: GT-06
+    name: SQL injection against the DMZ web server
+    steps:
+      - id: GT-06-1
+        techniques: [T1190]
+        where: "subtype='ips' AND srcip='131.228.119.59'"
+        expected_count: 220
+
+  - id: GT-07
+    name: Nemucod dropper detected but not blocked
+    steps:
+      - id: GT-07-1
+        techniques: [T1204.002, T1105]
+        where: "subtype='virus' AND action='detected' AND srcip='10.10.10.118'"
+        expected_count: 3
+
+  - id: GT-08
+    name: Low-and-slow exfiltration to one external host
+    steps:
+      - id: GT-08-1
+        techniques: [T1041, T1030, T1048]
+        where: "type='traffic' AND srcip='10.10.20.31' AND dstip='7.93.184.183'"
+        expected_count: 2000
+
+  - id: GT-09
+    name: Command injection against the DMZ web server
+    steps:
+      - id: GT-09-1
+        techniques: [T1190, T1059]
+        where: "subtype='ips' AND srcip='72.7.116.239'"
+        expected_count: 55
+
+  - id: GT-10
+    name: Webshell access on the DMZ web server
+    steps:
+      - id: GT-10-1
+        techniques: [T1505.003]
+        where: "subtype='webfilter' AND srcip='202.36.226.247'"
+        expected_count: 120
+
+  - id: GT-11
+    name: SMB fan-out from a LAN host to DMZ servers
+    steps:
+      - id: GT-11-1
+        techniques: [T1021.002]
+        where: "type='traffic' AND srcip='10.10.10.44' AND dstip LIKE '10.10.20.%' AND dstport=445"
+        expected_count: 2400
+
+  - id: GT-12
+    name: External port scan of the DMZ
+    steps:
+      - id: GT-12-1
+        techniques: [T1595, T1595.001, T1046]
+        where: "type='traffic' AND action='deny' AND srcip='194.102.163.167'"
+        expected_count: 1024
+
+  - id: GT-13
+    name: Firewall admin login from Russia (Deepika.Khan)
+    steps:
+      - id: GT-13-1
+        techniques: [T1078]
+        where: "logdesc='Admin login successful' AND user='Deepika.Khan'"
+        expected_count: 3
+
+  - id: GT-14
+    name: VPN impossible travel (keerat.ghughal)
+    steps:
+      - id: GT-14-1
+        techniques: [T1133, T1078]
+        where: "subtype='vpn' AND user='keerat.ghughal' AND srcip='9.222.114.167'"
+        expected_count: 2
+
+  - id: GT-15
+    name: Path traversal against the DMZ web server
+    steps:
+      - id: GT-15-1
+        techniques: [T1190, T1083]
+        where: "subtype='ips' AND srcip='72.90.113.105'"
+        expected_count: 80
+
+  - id: GT-16
+    name: SQL injection followed by webshell from one attacker
+    steps:
+      - id: GT-16-1
+        techniques: [T1190]
+        where: "subtype='ips' AND srcip='32.127.48.11'"
+        expected_count: 60
+      - id: GT-16-2
+        techniques: [T1505.003]
+        where: "subtype='webfilter' AND srcip='32.127.48.11'"
+        expected_count: 40
+
+  - id: GT-17
+    name: Rogue firewall admin svc_backup30 created, used, deleted
+    steps:
+      - id: GT-17-1
+        techniques: [T1136.001, T1098]
+        where: "logdesc='Object attribute configured' AND msg LIKE 'Add system.admin%' AND srcip='203.228.177.117'"
+        expected_count: 1
+      - id: GT-17-2
+        techniques: [T1078]
+        where: "logdesc='Admin login successful' AND user='svc_backup30'"
+        expected_count: 1
+      - id: GT-17-3
+        techniques: [T1070]
+        where: "logdesc='Object attribute configured' AND msg LIKE 'Delete system.admin%' AND srcip='203.228.177.117'"
+        expected_count: 1
+
+  - id: GT-18
+    name: Logging and firewall policy tampering (Tejas.Roy)
+    steps:
+      - id: GT-18-1
+        techniques: [T1562.001]
+        where: "logdesc='Attribute configured' AND user='Tejas.Roy' AND msg ILIKE '%log disk%'"
+        expected_count: 2
+      - id: GT-18-2
+        techniques: [T1562.004]
+        where: "logdesc='Attribute configured' AND user='Tejas.Roy' AND msg ILIKE '%firewall policy%purged%'"
+        expected_count: 1
+
+  - id: GT-19
+    name: SMB/RDP lateral sweep from a LAN host across DMZ servers
+    steps:
+      - id: GT-19-1
+        techniques: [T1021.002, T1021.001, T1021]
+        where: "type='traffic' AND srcip='10.10.10.63' AND dstip LIKE '10.10.20.%' AND dstport IN (445, 3389)"
+        expected_count: 180
