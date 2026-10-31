@@ -134,5 +134,8 @@ venv.bak/
 *.sw?
 
 # Project-specific ignores
-gemini_prompt.md.pdf
+Process/
+**/.vscode/
+**/.vscode/*
+
 
