@@ -1,1 +1,1 @@
-"""LLM helpers for the identity sprawl skeleton."""
+"""LLM provider clients."""

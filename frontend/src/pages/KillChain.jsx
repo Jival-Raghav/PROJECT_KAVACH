@@ -64,12 +64,14 @@ export default function KillChain() {
   const meta = status?.run_meta || {}
   const running = status?.status === 'running'
   const critical = incidents.filter(i => i.severity === 'critical').length
+  const stalled = (meta.clock_stalls || []).reduce((sum, s) => sum + s.lines, 0)
+  const analysed = (meta.ingest?.lines_parsed ?? 0) - stalled
 
   return (
     <div className="kc-page">
       <div className="kc-toolbar">
         <div className="kc-kpis">
-          <Kpi label="Events analysed" value={(meta.ingest?.lines_parsed ?? 0).toLocaleString()} />
+          <Kpi label="Events analysed" value={analysed.toLocaleString()} />
           <Kpi label="Raw alerts merged" value={(meta.raw_alerts_merged ?? 0).toLocaleString()} />
           <Kpi label="Incidents" value={incidents.length} />
           <Kpi label="Critical" value={critical} />
@@ -82,6 +84,15 @@ export default function KillChain() {
           </button>
         </div>
       </div>
+
+      {meta.ingest && (
+        <div className="card kc-note">
+          <b>What we found in the log:</b> {meta.ingest.lines_read.toLocaleString()} lines read.{' '}
+          {meta.ingest.lines_skipped.toLocaleString()} were unreadable and skipped.{' '}
+          {stalled.toLocaleString()} share one frozen timestamp, so they are counted but kept out of
+          detection. The remaining {analysed.toLocaleString()} events produced {incidents.length} incidents.
+        </div>
+      )}
 
       {error && <div className="kc-error"><AlertTriangle size={14} /> {error}</div>}
       {status?.status === 'error' && <div className="kc-error"><AlertTriangle size={14} /> {status.error}</div>}

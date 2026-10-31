@@ -210,14 +210,15 @@ def _detection(rule: Rule, row: dict) -> Detection:
     outcome = "blocked" if nb == n else "allowed" if nb == 0 else "mixed"
     entities = {role: [str(v) for v in (row.get(f"ent_{role}") or [])][:_MAX_ENTITY_VALUES]
                 for role in rule.entities}
-    who = ", ".join(v for v in gvals if v != "all")
+    who = ", ".join(dict.fromkeys(v for v in gvals if v != "all"))
     extra = f", {row['d']} distinct {rule.distinct.field}" if rule.distinct else ""
+    noun = "event" if n == 1 else "events"
     return Detection(
         detection_id=f"{rule.id}:{digest[:10]}", rule_id=rule.id, title=rule.title,
         technique=label(rule.technique), severity=rule.severity, first_seen=first,
         last_seen=last, event_count=n, sample_line_nos=list(row["lines"][:_SAMPLE_LINES]),
         entities={k: v for k, v in entities.items() if v}, outcome=outcome,
-        summary=f"{rule.title} ({who}): {n} events{extra}",
+        summary=f"{rule.title} ({who}): {n} {noun}{extra}",
     )
 
 

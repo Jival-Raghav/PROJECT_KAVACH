@@ -154,7 +154,7 @@ function Review({ incidentId, initial }) {
       )}
       <div className="kc-muted">
         Written by: {REVIEW_SOURCE[review.generated_by] || review.generated_by}
-        {review.note ? ` · ${review.note}` : ''}. The verdict is computed by a fixed rule, not by the LLM.
+        {review.note ? ` · ${review.note.replace(/\.$/, '')}` : ''}. The verdict is computed by a fixed rule, not by the LLM.
       </div>
     </section>
   )
@@ -204,7 +204,7 @@ export default function IncidentDetail({ incidentId, onBack }) {
                 <div className="kc-tl-time mono">{s.ts.replace('T', ' ').slice(0, 19)}</div>
                 <div className="kc-tl-body">
                   <div><span className="chip kc-chip mono">{s.technique_id}</span> <b>{s.technique_name}</b></div>
-                  <div className="kc-muted">{s.stage} · {s.tactic} · {s.event_count.toLocaleString()} events · {s.outcome}</div>
+                  <div className="kc-muted">{s.stage} · {s.tactic} · {s.event_count.toLocaleString()} {s.event_count === 1 ? 'event' : 'events'} · {s.outcome}</div>
                   <div className="kc-tl-desc">{s.description}</div>
                 </div>
               </li>
@@ -260,7 +260,7 @@ export default function IncidentDetail({ incidentId, onBack }) {
         {inc.actors?.length > 0 && (
           <section className="card kc-section">
             <h3>Linked actors</h3>
-            <ActorTable actors={inc.actors} />
+            <div style={{ overflowX: 'auto' }}><ActorTable actors={inc.actors} /></div>
           </section>
         )}
 

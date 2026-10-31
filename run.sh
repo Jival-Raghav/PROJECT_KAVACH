@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Kavach — one-command setup & launch (macOS / Linux).
+# Kavach: one-command setup & launch (macOS / Linux).
 # Usage: ./run.sh            # setup (first time) + start backend and frontend
 #        ./run.sh --test     # setup, then run the test suite and exit
 #        ./run.sh --killchain  # setup, build kill-chain incidents from the log, then launch

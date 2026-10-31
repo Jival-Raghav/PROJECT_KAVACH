@@ -8,15 +8,15 @@ Dataset: `firex-10G.log` — 9,125,382 events parsed, 3,848,247 analysed, 5,277,
 | Correct labels (strict) | **100.0%** | > 60% / > 85% | 🟢 Great |
 | Attack path | **100%** | half / all | 🟢 Great |
 | False alarms | **0.0%** | < 30% / < 10% | 🟢 Great |
-| Processing time | **4.6 min** | < 3 h / < 1 h | 🟢 Great |
-| Peak memory | **1.67 GB** | < 16 GB / < 8 GB | 🟢 Great |
+| Processing time | **4.5 min** | < 3 h / < 1 h | 🟢 Great |
+| Peak memory | **1.76 GB** | < 16 GB / < 8 GB | 🟢 Great |
 | Investigation speed (p95 open) | **0.02 ms** | < 2 s / < 500 ms | 🟢 Great |
 
 Attack paths: 20/20 scenarios rebuilt, of which 4/4 are multi-step chains where step order is actually tested. A scenario only counts as rebuilt when its incident contains no other scenario. Incidents spanning more than one scenario: 0. Incident purity (share of an incident's events that are planted): 100.0%.
 
-Steps found 28/28; lenient label accuracy 100.0%; 20 incidents, 0 false alarms; 11,078 raw alerts merged into 20 incidents (B-3). Cold load of all incidents: 6.2 ms.
+Steps found 28/28; lenient label accuracy 100.0%; 20 incidents, 0 false alarms; 11,078 raw alerts merged into 20 incidents (B-3). Cold load of all incidents: 5.62 ms.
 
-Stage timings (s): ingest 255.71, detect 7.2, correlate 0.0, enrich 0.46, anomaly 10.98, actors 0.15
+Stage timings (s): ingest 255.71, detect 6.44, correlate 0.0, enrich 0.68, anomaly 9.95, actors 0.19
 
 ## Per scenario
 
