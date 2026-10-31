@@ -2559,7 +2559,16 @@
     "fail_ratio": 0.0,
     "export_count": 2,
     "admin_op_count": 1,
-    "narrative": null,
+    "narrative": {
+      "prosecution": "The user profile for USR00035, nikhil.rao, exhibits several concerning patterns that warrant further investigation. The account has been inactive for 56 days but remains active, raising questions about its continued necessity and potential misuse. The high sensitivity ratio of 16.7% indicates that the account has accessed sensitive data, which is unusual given the user's department and job title. Additionally, the after-hours admin operation ratio of 33.3% suggests that the account may be being used for unauthorized activities outside of regular business hours. The flagged events include an export of HRIS data at unusual hours, a SQL query on the Admin Console at unusual hours, and multiple successful administrative operations, including one on the Email Archive. These actions could indicate potential insider threats or misuse of privileges.",
+      "devils_advocate": "Insufficient context to mount a defence. Proceed with investigation.",
+      "doubt_score": 0.4,
+      "final_severity": "HIGH",
+      "recommendation": "Verify access patterns with direct manager before escalating.",
+      "breach_impact": "If compromised, this account could lead to data breaches affecting the HRIS system, which contains high-sensitivity information. It could also allow for unauthorized administrative operations on other systems such as PROD_DB, EMAIL, ServiceNow, SIEM, Salesforce, and AD.",
+      "prosecutor_model": "LMStudioClient",
+      "da_model": "OllamaClient(qwen3:8b)"
+    },
     "suppressed": false,
     "feedback_note": "",
     "login_fail_count": 0
