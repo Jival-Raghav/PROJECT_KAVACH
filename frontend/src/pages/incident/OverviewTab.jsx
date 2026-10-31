@@ -1,8 +1,7 @@
-import { ChevronRight } from 'lucide-react'
 import { STAGES } from '../KillChain'
 import { OUTCOME, fmtDuration, fmtTime } from './format'
 
-export default function OverviewTab({ inc, tabs, onOpen }) {
+export default function OverviewTab({ inc }) {
   const got = inc.timeline.filter(s => s.outcome !== 'blocked').length
   const v = inc.review?.verdict
   return (
@@ -35,16 +34,6 @@ export default function OverviewTab({ inc, tabs, onOpen }) {
         </ol>
         {v && <p className="kc-overview-verdict"><b>Verdict: {v.final_priority} priority.</b> {v.reason}</p>}
       </section>
-
-      <div className="kc-nav-cards">
-        {tabs.filter(t => t.id !== 'overview').map(({ id, label, icon: Icon, blurb }) => (
-          <button key={id} className="card kc-nav-card" onClick={() => onOpen(id)}>
-            <Icon size={18} />
-            <span><b>{label}</b><small>{blurb}</small></span>
-            <ChevronRight size={15} />
-          </button>
-        ))}
-      </div>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Globe, MousePointerClick, Server, ShieldHalf, User } from 'lucide-react'
-import GraphCanvas from './GraphCanvas'
+import IncidentGraph from './IncidentGraph'
 import { KIND, OUTCOME, fmtTime, prettifyText } from './format'
 
 const NODE_LOOK = {
@@ -150,7 +150,7 @@ export default function AttackPathTab({ inc }) {
         </p>
       </div>
       <div className="kc-split">
-        <GraphCanvas nodes={gNodes} edges={gEdges} selected={selected} onSelect={setSelected}
+        <IncidentGraph nodes={gNodes} edges={gEdges} selected={selected} onSelect={setSelected}
           ariaLabel={`Attack path for incident ${inc.incident_id}`} />
         <aside className="card kc-panel">
           {node ? <NodePanel node={node} links={links} inc={inc} />

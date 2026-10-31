@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Crosshair, MoreHorizontal, MousePointerClick, Network, Server, ShieldCheck } from 'lucide-react'
-import GraphCanvas from './GraphCanvas'
+import IncidentGraph from './IncidentGraph'
 import { BASIS, SENSITIVITY_LABEL, SENSITIVITY_ORDER } from './format'
 
 const HUB = 'hub'
@@ -60,6 +60,33 @@ function buildGraph(reach, groups, expanded) {
     if (more > 0) {
       const id = `more:${g.id}`
       nodes.push({ id, col: 2, title: `${more} more hosts`, sub: 'Listed in the side panel', icon: MoreHorizontal })
+      edges.push({ id: `edge:${id}`, source: g.id, target: id, tone: basis?.tone, dashed: !basis?.proven })
+    }
+  })
+  return { nodes, edges }
+}
+
+const MAX_3D_PER_GROUP = 36
+
+/** A dense hub → segment → target cloud for the 3D view. Reuses the 2D view's id scheme, so
+ * clicking a node in either view resolves to the same panel. */
+function build3DGraph(reach, groups) {
+  const nodes = [{ id: HUB, col: 0, size: 9, title: hubTitle(reach.footholds), tone: 'bad' }]
+  const edges = []
+  groups.forEach(g => {
+    const sens = topSensitivity(g.targets)
+    const basis = BASIS[g.basis]
+    nodes.push({ id: g.id, col: 1, size: 5, title: g.segment, tone: SENS_TONE[sens] || 'plain' })
+    edges.push({ id: `edge:${g.id}`, source: HUB, target: g.id, tone: basis?.tone, dashed: !basis?.proven })
+    g.targets.slice(0, MAX_3D_PER_GROUP).forEach(t => {
+      const id = `target:${g.id}|${t.node}`
+      nodes.push({ id, col: 2, size: 2, title: t.label, tone: SENS_TONE[t.sensitivity] || 'plain', showLabel: false })
+      edges.push({ id: `edge:${id}`, source: g.id, target: id, tone: basis?.tone, dashed: !basis?.proven })
+    })
+    const more = g.targets.length - MAX_3D_PER_GROUP
+    if (more > 0) {
+      const id = `more:${g.id}`
+      nodes.push({ id, col: 2, size: 2.6, title: `+${more}`, tone: 'plain' })
       edges.push({ id: `edge:${id}`, source: g.id, target: id, tone: basis?.tone, dashed: !basis?.proven })
     }
   })
@@ -134,6 +161,7 @@ export default function BlastRadiusTab({ inc }) {
   const [selected, setSelected] = useState(null)
   const [pickedTarget, setPickedTarget] = useState(null)
   const graph = useMemo(() => buildGraph(reach, groups, expanded), [reach, groups, expanded])
+  const graph3d = useMemo(() => build3DGraph(reach, groups), [reach, groups])
 
   const select = id => {
     setSelected(id)
@@ -172,7 +200,9 @@ export default function BlastRadiusTab({ inc }) {
             <div className="kc-stat"><b>{SENSITIVITY_LABEL[top] || top}</b><span>Most sensitive target</span></div>
           </div>
           <div className="kc-split">
-            <GraphCanvas nodes={graph.nodes} edges={graph.edges} selected={selected} onSelect={select}
+            <IncidentGraph nodes={graph.nodes} edges={graph.edges}
+              nodes3d={graph3d.nodes} edges3d={graph3d.edges} physics
+              selected={selected} onSelect={select}
               ariaLabel={`Blast radius for incident ${inc.incident_id}`} />
             <aside className="card kc-panel">
               {target ? <TargetFacts target={target} />

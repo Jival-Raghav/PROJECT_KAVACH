@@ -60,7 +60,7 @@ export default function IncidentDetail({ incidentId, onBack }) {
         ))}
       </nav>
 
-      {tab === 'overview' && <OverviewTab inc={inc} tabs={TABS} onOpen={setTab} />}
+      {tab === 'overview' && <OverviewTab inc={inc} />}
       {tab === 'timeline' && <TimelineTab inc={inc} />}
       {tab === 'path' && <AttackPathTab inc={inc} />}
       {tab === 'blast' && <BlastRadiusTab inc={inc} />}
