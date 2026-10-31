@@ -132,3 +132,7 @@ venv.bak/
 *.njsproj
 *.sln
 *.sw?
+
+# Project-specific ignores
+gemini_prompt.md.pdf
+
