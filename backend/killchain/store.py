@@ -12,5 +12,5 @@ def open_events(run_dir: Path) -> duckdb.DuckDBPyConnection:
     con.execute("SET memory_limit='4GB'")
     con.execute("SET TimeZone='UTC'")
     pattern = str(Path(run_dir) / "events" / "*.parquet")
-    con.execute(f"CREATE VIEW events AS SELECT * FROM read_parquet('{pattern}')")
+    con.execute(f"CREATE VIEW events AS SELECT * REPLACE (CAST(ts AS TIMESTAMPTZ) AS ts) FROM read_parquet('{pattern}')")
     return con
