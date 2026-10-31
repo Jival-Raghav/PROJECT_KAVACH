@@ -142,3 +142,5 @@ Process/
 **/.vscode/*
 **/pyrightconfig.json
 pyrightconfig.json
+.superpowers/
+backend/data/killchain/
