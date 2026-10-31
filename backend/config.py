@@ -58,7 +58,7 @@ class Settings:
 
     # ── ML / Pipeline ─────────────────────────────────────────────────────────
     ISOLATION_FOREST_CONTAMINATION: float = float(
-        os.getenv("IF_CONTAMINATION", "0.15")
+        os.getenv("IF_CONTAMINATION", "0.35")
     )
     KMEANS_K: int = int(os.getenv("KMEANS_K", "5"))
     STALE_DAYS_THRESHOLD: int = int(os.getenv("STALE_DAYS_THRESHOLD", "30"))

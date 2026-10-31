@@ -30,6 +30,28 @@ def run_pipeline() -> None:
         pipeline_state.update({"progress": 20, "message": "Scoring users"})
         isolation_forest.score_users(profiles, raw_events)
 
+        # ── Flag boost pass ───────────────────────────────────────────────────
+        # Connects rule-based signals to the ML risk score.
+        # Ensures flagged users score higher even if IF missed them statistically.
+        FLAG_BOOSTS: dict[str, float] = {
+            "STALE_PRIVILEGED_ACCOUNT": 12.0,
+            "AFTER_HOURS_ADMIN_OP":     14.0,
+            "BULK_EXPORT":              10.0,
+            "HIGH_BLAST_ACCESS":        10.0,
+            "CROSS_DEPT_ACCESS":         8.0,
+            "HIGH_FAIL_RATE":           10.0,
+            "VERY_STALE_ACCOUNT":        8.0,
+            "EXCESSIVE_SYSTEMS":         6.0,
+            "INACTIVE_ADMIN":           15.0,
+        }
+        for profile in profiles:
+            boost = sum(FLAG_BOOSTS.get(f, 0.0) for f in profile.get("flags", []))
+            if boost > 0:
+                profile["risk_score"] = round(
+                    min(100.0, profile["risk_score"] + boost), 2
+                )
+        # ── End flag boost ────────────────────────────────────────────────────
+
         pipeline_state.update({"progress": 40, "message": "Clustering events"})
         event_clusters = kmeans_events.cluster_events(raw_events)
         kmeans_events.assign_cluster_to_users(profiles, event_clusters)

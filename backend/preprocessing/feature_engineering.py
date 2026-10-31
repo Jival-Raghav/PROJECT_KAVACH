@@ -248,8 +248,8 @@ def extract_user_features(
         "is_inactive_account": 0.0 if is_active else 1.0,
         "is_new_hire": 1.0 if bool(profile.get("is_new_hire", False)) else 0.0,
         "event_count": float(event_agg.get("event_count", 0)),
-        "after_hours_ratio": float(event_agg.get("after_hours_ratio", 0.0)),
-        "high_sensitivity_ratio": float(event_agg.get("high_sensitivity_ratio", 0.0)),
+        "after_hours_ratio": float(event_agg.get("after_hours_ratio", 0.0))*1.5,
+        "high_sensitivity_ratio": float(event_agg.get("high_sensitivity_ratio", 0.0))*1.5,
         "fail_ratio": float(event_agg.get("fail_ratio", 0.0)),
         "export_count": float(event_agg.get("export_count", 0)),
         "admin_op_count": float(event_agg.get("admin_op_count", 0)),
@@ -258,7 +258,7 @@ def extract_user_features(
         "cross_dept_access_ratio": float(event_agg.get("cross_dept_access_ratio", 0.0)),
         "high_blast_system_count": float(high_blast_count),
         "high_sens_after_hours": float(event_agg.get("after_hours_ratio", 0.0)) 
-                         * float(event_agg.get("high_sensitivity_ratio", 0.0)),
+                         * float(event_agg.get("high_sensitivity_ratio", 0.0))*2.0,
     }
 
 
