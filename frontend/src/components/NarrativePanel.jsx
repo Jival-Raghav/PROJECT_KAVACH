@@ -6,29 +6,32 @@ import {
   ShieldAlert, ChevronDown, ChevronUp
 } from 'lucide-react'
 
-const SEVERITY_STYLE = {
-  CRITICAL:      'bg-rose-500/20 text-rose-200 border-rose-400/40',
-  HIGH:          'bg-orange-500/20 text-orange-200 border-orange-400/40',
-  REVIEW:        'bg-yellow-500/20 text-yellow-100 border-yellow-400/40',
-  INFORMATIONAL: 'bg-slate-500/20 text-slate-200 border-slate-400/40',
-  SUPPRESSED:    'bg-slate-700/30 text-slate-400 border-slate-600/40',
+/* ── Style maps — now using CSS variable references ─── */
+
+const SEVERITY_BG = {
+  CRITICAL:      'badge-critical',
+  HIGH:          'badge-critical',
+  REVIEW:        'badge-review',
+  INFORMATIONAL: 'badge-neutral',
+  SUPPRESSED:    'badge-neutral',
 }
 
-const ACTION_STYLE = {
-  ESCALATE:    'bg-rose-500/20 text-rose-300 border-rose-400/40',
-  INVESTIGATE: 'bg-orange-500/20 text-orange-300 border-orange-400/40',
-  MONITOR:     'bg-yellow-500/20 text-yellow-200 border-yellow-400/40',
-  DISMISS:     'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+const ACTION_BG = {
+  ESCALATE:    'badge-critical',
+  INVESTIGATE: 'badge-review',
+  MONITOR:     'badge-review',
+  DISMISS:     'badge-normal',
 }
 
-const CONFIDENCE_STYLE = {
-  HIGH:   'text-rose-300',
-  MEDIUM: 'text-yellow-300',
-  LOW:    'text-slate-400',
+const CONFIDENCE_COLOR = {
+  HIGH:   'var(--c-critical)',
+  MEDIUM: 'var(--c-review)',
+  LOW:    'var(--text-muted)',
 }
+
+/* ── JSON parser helper ─────────────────────────────── */
 
 function tryParseInference(raw) {
-  // strip markdown fences
   const cleaned = raw.replace(/```(?:json)?\s*/g, '').replace(/```/g, '').trim()
   const start = cleaned.indexOf('{')
   const end   = cleaned.lastIndexOf('}')
@@ -36,45 +39,78 @@ function tryParseInference(raw) {
   try { return JSON.parse(cleaned.slice(start, end + 1)) } catch { return null }
 }
 
+/* ── Component ─────────────────────────────────────── */
+
 export default function NarrativePanel({ user }) {
-  const [prosecution, setProsecution]   = useState('')
-  const [da,          setDa]            = useState('')
-  const [activeSection, setSection]     = useState(null)
-  const [streaming,   setStreaming]      = useState(false)
-  const [done,        setDone]          = useState(false)
-  const [error,       setError]         = useState(null)
-  const [narrative,   setNarrative]     = useState(null)
-  const [tab,         setTab]           = useState('prosecutor')
+  const [prosecution, setProsecution]  = useState('')
+  const [da,          setDa]           = useState('')
+  const [activeSection, setSection]    = useState(null)
+  const [streaming,   setStreaming]     = useState(false)
+  const [done,        setDone]         = useState(false)
+  const [error,       setError]        = useState(null)
+  const [narrative,   setNarrative]    = useState(null)
+  const [tab,         setTab]          = useState('prosecutor')
 
   // Inference state
-  const [inferencing,    setInferencing]    = useState(false)
-  const [inferenceRaw,   setInferenceRaw]   = useState('')
-  const [inferenceResult, setInferenceResult] = useState(null)
-  const [inferenceError, setInferenceError]  = useState(null)
-  const [showInference,  setShowInference]   = useState(false)
+  const [inferencing,     setInferencing]    = useState(false)
+  const [inferenceRaw,    setInferenceRaw]   = useState('')
+  const [inferenceResult, setInferenceResult]= useState(null)
+  const [inferenceError,  setInferenceError] = useState(null)
+  const [showInference,   setShowInference]  = useState(false)
 
   const sourceRef    = useRef(null)
   const inferenceRef = useRef(null)
 
+  // ── Streaming buffer: accumulate chunks in refs, flush via rAF ──
+  // This decouples token arrival rate from React render rate (~60fps cap)
+  const proseBuf  = useRef('')   // unbatched prosecution text
+  const daBuf     = useRef('')   // unbatched da text
+  const rafHandle = useRef(null)
+
+  const flushBuffers = () => {
+    rafHandle.current = null
+    const p = proseBuf.current
+    const d = daBuf.current
+    proseBuf.current = ''
+    daBuf.current    = ''
+    if (p) setProsecution(prev => prev + p)
+    if (d) setDa(prev => prev + d)
+  }
+
+  const scheduleFlush = () => {
+    if (!rafHandle.current) {
+      rafHandle.current = requestAnimationFrame(flushBuffers)
+    }
+  }
+
   const start = () => {
     if (!user?.user_id) return
+
+    // Cancel any pending flush
+    if (rafHandle.current) { cancelAnimationFrame(rafHandle.current); rafHandle.current = null }
+    proseBuf.current = ''
+    daBuf.current    = ''
+
     setProsecution(''); setDa(''); setSection(null)
     setStreaming(true); setDone(false); setError(null); setNarrative(null)
-    // reset inference when re-generating narrative
     setInferenceRaw(''); setInferenceResult(null); setInferenceError(null); setShowInference(false)
 
     sourceRef.current?.close()
     sourceRef.current = streamNarrative(user.user_id, {
       onSection: s => { setSection(s); setTab(s) },
-      onChunk:   chunk => {
-        setSection(prev => {
-          if (prev === 'prosecutor') setProsecution(t => t + chunk)
-          else if (prev === 'da')   setDa(t => t + chunk)
-          return prev
-        })
+      onChunk:   (chunk, section) => {
+        // Append to the correct buffer and schedule a rAF flush
+        if (section === 'prosecutor') proseBuf.current += chunk
+        else if (section === 'da')   daBuf.current    += chunk
+        scheduleFlush()
       },
-      onError:   msg => { setError(msg); setStreaming(false) },
-      onDone:    () => { setStreaming(false); setDone(true) },
+      onError: msg => { setError(msg); setStreaming(false) },
+      onDone:  ()  => {
+        // Final flush before marking done
+        if (rafHandle.current) { cancelAnimationFrame(rafHandle.current); rafHandle.current = null }
+        flushBuffers()
+        setStreaming(false); setDone(true)
+      },
     })
   }
 
@@ -98,10 +134,15 @@ export default function NarrativePanel({ user }) {
     })
   }
 
-  // Auto-load cached narrative when user changes
   useEffect(() => {
     sourceRef.current?.close()
     inferenceRef.current?.close()
+
+    // Cancel any in-flight rAF flush for the previous user
+    if (rafHandle.current) { cancelAnimationFrame(rafHandle.current); rafHandle.current = null }
+    proseBuf.current = ''
+    daBuf.current    = ''
+
     setProsecution(''); setDa(''); setSection(null)
     setStreaming(false); setDone(false); setError(null)
     setInferenceRaw(''); setInferenceResult(null); setInferenceError(null); setShowInference(false)
@@ -118,15 +159,16 @@ export default function NarrativePanel({ user }) {
     return () => {
       sourceRef.current?.close()
       inferenceRef.current?.close()
+      if (rafHandle.current) { cancelAnimationFrame(rafHandle.current); rafHandle.current = null }
     }
   }, [user?.user_id])
 
   if (!user) {
     return (
-      <section className="glass rounded-2xl border border-white/10 p-5">
-        <div className="flex h-40 flex-col items-center justify-center gap-3 text-center">
-          <BrainCircuit size={28} className="text-slate-600" />
-          <p className="text-sm text-slate-500">Select a user to generate a<br />two-pass LLM narrative</p>
+      <section className="card" style={{ padding: 14, flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 100, gap: 8, textAlign: 'center' }}>
+          <BrainCircuit size={24} style={{ color: 'var(--text-muted)' }} />
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Select a user to generate<br />a two-pass LLM narrative</p>
         </div>
       </section>
     )
@@ -138,110 +180,121 @@ export default function NarrativePanel({ user }) {
   const canInfer   = done && (prosecution || da)
 
   return (
-    <section className="glass rounded-2xl border border-white/10 p-5 slide-up">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+    <section className="card slide-up" style={{ padding: 14, flexShrink: 0 }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
         <div>
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-slate-500">
-            <BrainCircuit size={12} /> Devil's Advocate Narrative
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', marginBottom: 4 }}>
+            <BrainCircuit size={11} /> Devil's Advocate Narrative
           </div>
-          <div className="mt-1 font-semibold text-white">{user.username}</div>
+          <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{user.username}</div>
         </div>
-        <div className="flex items-center gap-2">
-          {severity && (
-            <span className={`chip border ${SEVERITY_STYLE[severity] || SEVERITY_STYLE.INFORMATIONAL}`}>
-              {severity}
-            </span>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {severity && <span className={SEVERITY_BG[severity] || 'badge-neutral'}>{severity}</span>}
           <button
             id={`narrative-refresh-${user.user_id}`}
             onClick={start}
             disabled={streaming}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white disabled:opacity-40"
+            className="btn-icon"
+            style={{ width: 28, height: 28, border: '1px solid var(--border)' }}
             title="Re-generate narrative"
           >
-            {streaming ? <Loader2 size={13} className="spin-slow" /> : <RefreshCw size={13} />}
+            {streaming ? <Loader2 size={12} className="spin-slow" /> : <RefreshCw size={12} />}
           </button>
         </div>
       </div>
 
-      {/* Doubt score meter */}
+      {/* ── Doubt score ── */}
       {doubtScore !== null && (
-        <div className="mt-4">
-          <div className="mb-1 flex justify-between text-[11px] text-slate-500">
-            <span>Doubt Score (DA confidence)</span>
-            <span className="mono text-slate-300">{(doubtScore * 100).toFixed(0)}%</span>
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
+            <span>Doubt Score</span>
+            <span className="mono" style={{ color: 'var(--text-secondary)' }}>{(doubtScore * 100).toFixed(0)}%</span>
           </div>
           <div className="doubt-track">
             <div className="doubt-fill" style={{ width: `${doubtScore * 100}%` }} />
           </div>
-          <div className="mt-1 flex justify-between text-[10px] text-slate-600">
-            <span>0 = Certain threat</span><span>1 = Likely false positive</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>
+            <span>0 = Certain threat</span>
+            <span>1 = Likely false positive</span>
           </div>
         </div>
       )}
 
-      {/* Tab switcher */}
-      <div className="mt-4 flex gap-1 rounded-xl border border-white/8 bg-white/5 p-1">
+      {/* ── Tab switcher ── */}
+      <div style={{
+        display: 'flex', gap: 4, padding: 3, borderRadius: 4,
+        border: '1px solid var(--border)', background: 'var(--surface-mid)', marginBottom: 10,
+      }}>
         {[
-          { key: 'prosecutor', label: 'Prosecutor',      icon: AlertOctagon, color: 'text-orange-300' },
-          { key: 'da',        label: "Devil's Advocate", icon: Scale,        color: 'text-cyan-300'   },
-        ].map(({ key, label, icon: Icon, color }) => (
+          { key: 'prosecutor', label: 'Prosecutor',      icon: AlertOctagon },
+          { key: 'da',        label: "Devil's Advocate", icon: Scale         },
+        ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             id={`narrative-tab-${key}`}
             onClick={() => setTab(key)}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition ${
-              tab === key ? 'bg-white/10 text-white shadow' : 'text-slate-500 hover:text-slate-300'
-            }`}
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+              padding: '5px 0', borderRadius: 3, border: 'none', fontSize: 11, fontWeight: 500, cursor: 'pointer',
+              background: tab === key ? 'var(--surface)' : 'transparent',
+              color: tab === key ? 'var(--text-primary)' : 'var(--text-muted)',
+              transition: 'all 150ms ease',
+            }}
           >
-            <Icon size={11} className={tab === key ? color : ''} /> {label}
+            <Icon size={11} style={{ color: tab === key ? 'var(--sg-red)' : 'inherit' }} /> {label}
           </button>
         ))}
       </div>
 
-      {/* Generate button (if not started) */}
+      {/* ── Generate button (if not started) ── */}
       {!streaming && !done && !prosecution && (
         <button
           id={`narrative-generate-${user.user_id}`}
           onClick={start}
-          className="mt-4 w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 py-3 text-sm font-medium text-cyan-300 transition hover:bg-cyan-500/20"
+          className="btn-primary"
+          style={{ width: '100%', justifyContent: 'center', height: 36, marginBottom: 8 }}
         >
-          <MessageSquareWarning size={14} className="mr-2 inline" />
-          Generate LLM Narrative
+          <MessageSquareWarning size={13} /> Generate LLM Narrative
         </button>
       )}
 
-      {/* Error */}
+      {/* ── Error ── */}
       {error && (
-        <div className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+        <div style={{ marginBottom: 8, borderRadius: 4, border: '1px solid var(--c-critical-bd)', background: 'var(--c-critical-bg)', padding: '8px 10px', fontSize: 12, color: 'var(--c-critical)' }}>
           ⚠ {error}
         </div>
       )}
 
-      {/* Content */}
+      {/* ── Content ── */}
       {(prosecution || da) && (
-        <div className="mt-3">
-          <div className={`min-h-32 rounded-xl border border-white/8 bg-white/4 p-4 text-sm leading-relaxed text-slate-300 slide-up ${
-            streaming && tab === activeSection ? 'cursor' : ''
-          }`}>
+        <div>
+          <div
+            className={streaming && tab === activeSection ? 'cursor' : ''}
+            style={{
+              minHeight: 96, borderRadius: 4, border: '1px solid var(--border)',
+              background: 'var(--surface-mid)', padding: '10px 12px',
+              fontSize: 12, lineHeight: 1.65, color: 'var(--text-secondary)',
+            }}
+          >
             {tab === 'prosecutor'
-              ? (prosecution || <span className="text-slate-600">Waiting for Prosecutor…</span>)
-              : (da || <span className="text-slate-600">Waiting for Devil's Advocate…</span>)
+              ? (prosecution || <span style={{ color: 'var(--text-muted)' }}>Waiting for Prosecutor…</span>)
+              : (da           || <span style={{ color: 'var(--text-muted)' }}>Waiting for Devil's Advocate…</span>)
             }
           </div>
 
           {/* Recommendation */}
           {done && cachedNarrative?.recommendation && (
-            <div className="mt-3 rounded-xl border border-indigo-500/20 bg-indigo-500/8 p-3">
-              <div className="mb-1 text-[10px] uppercase tracking-widest text-indigo-400">Recommendation</div>
-              <div className="text-xs text-slate-300">{cachedNarrative.recommendation}</div>
+            <div style={{ marginTop: 8, borderRadius: 4, border: '1px solid var(--c-info-bd)', background: 'var(--c-info-bg)', padding: '8px 10px' }}>
+              <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--c-info)', marginBottom: 4 }}>Recommendation</div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{cachedNarrative.recommendation}</div>
             </div>
           )}
 
           {/* Model attribution */}
           {done && (cachedNarrative?.prosecutor_model || cachedNarrative?.da_model) && (
-            <div className="mt-2 flex items-center justify-between text-[10px] text-slate-600">
+            <div style={{ marginTop: 6, display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-muted)' }}>
               <span>⚖ {cachedNarrative.prosecutor_model}</span>
               <span>🛡 {cachedNarrative.da_model}</span>
             </div>
@@ -249,73 +302,76 @@ export default function NarrativePanel({ user }) {
         </div>
       )}
 
-      {/* ── Inference Button ─────────────────────────────────────── */}
+      {/* ── Inference Button ── */}
       {canInfer && (
         <button
           id={`narrative-inference-${user.user_id}`}
           onClick={runInference}
           disabled={inferencing}
-          className={`mt-4 w-full rounded-xl border py-3 text-sm font-semibold transition flex items-center justify-center gap-2 ${
-            inferencing
-              ? 'border-violet-500/20 bg-violet-500/5 text-violet-400 opacity-70 cursor-not-allowed'
-              : 'border-violet-500/40 bg-violet-500/15 text-violet-300 hover:bg-violet-500/25 hover:border-violet-400/60 shadow-[0_0_20px_rgba(139,92,246,0.12)]'
-          }`}
+          className="btn-primary"
+          style={{ width: '100%', justifyContent: 'center', height: 34, marginTop: 10 }}
         >
           {inferencing
-            ? <><Loader2 size={14} className="spin-slow" /> Synthesising Verdict…</>
-            : <><Gavel size={14} /> Inference — Final Verdict</>
+            ? <><Loader2 size={13} className="spin-slow" /> Synthesising Verdict…</>
+            : <><Gavel size={13} /> Inference — Final Verdict</>
           }
         </button>
       )}
 
-      {/* ── Inference Error ──────────────────────────────────────── */}
+      {/* ── Inference Error ── */}
       {inferenceError && (
-        <div className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+        <div style={{ marginTop: 8, borderRadius: 4, border: '1px solid var(--c-critical-bd)', background: 'var(--c-critical-bg)', padding: '8px 10px', fontSize: 12, color: 'var(--c-critical)' }}>
           ⚠ Inference error: {inferenceError}
         </div>
       )}
 
-      {/* ── Inference Result Panel ───────────────────────────────── */}
+      {/* ── Inference Result Panel ── */}
       {showInference && (inferencing || inferenceResult || inferenceRaw) && (
-        <div className="mt-3 rounded-2xl border border-violet-500/25 bg-violet-500/8 overflow-hidden slide-up">
-          {/* Panel header */}
+        <div style={{ marginTop: 10, borderRadius: 4, border: '1px solid var(--c-critical-bd)', overflow: 'hidden' }}>
+
+          {/* Panel header toggle */}
           <button
             onClick={() => setShowInference(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left"
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '8px 12px', background: 'var(--c-critical-bg)', border: 'none', cursor: 'pointer',
+            }}
           >
-            <div className="flex items-center gap-2">
-              <Gavel size={13} className="text-violet-400" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-violet-300">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Gavel size={12} style={{ color: 'var(--c-critical)' }} />
+              <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--c-critical)' }}>
                 Final Verdict
               </span>
               {inferenceResult?.recommended_action && (
-                <span className={`ml-1 rounded-md border px-2 py-0.5 text-[10px] font-bold ${
-                  ACTION_STYLE[inferenceResult.recommended_action] || ACTION_STYLE.MONITOR
-                }`}>
+                <span className={ACTION_BG[inferenceResult.recommended_action] || 'badge-review'} style={{ marginLeft: 4 }}>
                   {inferenceResult.recommended_action}
                 </span>
               )}
             </div>
-            {showInference ? <ChevronUp size={13} className="text-slate-500" /> : <ChevronDown size={13} className="text-slate-500" />}
+            {showInference
+              ? <ChevronUp  size={13} style={{ color: 'var(--text-muted)' }} />
+              : <ChevronDown size={13} style={{ color: 'var(--text-muted)' }} />
+            }
           </button>
 
           {showInference && (
-            <div className="px-4 pb-4 space-y-3">
-              {/* Streaming raw while inferencing */}
+            <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8, background: 'var(--surface-mid)' }}>
+
+              {/* Streaming raw */}
               {inferencing && !inferenceResult && (
-                <div className="rounded-xl border border-white/8 bg-white/4 p-3 text-xs leading-relaxed text-slate-400 font-mono min-h-16">
-                  {inferenceRaw || <span className="text-slate-600 animate-pulse">Generating verdict…</span>}
+                <div style={{ borderRadius: 4, border: '1px solid var(--border)', background: 'var(--surface)', padding: '8px 10px', fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', minHeight: 48 }}>
+                  {inferenceRaw || <span style={{ opacity: 0.5 }}>Generating verdict…</span>}
                 </div>
               )}
 
-              {/* Parsed structured result */}
+              {/* Parsed result */}
               {inferenceResult && (
                 <>
-                  {/* Confidence badge */}
+                  {/* Confidence */}
                   {inferenceResult.confidence && (
-                    <div className="flex items-center gap-2 text-[11px]">
-                      <span className="text-slate-500 uppercase tracking-widest">Confidence</span>
-                      <span className={`font-bold ${CONFIDENCE_STYLE[inferenceResult.confidence] || 'text-slate-400'}`}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
+                      <span style={{ textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)' }}>Confidence</span>
+                      <span style={{ fontWeight: 700, color: CONFIDENCE_COLOR[inferenceResult.confidence] || 'var(--text-secondary)' }}>
                         {inferenceResult.confidence}
                       </span>
                     </div>
@@ -323,26 +379,24 @@ export default function NarrativePanel({ user }) {
 
                   {/* What happened */}
                   {inferenceResult.what_happened && (
-                    <div className="rounded-xl border border-white/8 bg-white/4 p-3">
-                      <div className="mb-1.5 text-[10px] uppercase tracking-widest text-slate-500 flex items-center gap-1">
+                    <div style={{ borderRadius: 4, border: '1px solid var(--border)', background: 'var(--surface)', padding: '8px 10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 5 }}>
                         <ShieldAlert size={10} /> What Actually Happened
                       </div>
-                      <p className="text-xs leading-relaxed text-slate-300">
-                        {inferenceResult.what_happened}
-                      </p>
+                      <p style={{ fontSize: 12, lineHeight: 1.55, color: 'var(--text-secondary)', margin: 0 }}>{inferenceResult.what_happened}</p>
                     </div>
                   )}
 
                   {/* Key findings */}
                   {inferenceResult.key_findings?.length > 0 && (
-                    <div className="rounded-xl border border-amber-500/15 bg-amber-500/8 p-3">
-                      <div className="mb-2 text-[10px] uppercase tracking-widest text-amber-400 flex items-center gap-1">
+                    <div style={{ borderRadius: 4, border: '1px solid var(--c-review-bd)', background: 'var(--c-review-bg)', padding: '8px 10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--c-review)', marginBottom: 6 }}>
                         <ListChecks size={10} /> Key Findings
                       </div>
-                      <ul className="space-y-1">
+                      <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
                         {inferenceResult.key_findings.map((f, i) => (
-                          <li key={i} className="flex items-start gap-1.5 text-xs text-slate-300">
-                            <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400/60" />
+                          <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 12, color: 'var(--text-secondary)' }}>
+                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--c-review)', marginTop: 5, flexShrink: 0 }} />
                             {f}
                           </li>
                         ))}
@@ -352,14 +406,18 @@ export default function NarrativePanel({ user }) {
 
                   {/* Remediation steps */}
                   {inferenceResult.remediation_steps?.length > 0 && (
-                    <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/8 p-3">
-                      <div className="mb-2 text-[10px] uppercase tracking-widest text-emerald-400 flex items-center gap-1">
+                    <div style={{ borderRadius: 4, border: '1px solid var(--c-normal-bd)', background: 'var(--c-normal-bg)', padding: '8px 10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--c-normal)', marginBottom: 6 }}>
                         <CheckCircle2 size={10} /> Remediation Steps
                       </div>
-                      <ol className="space-y-1.5">
+                      <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
                         {inferenceResult.remediation_steps.map((step, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
-                            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-[9px] font-bold text-emerald-400">
+                          <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 12, color: 'var(--text-secondary)' }}>
+                            <span style={{
+                              width: 16, height: 16, borderRadius: '50%', flexShrink: 0, marginTop: 1,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: 'var(--c-normal-bg)', color: 'var(--c-normal)', fontSize: 9, fontWeight: 700,
+                            }}>
                               {i + 1}
                             </span>
                             {step}
@@ -371,7 +429,7 @@ export default function NarrativePanel({ user }) {
 
                   {/* Rationale */}
                   {inferenceResult.rationale && (
-                    <div className="border-t border-white/8 pt-3 text-[11px] italic text-slate-500">
+                    <div style={{ paddingTop: 8, borderTop: '1px solid var(--border)', fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)' }}>
                       {inferenceResult.rationale}
                     </div>
                   )}

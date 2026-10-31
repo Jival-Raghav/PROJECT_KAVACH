@@ -1,89 +1,109 @@
 import { Shield, Users } from 'lucide-react'
 import ClusterScatterPlot from './ClusterScatterPlot'
 
-function riskGradient(score) {
-  if (score >= 70) return 'from-rose-500 to-red-600'
-  if (score >= 50) return 'from-orange-400 to-amber-500'
-  if (score >= 30) return 'from-yellow-400 to-amber-400'
-  return 'from-emerald-400 to-teal-500'
+/* ── Helpers ──────────────────────────────────────────── */
+
+function riskBarColor(score) {
+  if (score >= 60) return 'var(--c-critical)'
+  if (score >= 40) return 'var(--c-review)'
+  return 'var(--c-normal)'
 }
 
-function dotClass(level) {
-  if (level === 'critical') return 'bg-rose-400'
-  if (level === 'high') return 'bg-orange-400'
-  if (level === 'review') return 'bg-yellow-400'
-  return 'bg-slate-400'
+function severityDot(level) {
+  if (level === 'critical') return 'var(--c-critical)'
+  if (level === 'high')     return 'var(--c-critical)'
+  if (level === 'review')   return 'var(--c-review)'
+  return 'var(--text-muted)'
 }
+
+/* ── Component ─────────────────────────────────────────── */
 
 export default function ClusterPanel({ clusters, users, onSelectUser }) {
   if (!clusters || clusters.length === 0) {
     return (
-      <div className="flex h-40 items-center justify-center text-sm text-slate-500">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120, color: 'var(--text-muted)', fontSize: 13 }}>
         Run the pipeline to see behavioral clusters.
       </div>
     )
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
-            <Shield size={18} className="text-indigo-400" /> Behavioral Clusters
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">
-            Aggregated behavioral groups derived from user activity patterns
-          </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Shield size={15} style={{ color: 'var(--c-info)' }} />
+          <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>Behavioral Clusters</span>
+          <span className="badge-neutral">{clusters.length} groups</span>
         </div>
-        <div className="chip border border-white/10 bg-white/5 text-slate-300">
-          <Users size={12} /> {clusters.length} clusters
-        </div>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Aggregated from user activity patterns</span>
       </div>
 
-      <ClusterScatterPlot users={users} onSelectUser={onSelectUser} />
+      {/* ── Scatter plot ── */}
+      <div className="card" style={{ padding: '12px 14px' }}>
+        <div style={{ marginBottom: 8, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>
+          Risk Cluster Projection
+        </div>
+        <ClusterScatterPlot users={users} onSelectUser={onSelectUser} />
+      </div>
 
-      <div className="grid gap-3 lg:grid-cols-2">
+      {/* ── Cluster cards grid ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
         {clusters.map(cluster => (
-          <article key={cluster.cluster_label} className="glass rounded-2xl border border-white/10 p-4 slide-up transition hover:border-white/20">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-base font-semibold text-white">{cluster.description}</div>
-                <div className="mt-1 text-[11px] uppercase tracking-widest text-slate-500">
+          <article key={cluster.cluster_label} className="card slide-up" style={{ padding: 14 }}>
+
+            {/* Title row */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 500, fontSize: 13, color: 'var(--text-primary)' }}>{cluster.description}</div>
+                <div style={{ marginTop: 3, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)' }}>
                   Cluster {cluster.cluster_label}
                 </div>
               </div>
-              <span className="chip border border-white/10 bg-white/5 text-slate-300">
-                {cluster.user_count} users
+              <span className="badge-neutral" style={{ flexShrink: 0 }}>
+                <Users size={9} style={{ marginRight: 3 }} />
+                {cluster.user_count}
               </span>
             </div>
 
-            <div className="mt-4">
-              <div className="mb-1 flex items-center justify-between text-[11px] text-slate-500">
+            {/* Avg Risk bar */}
+            <div style={{ marginTop: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>
                 <span>Avg Risk</span>
-                <span className="text-slate-300">{Number(cluster.avg_risk_score).toFixed(1)}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{Number(cluster.avg_risk_score).toFixed(1)}</span>
               </div>
               <div className="risk-bar">
-                <div className={`risk-bar-fill bg-gradient-to-r ${riskGradient(cluster.avg_risk_score)}`} style={{ width: `${cluster.avg_risk_score}%` }} />
+                <div
+                  className="risk-bar-fill"
+                  style={{ width: `${cluster.avg_risk_score}%`, background: riskBarColor(cluster.avg_risk_score) }}
+                />
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {(cluster.top_flags || []).slice(0, 3).map(flag => (
-                <span key={flag} className="chip border border-white/10 bg-white/5 text-[10px] text-slate-300">
-                  {flag.replace(/_/g, ' ')}
+            {/* Top flags */}
+            {(cluster.top_flags || []).length > 0 && (
+              <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {(cluster.top_flags || []).slice(0, 3).map(flag => (
+                  <span key={flag} className="flag-tag neutral" style={{ textTransform: 'none', fontSize: 10 }}>
+                    {flag.replace(/_/g, ' ')}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Severity breakdown */}
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)', display: 'flex', gap: 12, fontSize: 11, color: 'var(--text-secondary)' }}>
+              {[
+                { label: 'critical', count: cluster.critical_count },
+                { label: 'high',     count: cluster.high_count     },
+                { label: 'review',   count: cluster.review_count   },
+              ].map(({ label, count }) => (
+                <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: severityDot(label), flexShrink: 0 }} />
+                  {count} {label}
                 </span>
               ))}
-              {(cluster.top_flags || []).length === 0 && (
-                <span className="chip border border-white/10 bg-white/5 text-[10px] text-slate-500">
-                  No dominant flags
-                </span>
-              )}
-            </div>
-
-            <div className="mt-4 flex items-center gap-3 text-xs text-slate-400">
-              <span className="flex items-center gap-1.5"><span className={`h-2 w-2 rounded-full ${dotClass('critical')}`} /> {cluster.critical_count} critical</span>
-              <span className="flex items-center gap-1.5"><span className={`h-2 w-2 rounded-full ${dotClass('high')}`} /> {cluster.high_count} high</span>
-              <span className="flex items-center gap-1.5"><span className={`h-2 w-2 rounded-full ${dotClass('review')}`} /> {cluster.review_count} review</span>
             </div>
           </article>
         ))}

@@ -31,6 +31,7 @@ export const postFeedback = (userId, action, note) =>
  */
 export function streamNarrative(userId, { onSection, onChunk, onError, onDone } = {}) {
   const source = new EventSource(`${BASE_URL}/users/${userId}/narrative`)
+  let currentSection = null  // track active section inside the SSE handler
 
   source.onmessage = ({ data }) => {
     if (data === '[DONE]') {
@@ -43,14 +44,17 @@ export function streamNarrative(userId, { onSection, onChunk, onError, onDone } 
       return
     }
     if (data.startsWith('[PROSECUTOR')) {
+      currentSection = 'prosecutor'
       onSection?.('prosecutor')
       return
     }
     if (data.startsWith("[DEVIL'S ADVOCATE")) {
+      currentSection = 'da'
       onSection?.('da')
       return
     }
-    onChunk?.(data)
+    // Pass section as second arg so caller can route without its own state read
+    onChunk?.(data, currentSection)
   }
 
   source.onerror = () => {

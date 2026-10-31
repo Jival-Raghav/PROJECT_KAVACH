@@ -5,32 +5,42 @@ import { getBreachSimulation } from '../api'
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const SENSITIVITY_COLOR = {
-  critical: '#ef4444',
+  critical: '#E3000B',
   high:     '#f97316',
   medium:   '#eab308',
   low:      '#94a3b8',
 }
 
-const IMPACT_STYLE = {
-  CATASTROPHIC: 'border-rose-400/40 bg-rose-500/10 text-rose-300',
-  SEVERE:       'border-orange-400/40 bg-orange-500/10 text-orange-300',
-  MODERATE:     'border-yellow-400/40 bg-yellow-500/10 text-yellow-300',
-  LOW:          'border-emerald-400/40 bg-emerald-500/10 text-emerald-300',
+// Glow colour per node type (for SVG filter / stroke)
+const NODE_GLOW = {
+  critical: '#E3000B',
+  high:     '#f97316',
+  medium:   '#eab308',
+  lateral:  '#818cf8',
+  user:     '#60a5fa',
+  low:      '#94a3b8',
 }
 
-const IMPACT_GRADIENT = {
-  CATASTROPHIC: 'from-rose-500 to-red-600',
-  SEVERE:       'from-orange-400 to-amber-500',
-  MODERATE:     'from-yellow-400 to-amber-400',
-  LOW:          'from-emerald-400 to-teal-500',
+const IMPACT_BADGE_CLS = {
+  CATASTROPHIC: 'badge-critical',
+  SEVERE:       'badge-review',
+  MODERATE:     'badge-review',
+  LOW:          'badge-normal',
+}
+
+const IMPACT_BAR_COLOR = {
+  CATASTROPHIC: 'var(--c-critical)',
+  SEVERE:       'var(--c-review)',
+  MODERATE:     'var(--c-review)',
+  LOW:          'var(--c-normal)',
 }
 
 // Legend filter definitions
 const LEGEND_ITEMS = [
-  { key: 'critical', label: 'Critical System',   dot: 'bg-rose-500' },
-  { key: 'high',     label: 'High Sensitivity',  dot: 'bg-orange-500' },
-  { key: 'lateral',  label: 'Lateral Reach',     dot: 'bg-indigo-500' },
-  { key: 'user',     label: 'Compromised User',  dot: 'bg-slate-400' },
+  { key: 'critical', label: 'Critical System',   color: '#E3000B'  },
+  { key: 'high',     label: 'High Sensitivity',  color: '#f97316'  },
+  { key: 'lateral',  label: 'Lateral Reach',     color: '#818cf8'  },
+  { key: 'user',     label: 'Compromised User',  color: '#60a5fa'  },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -110,34 +120,73 @@ function buildGraph(breachData, username) {
 }
 
 // ── BreachGraph component ─────────────────────────────────────────────────────
+// height prop is kept only for the non-interactive mini-preview.
+// In interactive/modal mode the component fills its container via ResizeObserver.
 
 function BreachGraph({ breachData, username, height = 200, interactive = false, activeFilter, onFilterChange }) {
   const svgRef       = useRef(null)
   const containerRef = useRef(null)
   const simRef       = useRef(null)
-  const nodesDataRef = useRef([]) // keep ref for filter effect
+  const nodesDataRef = useRef([])
+
+  // Actual rendered dimensions (updated by ResizeObserver in interactive mode)
+  const [dims, setDims] = useState({ w: 0, h: 0 })
 
   // Tooltip state (interactive mode only)
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, node: null })
 
+  // ── ResizeObserver: measure container in interactive mode ──────────────────
+  useEffect(() => {
+    if (!interactive || !containerRef.current) return
+    const obs = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height: h } = entry.contentRect
+        if (width > 0 && h > 0) setDims({ w: Math.floor(width), h: Math.floor(h) })
+      }
+    })
+    obs.observe(containerRef.current)
+    // Initial measure
+    const r = containerRef.current.getBoundingClientRect()
+    if (r.width > 0 && r.height > 0) setDims({ w: Math.floor(r.width), h: Math.floor(r.height) })
+    return () => obs.disconnect()
+  }, [interactive])
+
   // ── Build & render simulation ──────────────────────────────────────────────
   useEffect(() => {
     if (!breachData || !svgRef.current || !containerRef.current) return
+
+    // In interactive mode, wait until ResizeObserver gives us real dimensions
+    const width  = interactive ? (dims.w || containerRef.current.clientWidth || 600) : (containerRef.current.clientWidth || 320)
+    const h      = interactive ? (dims.h || containerRef.current.clientHeight || 400) : height
+    if (interactive && (width < 10 || h < 10)) return  // not mounted yet
+
     let cancelled = false
 
     const render = async () => {
       const d3 = await loadD3()
       if (cancelled || !svgRef.current || !containerRef.current) return
 
-      const width  = containerRef.current.clientWidth || 500
       const { nodes, links } = buildGraph(breachData, username)
       nodesDataRef.current = nodes
 
       const svg = d3.select(svgRef.current)
       svg.selectAll('*').remove()
       svg
-        .attr('viewBox', `0 0 ${width} ${height}`)
+        .attr('viewBox', `0 0 ${width} ${h}`)
+        .attr('width',  width)
+        .attr('height', h)
         .attr('preserveAspectRatio', 'xMidYMid meet')
+        .style('background', 'transparent')
+
+      // ── SVG Defs: glow filters ──
+      const defs = svg.append('defs')
+      Object.entries(NODE_GLOW).forEach(([key, colour]) => {
+        const f = defs.append('filter').attr('id', `glow-${key}`).attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%')
+        f.append('feGaussianBlur').attr('stdDeviation', interactive ? '3' : '2').attr('result', 'blur')
+        const merge = f.append('feMerge')
+        merge.append('feMergeNode').attr('in', 'blur')
+        merge.append('feMergeNode').attr('in', 'SourceGraphic')
+      })
 
       // ── Edges ──
       const linkG = svg.append('g').attr('class', 'links')
@@ -145,10 +194,11 @@ function BreachGraph({ breachData, username, height = 200, interactive = false, 
         .data(links)
         .enter()
         .append('line')
-        .attr('stroke', d => d.kind === 'lateral' ? '#4f46e5' : '#334155')
-        .attr('stroke-opacity', 0.6)
-        .attr('stroke-width', d => d.kind === 'direct' ? 1.8 : 1.2)
-        .attr('stroke-dasharray', d => d.kind === 'lateral' ? '5,3' : '0')
+        .attr('stroke', d => d.kind === 'lateral' ? '#818cf8' : '#475569')
+        .attr('stroke-opacity', d => d.kind === 'lateral' ? 0.5 : 0.7)
+        .attr('stroke-width', d => d.kind === 'direct' ? 1.5 : 1)
+        .attr('stroke-dasharray', d => d.kind === 'lateral' ? '5,4' : '0')
+        .attr('filter', d => d.kind === 'lateral' ? 'url(#glow-lateral)' : 'none')
 
       // ── Nodes ──
       const nodeG = svg.append('g').attr('class', 'nodes')
@@ -159,25 +209,49 @@ function BreachGraph({ breachData, username, height = 200, interactive = false, 
         .attr('class', 'node-group')
         .style('cursor', interactive ? 'pointer' : 'default')
 
-      // Circle
+      // Outer ring (halo) for user node
+      nodeSel.filter(d => d.type === 'user')
+        .append('circle')
+        .attr('r', d => d.radius + 7)
+        .attr('fill', 'none')
+        .attr('stroke', '#60a5fa')
+        .attr('stroke-width', 0.8)
+        .attr('stroke-opacity', 0.35)
+        .attr('stroke-dasharray', '3,4')
+
+      // Main circle
       nodeSel.append('circle')
         .attr('r', d => d.radius)
-        .attr('fill', d => d.color)
-        .attr('fill-opacity', d => d.type === 'user' ? 0.25 : 0.85)
-        .attr('stroke', d => {
-          if (d.type === 'user')    return '#94a3b8'
-          if (d.type === 'lateral') return '#818cf8'
-          return 'rgba(255,255,255,0.25)'
+        .attr('fill', d => d.type === 'user' ? '#0a1628' : d.color)
+        .attr('fill-opacity', d => d.type === 'user' ? 0.9 : 0.80)
+        .attr('stroke', d => NODE_GLOW[d.sensitivity] || NODE_GLOW[d.type] || '#475569')
+        .attr('stroke-width', d => d.type === 'user' ? 1.5 : d.type === 'lateral' ? 1.2 : 1.5)
+        .attr('stroke-dasharray', d => d.type === 'lateral' ? '4,3' : '0')
+        .attr('stroke-opacity', 0.9)
+        .attr('filter', d => {
+          const key = d.sensitivity === 'critical' ? 'critical'
+                    : d.sensitivity === 'high'     ? 'high'
+                    : d.type === 'lateral'          ? 'lateral'
+                    : d.type === 'user'             ? 'user'
+                    : 'low'
+          return `url(#glow-${key})`
         })
-        .attr('stroke-width', d => d.type === 'lateral' ? 1.5 : 1)
-        .attr('stroke-dasharray', d => d.type === 'lateral' ? '3,2' : '0')
 
       // Label
       nodeSel.append('text')
-        .attr('y', d => d.radius + (interactive ? 14 : 11))
+        .attr('y', d => d.radius + (interactive ? 15 : 12))
         .attr('text-anchor', 'middle')
         .attr('font-size', interactive ? '10px' : '8px')
-        .attr('fill', '#94a3b8')
+        .attr('font-family', 'Inter, system-ui, sans-serif')
+        .attr('font-weight', '500')
+        .attr('letter-spacing', '0.02em')
+        .attr('fill', d => {
+          if (d.type === 'user')              return '#93c5fd'
+          if (d.type === 'lateral')           return '#a5b4fc'
+          if (d.sensitivity === 'critical')   return '#fca5a5'
+          if (d.sensitivity === 'high')       return '#fdba74'
+          return '#94a3b8'
+        })
         .attr('pointer-events', 'none')
         .text(d => interactive ? d.label : trunc(d.label, 8))
 
@@ -186,20 +260,11 @@ function BreachGraph({ breachData, username, height = 200, interactive = false, 
         nodeSel
           .on('mouseenter', (event, d) => {
             const rect = containerRef.current.getBoundingClientRect()
-            setTooltip({
-              visible: true,
-              x: event.clientX - rect.left + 12,
-              y: event.clientY - rect.top - 10,
-              node: d,
-            })
+            setTooltip({ visible: true, x: event.clientX - rect.left + 12, y: event.clientY - rect.top - 10, node: d })
           })
           .on('mousemove', (event) => {
             const rect = containerRef.current.getBoundingClientRect()
-            setTooltip(prev => ({
-              ...prev,
-              x: event.clientX - rect.left + 12,
-              y: event.clientY - rect.top - 10,
-            }))
+            setTooltip(prev => ({ ...prev, x: event.clientX - rect.left + 12, y: event.clientY - rect.top - 10 }))
           })
           .on('mouseleave', () => setTooltip({ visible: false, x: 0, y: 0, node: null }))
       }
@@ -207,11 +272,19 @@ function BreachGraph({ breachData, username, height = 200, interactive = false, 
       // ── Force simulation ──
       const sim = d3.forceSimulation(nodes)
         .force('link', d3.forceLink(links).id(d => d.id)
-          .distance(d => d.kind === 'lateral' ? 70 : 100)
+          .distance(d => d.kind === 'lateral' ? (interactive ? 90 : 70) : (interactive ? 130 : 100))
           .strength(0.6))
-        .force('charge', d3.forceManyBody().strength(interactive ? -280 : -180))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(d => d.radius + (interactive ? 18 : 12)))
+        .force('charge', d3.forceManyBody().strength(interactive ? -320 : -180))
+        .force('center', d3.forceCenter(width / 2, h / 2))
+        .force('collision', d3.forceCollide().radius(d => d.radius + (interactive ? 20 : 12)))
+        // Clamp nodes inside the SVG so nothing is cut off
+        .force('bound', () => {
+          const pad = 40
+          nodes.forEach(n => {
+            n.x = Math.max(pad, Math.min(width - pad, n.x ?? width / 2))
+            n.y = Math.max(pad, Math.min(h    - pad, n.y ?? h    / 2))
+          })
+        })
 
       sim.on('tick', () => {
         linkSel
@@ -232,7 +305,8 @@ function BreachGraph({ breachData, username, height = 200, interactive = false, 
       simRef.current?.stop()
       setTooltip({ visible: false, x: 0, y: 0, node: null })
     }
-  }, [breachData, username, height, interactive])
+  // dims triggers re-render when ResizeObserver fires in interactive mode
+  }, [breachData, username, height, interactive, dims])
 
   // ── Filter effect — runs independently when activeFilter changes ───────────
   useEffect(() => {
@@ -276,23 +350,45 @@ function BreachGraph({ breachData, username, height = 200, interactive = false, 
   }, [activeFilter, interactive])
 
   return (
-    <div ref={containerRef} className="relative w-full">
-      <svg ref={svgRef} style={{ height, width: '100%' }} />
+    <div
+      ref={containerRef}
+      style={{
+        position: 'relative', width: '100%',
+        // In interactive mode, fill 100% of parent height
+        height: interactive ? '100%' : height,
+        overflow: 'hidden',
+      }}
+    >
+      <svg
+        ref={svgRef}
+        style={{
+          width: '100%',
+          height: interactive ? '100%' : height,
+          display: 'block',
+        }}
+      />
 
       {/* Hover tooltip */}
       {interactive && tooltip.visible && tooltip.node && (
         <div
-          className="pointer-events-none absolute z-10 rounded-xl border border-white/10 bg-slate-900/95 p-3 text-xs shadow-xl backdrop-blur"
-          style={{ left: tooltip.x, top: tooltip.y, maxWidth: 180 }}
+          style={{
+            position: 'absolute', left: tooltip.x, top: tooltip.y,
+            maxWidth: 180, pointerEvents: 'none', zIndex: 20,
+            background: 'rgba(10,18,40,0.97)',
+            border: '1px solid rgba(96,165,250,0.25)',
+            borderRadius: 6, padding: '8px 12px',
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 0 18px rgba(96,165,250,0.12), 0 4px 20px rgba(0,0,0,0.5)',
+          }}
         >
-          <div className="font-semibold text-white">{tooltip.node.label}</div>
+          <div style={{ fontWeight: 600, fontSize: 12, color: '#e2e8f0', marginBottom: 4 }}>{tooltip.node.label}</div>
           {tooltip.node.type !== 'user' && (
-            <div className="mt-1 text-slate-400">
-              Sensitivity: <span className="text-slate-200 capitalize">{tooltip.node.sensitivity}</span>
+            <div style={{ fontSize: 11, color: '#64748b' }}>
+              Sensitivity: <span style={{ color: '#cbd5e1', textTransform: 'capitalize' }}>{tooltip.node.sensitivity}</span>
             </div>
           )}
-          <div className="mt-0.5 text-slate-400">
-            Type: <span className="text-slate-200">
+          <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+            Type: <span style={{ color: '#cbd5e1' }}>
               {tooltip.node.type === 'user'    ? 'Compromised User'  :
                tooltip.node.type === 'direct'  ? 'Direct Access'     :
                'Lateral Reach'}
@@ -308,20 +404,30 @@ function BreachGraph({ breachData, username, height = 200, interactive = false, 
 
 function GraphLegend({ activeFilter, onFilterChange }) {
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
       {LEGEND_ITEMS.map(item => {
         const isActive = activeFilter === item.key
         return (
           <button
             key={item.key}
             onClick={() => onFilterChange(isActive ? null : item.key)}
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-widest transition ${
-              isActive
-                ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300'
-                : 'border-white/10 bg-white/5 text-slate-500 hover:border-white/20 hover:text-slate-300'
-            }`}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '5px 14px', borderRadius: 9999,
+              border: `1px solid ${isActive ? item.color : 'rgba(255,255,255,0.10)'}`,
+              background: isActive ? `${item.color}18` : 'rgba(255,255,255,0.03)',
+              color: isActive ? item.color : '#64748b',
+              fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
+              letterSpacing: '0.08em', cursor: 'pointer',
+              transition: 'all 150ms ease',
+              boxShadow: isActive ? `0 0 10px ${item.color}33` : 'none',
+            }}
           >
-            <span className={`h-2 w-2 rounded-full ${item.dot}`} />
+            <span style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: item.color, flexShrink: 0,
+              boxShadow: isActive ? `0 0 6px ${item.color}` : 'none',
+            }} />
             {item.label}
           </button>
         )
@@ -335,7 +441,6 @@ function GraphLegend({ activeFilter, onFilterChange }) {
 function GraphModal({ breachData, username, onClose }) {
   const [activeFilter, setActiveFilter] = useState(null)
 
-  // Close on Escape key
   useEffect(() => {
     const handler = e => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', handler)
@@ -344,46 +449,108 @@ function GraphModal({ breachData, username, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'rgba(0,0,0,0.88)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        padding: '20px',
+      }}
       onClick={onClose}
     >
       <div
-        className="relative flex w-[60vw] flex-col rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-2xl"
-        style={{ height: '70vh' }}
+        style={{
+          position: 'relative', display: 'flex', flexDirection: 'column',
+          // Responsive: up to 960px wide, up to 88% of viewport height
+          width: 'min(960px, 100%)',
+          height: 'min(760px, 88vh)',
+          background: '#080d1a',
+          border: '1px solid rgba(96,165,250,0.15)',
+          borderRadius: 10,
+          boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 40px 80px rgba(0,0,0,0.75), 0 0 60px rgba(96,165,250,0.07)',
+          overflow: 'hidden',
+        }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <div className="text-[11px] uppercase tracking-widest text-slate-500">Lateral Movement Graph</div>
-            <div className="mt-0.5 font-semibold text-white">{username}</div>
+        {/* Top SG red accent stripe */}
+        <div style={{ height: 2, background: 'linear-gradient(90deg, #E3000B 0%, rgba(227,0,11,0.3) 60%, transparent 100%)', flexShrink: 0 }} />
+
+        {/* Subtle grid scan-line overlay */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
+          backgroundImage: 'linear-gradient(rgba(96,165,250,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(96,165,250,0.03) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }} />
+
+        {/* Content — fills remaining space */}
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: '18px 22px 14px' }}>
+
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14, flexShrink: 0 }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#E3000B', marginBottom: 5 }}>
+                ◈ LATERAL MOVEMENT GRAPH
+              </div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: '#e2e8f0', letterSpacing: '-0.01em' }}>{username}</div>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 32, height: 32, borderRadius: 6,
+                border: '1px solid rgba(255,255,255,0.10)',
+                background: 'rgba(255,255,255,0.03)',
+                color: '#64748b', cursor: 'pointer',
+                transition: 'all 150ms ease', flexShrink: 0,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(227,0,11,0.5)'; e.currentTarget.style.color = '#fca5a5' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; e.currentTarget.style.color = '#64748b' }}
+            >
+              <X size={14} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
-          >
-            <X size={14} />
-          </button>
+
+          {/* Graph area — flex:1 means it fills all remaining vertical space */}
+          <div style={{
+            flex: 1, minHeight: 0, borderRadius: 6, overflow: 'hidden',
+            border: '1px solid rgba(96,165,250,0.10)',
+            background: 'radial-gradient(ellipse at 50% 50%, #0d1a33 0%, #060b15 100%)',
+            boxShadow: 'inset 0 0 40px rgba(0,0,0,0.4)',
+            position: 'relative',
+          }}>
+            {/* Corner brackets */}
+            {['top-left','top-right','bottom-left','bottom-right'].map(corner => {
+              const [v, h] = corner.split('-')
+              return (
+                <div key={corner} style={{
+                  position: 'absolute', [v]: 8, [h]: 8,
+                  width: 12, height: 12,
+                  borderTop:    v === 'top'    ? '1.5px solid rgba(227,0,11,0.5)' : 'none',
+                  borderBottom: v === 'bottom' ? '1.5px solid rgba(227,0,11,0.5)' : 'none',
+                  borderLeft:   h === 'left'   ? '1.5px solid rgba(227,0,11,0.5)' : 'none',
+                  borderRight:  h === 'right'  ? '1.5px solid rgba(227,0,11,0.5)' : 'none',
+                  pointerEvents: 'none', zIndex: 2,
+                }} />
+              )
+            })}
+            {/* BreachGraph fills 100% of this container (via ResizeObserver) */}
+            <BreachGraph
+              breachData={breachData}
+              username={username}
+              interactive={true}
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+            />
+          </div>
+
+          {/* Interactive legend — horizontal, wraps naturally */}
+          <GraphLegend activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+
+          <p style={{ marginTop: 8, textAlign: 'center', fontSize: 10, color: '#334155', letterSpacing: '0.04em' }}>
+            Click a legend item to highlight · Hover nodes for details · Press Esc to close
+          </p>
         </div>
-
-        {/* Graph fills remaining space */}
-        <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-white/5 bg-black/30">
-          <BreachGraph
-            breachData={breachData}
-            username={username}
-            height={420}
-            interactive={true}
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-          />
-        </div>
-
-        {/* Interactive legend at bottom */}
-        <GraphLegend activeFilter={activeFilter} onFilterChange={setActiveFilter} />
-
-        <p className="mt-3 text-center text-[10px] text-slate-600">
-          Click a legend item to highlight · Hover nodes for details · Press Esc to close
-        </p>
       </div>
     </div>
   )
@@ -423,92 +590,135 @@ export default function BreachImpactPanel({ user }) {
 
   return (
     <>
-      <section className="glass rounded-2xl border border-white/10 p-5 slide-up">
+      <section className="card slide-up" style={{ padding: 14, flexShrink: 0 }}>
+
         {/* Section label */}
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-slate-500">
-          <AlertTriangle size={12} className="text-rose-400" /> Breach Impact
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--text-muted)', marginBottom: 10 }}>
+          <AlertTriangle size={11} style={{ color: 'var(--c-critical)' }} /> Breach Impact
         </div>
 
         {/* Loading */}
         {loading && (
-          <div className="mt-4 flex h-32 items-center justify-center text-sm text-slate-500">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 96, fontSize: 13, color: 'var(--text-muted)' }}>
             Simulating breach paths…
           </div>
         )}
 
         {/* Error */}
         {!loading && error && (
-          <div className="mt-4 rounded-xl border border-rose-400/20 bg-rose-500/10 p-3 text-sm text-rose-300">
+          <div style={{ borderRadius: 4, border: '1px solid var(--c-critical-bd)', background: 'var(--c-critical-bg)', padding: '8px 10px', fontSize: 12, color: 'var(--c-critical)' }}>
             {error}
           </div>
         )}
 
         {/* Content */}
         {!loading && !error && breachData && (
-          <div className="mt-4 space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
             {/* Impact header row */}
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/8 bg-white/4 p-4">
-                <div className="text-[10px] uppercase tracking-widest text-slate-500">Estimated Impact</div>
-                <div className="mt-2">
-                  <span className={`chip border ${IMPACT_STYLE[breachData.estimated_impact] || IMPACT_STYLE.LOW}`}>
-                    {breachData.estimated_impact}
-                  </span>
-                </div>
-                <div className="mt-3 text-xs text-slate-400">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 8 }}>
+              <div style={{ borderRadius: 4, border: '1px solid var(--border)', background: 'var(--surface-mid)', padding: '10px 12px' }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>Estimated Impact</div>
+                <span className={IMPACT_BADGE_CLS[breachData.estimated_impact] || 'badge-neutral'}>
+                  {breachData.estimated_impact}
+                </span>
+                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-secondary)' }}>
                   {breachData.pivot_user_count} users reachable
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-white/8 bg-white/4 p-4 sm:col-span-2">
-                <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-slate-500">
+              <div style={{ borderRadius: 4, border: '1px solid var(--border)', background: 'var(--surface-mid)', padding: '10px 12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>
                   <span>Data Sensitivity Score</span>
-                  <span className="text-slate-300">{Number(breachData.data_sensitivity_score).toFixed(1)} / 100</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{Number(breachData.data_sensitivity_score).toFixed(1)} / 100</span>
                 </div>
-                <div className="mt-3 risk-bar">
+                <div className="risk-bar">
                   <div
-                    className={`risk-bar-fill bg-gradient-to-r ${IMPACT_GRADIENT[breachData.estimated_impact] || IMPACT_GRADIENT.LOW}`}
-                    style={{ width: `${breachData.data_sensitivity_score}%` }}
+                    className="risk-bar-fill"
+                    style={{ width: `${breachData.data_sensitivity_score}%`, background: IMPACT_BAR_COLOR[breachData.estimated_impact] || 'var(--c-normal)' }}
                   />
                 </div>
-                <div className="mt-3 text-xs text-slate-400">
+                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-secondary)' }}>
                   {breachData.lateral_movement_risk?.length || 0} systems in lateral reach
                 </div>
               </div>
             </div>
 
             {/* Collapsed graph */}
-            <div className="rounded-2xl border border-white/8 bg-black/30 p-3">
-              <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">
-                Attack Path Preview
-              </div>
-              <BreachGraph
-                breachData={breachData}
-                username={user.username}
-                height={200}
-                interactive={false}
-                activeFilter={null}
-                onFilterChange={() => {}}
-              />
+            <div style={{
+              borderRadius: 6,
+              border: '1px solid rgba(96,165,250,0.12)',
+              background: 'radial-gradient(ellipse at 50% 50%, #0d1a33 0%, #060b15 100%)',
+              padding: '10px 12px',
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              {/* grid texture */}
+              <div style={{
+                position: 'absolute', inset: 0, pointerEvents: 'none',
+                backgroundImage: 'linear-gradient(rgba(96,165,250,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(96,165,250,0.03) 1px, transparent 1px)',
+                backgroundSize: '30px 30px',
+              }} />
 
-              {/* Static mini legend (not interactive — save that for modal) */}
-              <div className="mt-2 flex flex-wrap gap-3 text-[10px] text-slate-600">
-                {LEGEND_ITEMS.map(item => (
-                  <span key={item.key} className="flex items-center gap-1">
-                    <span className={`h-1.5 w-1.5 rounded-full ${item.dot}`} />
-                    {item.label}
-                  </span>
-                ))}
-              </div>
+              {/* Corner brackets */}
+              {['top-left','top-right','bottom-left','bottom-right'].map(corner => {
+                const [v, h] = corner.split('-')
+                return (
+                  <div key={corner} style={{
+                    position: 'absolute',
+                    [v]: 6, [h]: 6,
+                    width: 9, height: 9,
+                    borderTop:    v === 'top'    ? '1.5px solid rgba(227,0,11,0.55)' : 'none',
+                    borderBottom: v === 'bottom' ? '1.5px solid rgba(227,0,11,0.55)' : 'none',
+                    borderLeft:   h === 'left'   ? '1.5px solid rgba(227,0,11,0.55)' : 'none',
+                    borderRight:  h === 'right'  ? '1.5px solid rgba(227,0,11,0.55)' : 'none',
+                    pointerEvents: 'none', zIndex: 2,
+                  }} />
+                )
+              })}
 
-              {/* Expand button */}
-              <button
-                onClick={() => setShowModal(true)}
-                className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs text-slate-400 transition hover:border-cyan-500/30 hover:bg-cyan-500/5 hover:text-cyan-300"
-              >
-                View Full Graph ↗
-              </button>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#E3000B', marginBottom: 8, fontWeight: 600, opacity: 0.85 }}>
+                  ◈ Attack Path Preview
+                </div>
+                <BreachGraph
+                  breachData={breachData}
+                  username={user.username}
+                  height={200}
+                  interactive={false}
+                  activeFilter={null}
+                  onFilterChange={() => {}}
+                />
+
+                {/* Static mini legend */}
+                <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 10, color: '#475569' }}>
+                  {LEGEND_ITEMS.map(item => (
+                    <span key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: item.color, boxShadow: `0 0 4px ${item.color}88`, flexShrink: 0 }} />
+                      <span style={{ color: '#64748b' }}>{item.label}</span>
+                    </span>
+                  ))}
+                </div>
+
+                {/* Expand button */}
+                <button
+                  onClick={() => setShowModal(true)}
+                  style={{
+                    width: '100%', marginTop: 12, height: 32, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    background: 'rgba(227,0,11,0.08)',
+                    border: '1px solid rgba(227,0,11,0.25)',
+                    borderRadius: 4, color: '#fca5a5',
+                    fontSize: 11, fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    transition: 'all 150ms ease',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(227,0,11,0.16)'; e.currentTarget.style.borderColor = 'rgba(227,0,11,0.5)'; e.currentTarget.style.color = '#fff' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(227,0,11,0.08)'; e.currentTarget.style.borderColor = 'rgba(227,0,11,0.25)'; e.currentTarget.style.color = '#fca5a5' }}
+                >
+                  View Full Graph ↗
+                </button>
+              </div>
             </div>
 
           </div>
