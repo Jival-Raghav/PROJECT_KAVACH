@@ -31,11 +31,16 @@ _DROP = {"date", "time", "eventtime", "tz", "devname", "devid", "vd", "sentpkt",
 _KV = re.compile(r'(?:^| )(\w+)=("(?:[^"\\]|\\.)*"|\S*)')
 
 
+_INT64_MIN, _INT64_MAX = -(2**63), 2**63 - 1
+
+
 def _to_int(value: str) -> int | None:
+    """int64 or None — an out-of-range value must not abort a multi-GB ingest."""
     try:
-        return int(value)
+        n = int(value)
     except ValueError:
         return None
+    return n if _INT64_MIN <= n <= _INT64_MAX else None
 
 
 def parse_line(line: str, line_no: int) -> dict | None:
@@ -45,7 +50,7 @@ def parse_line(line: str, line_no: int) -> dict | None:
     pairs = {k: (v[1:-1] if len(v) >= 2 and v[0] == '"' and v[-1] == '"' else v)
              for k, v in _KV.findall(line.rstrip("\r\n"))}
     ts = _to_int(pairs.get("eventtime", ""))
-    if ts is None:
+    if ts is None or ts <= 0:
         return None
     rec: dict = dict.fromkeys(COLUMNS)
     rec["line_no"] = line_no

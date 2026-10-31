@@ -15,7 +15,7 @@ from killchain.reach import build_network_graph, load_assets, next_reach
 from killchain.report import render_report
 from killchain.rules import load_rules, run_rules
 from killchain.scoring import rank
-from killchain.store import open_events
+from killchain.store import open_events, sql_str
 
 _CACHE: dict[str, tuple[float, dict[int, dict]]] = {}
 
@@ -59,7 +59,8 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
     con = open_events(run_dir)
     rules = load_rules(Path(rules_dir))
     detections = run_rules(con, rules)
-    con.execute(f"COPY detection_events TO '{run_dir / 'detection_events.parquet'}' (FORMAT parquet)")
+    out_path = sql_str(str(run_dir / "detection_events.parquet"))
+    con.execute(f"COPY detection_events TO {out_path} (FORMAT parquet)")
     seconds["detect"] = round(time.perf_counter() - t, 2)
 
     say("correlate")

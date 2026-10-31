@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from killchain.groundtruth import load_ground_truth, resolve_steps
 from killchain.pipeline import clear_cache, load_meta, load_run
-from killchain.store import open_events
+from killchain.store import open_events, sql_str
 
 
 class Metrics(BaseModel):
@@ -18,6 +18,10 @@ class Metrics(BaseModel):
     label_accuracy_lenient: float
     paths_rebuilt: int
     paths_total: int
+    paths_multistep_rebuilt: int
+    paths_multistep_total: int
+    merged_incidents: int  # incidents spanning more than one planted scenario
+    incident_purity: float  # mean share of an incident's events that are planted
     false_alarm_rate: float
     incidents: int
     false_alarms: int
@@ -34,7 +38,7 @@ class Metrics(BaseModel):
 def _det_lines(run_dir: Path) -> dict[str, set[int]]:
     con = open_events(run_dir)
     rows = con.execute(
-        f"SELECT detection_id, line_no FROM read_parquet('{run_dir / 'detection_events.parquet'}')"
+        f"SELECT detection_id, line_no FROM read_parquet({sql_str(str(run_dir / 'detection_events.parquet'))})"
     ).fetchall()
     out: dict[str, set[int]] = {}
     for det_id, ln in rows:
@@ -86,10 +90,20 @@ def evaluate(run_dir: Path, gt_path: Path) -> Metrics:
                              "techniques_found": techs, "expected": st.techniques,
                              "label_ok": ok_strict, "events": len(steps[st.id])})
 
-    per_scenario, rebuilt = [], 0
+    # Which scenarios each incident touches (any of its lines inside any step of the scenario).
+    sc_lines = {sc.id: set().union(*(steps[st.id] for st in sc.steps)) for sc in scenarios}
+    inc_lines = {inc_id: set().union(*(det_lines.get(d["detection_id"], set())
+                                       for d in inc["detections"]))
+                 for inc_id, inc in incidents.items()}
+    inc_scen = {inc_id: {sid for sid, ls in sc_lines.items() if ls & lines}
+                for inc_id, lines in inc_lines.items()}
+
+    per_scenario, rebuilt, multi_total, multi_rebuilt = [], 0, 0, 0
     for sc in scenarios:
         ok_inc = None
         for inc_id in incidents:
+            if inc_scen[inc_id] != {sc.id}:  # must hold this scenario and nothing else
+                continue
             times = []
             for st in sc.steps:
                 ts = [det_info[d][2] for d in covering[st.id]
@@ -102,13 +116,15 @@ def evaluate(run_dir: Path, gt_path: Path) -> Metrics:
                     ok_inc = inc_id
                     break
         rebuilt += ok_inc is not None
+        if len(sc.steps) > 1:
+            multi_total += 1
+            multi_rebuilt += ok_inc is not None
         per_scenario.append({"scenario": sc.id, "name": sc.name, "steps": len(sc.steps),
                              "rebuilt": ok_inc is not None, "incident_id": ok_inc})
 
-    false_alarms = 0
-    for inc in incidents.values():
-        lines = set().union(*(det_lines.get(d["detection_id"], set()) for d in inc["detections"]))
-        false_alarms += not (lines & gt_lines)
+    false_alarms = sum(not scen for scen in inc_scen.values())
+    merged = sum(len(scen) > 1 for scen in inc_scen.values())
+    purity = [len(ls & gt_lines) / len(ls) for ls in inc_lines.values() if ls]
 
     total_steps = len(per_step)
     meta = load_meta(run_dir)
@@ -118,6 +134,9 @@ def evaluate(run_dir: Path, gt_path: Path) -> Metrics:
         label_accuracy=round(strict / found, 4) if found else 0.0,
         label_accuracy_lenient=round(lenient / found, 4) if found else 0.0,
         paths_rebuilt=rebuilt, paths_total=len(scenarios),
+        paths_multistep_rebuilt=multi_rebuilt, paths_multistep_total=multi_total,
+        merged_incidents=merged,
+        incident_purity=round(sum(purity) / len(purity), 4) if purity else 0.0,
         false_alarm_rate=round(false_alarms / len(incidents), 4) if incidents else 0.0,
         incidents=len(incidents), false_alarms=false_alarms, steps_total=total_steps,
         steps_found=found, processing_seconds=float(meta.get("total_seconds", 0.0)),
