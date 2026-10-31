@@ -23,7 +23,10 @@ export const exportResponseScript = () =>
   fetch(`${BASE_URL}/api/response/export`, { method: 'POST' }).then(err).then(r => r.text())
 export const getAccounts        = () => kc('/api/accounts')
 export const getLlmSafety       = () => kc('/api/killchain/llm-safety')
-export const getAnomalies       = (limit = 50, offset = 0) => kc(`/api/anomalies?limit=${limit}&offset=${offset}`)
+export const getAnomalies       = (params = {}) => {
+  const p = new URLSearchParams({ limit: 50, offset: 0, notable_only: true, ...params })
+  return kc(`/api/anomalies?${p}`)
+}
 export const getActors          = () => kc('/api/actors')
 export const getKillchainRules  = () => kc('/api/killchain/rules')
 export const getKillchainStatus = () => kc('/api/killchain/status')

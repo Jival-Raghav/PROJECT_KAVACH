@@ -126,9 +126,20 @@ def get_compliance(run_id: RunId = "firex") -> dict:
 
 @router.get("/anomalies")
 def list_anomalies(run_id: RunId = "firex", limit: int = Query(50, ge=1, le=500),
-                   offset: int = Query(0, ge=0)) -> dict:
+                   offset: int = Query(0, ge=0), kind: str = "", q: str = "",
+                   notable_only: bool = True) -> dict:
     rows = load_anomalies(_run_dir(run_id))
-    return {"total": len(rows), "items": rows[offset:offset + limit]}
+    all_total = len(rows)
+    if kind:
+        rows = [r for r in rows if r["kind"] == kind]
+    if q:
+        needle = q.strip().lower()
+        rows = [r for r in rows if needle in r["entity"].lower()]
+    if notable_only:
+        # A lead where every reason is "unusually far BELOW the peer median" is a quiet
+        # entity, not a sign of attack activity: hide it unless the user asks to see it.
+        rows = [r for r in rows if any("above the peer median" in reason for reason in r["reasons"])]
+    return {"total": len(rows), "all_total": all_total, "items": rows[offset:offset + limit]}
 
 
 @router.get("/accounts")
