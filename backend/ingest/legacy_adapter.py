@@ -253,3 +253,7 @@ def canonical_to_legacy_dicts(
         })
 
     return raw_users, raw_events
+
+
+# Backward compatibility alias
+load_legacy_as_canonical = load_canonical
