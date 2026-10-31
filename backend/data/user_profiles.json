@@ -2928,18 +2928,9 @@
     "fail_ratio": 0.0,
     "export_count": 0,
     "admin_op_count": 0,
-    "narrative": {
-      "prosecution": "The user 'stephen.bhat' logged into the high-sensitivity system PROD_DB during business hours on 2026-04-10 at 10:54:05, which has a risk score of 4.0 and is flagged for cross-departmental access. This login event occurred after 25 days of inactivity, raising concerns about potential account compromise or misuse.",
-      "devils_advocate": "Insufficient context to mount a defence. Proceed with investigation.",
-      "doubt_score": 0.4,
-      "final_severity": "CRITICAL",
-      "recommendation": "Verify access patterns with direct manager before escalating.",
-      "breach_impact": "If this account is compromised, it could lead to a catastrophic breach affecting high-value targets such as GCP, PROD_DB, and SIEM. Lateral movement through the network has been observed, reaching systems like AD, ADMIN_SYS, AWS_IAM, Azure_AD, EMAIL, Okta, Salesforce, and ServiceNow.",
-      "prosecutor_model": "LMStudioClient",
-      "da_model": "OllamaClient(qwen3:8b)"
-    },
-    "suppressed": false,
-    "feedback_note": "",
+    "narrative": null,
+    "suppressed": true,
+    "feedback_note": "this is a false positive as the risk score is very less ",
     "login_fail_count": 0
   },
   {
@@ -9250,16 +9241,7 @@
     "fail_ratio": 0.2,
     "export_count": 1,
     "admin_op_count": 0,
-    "narrative": {
-      "prosecution": "The user profile of Kenneth Verma, with a high risk score and flagged for stale privileged access and cross-departmental access, has shown multiple suspicious activities. On February 17, 2026, at 10:54:05, he attempted to log into File_Share but failed. This event occurred during business hours, indicating a potential insider threat or compromised credentials. Additionally, on April 10, 2026, at 10:54:05, he successfully exported data from the PROD_DB, a high-value target with a sensitivity score of 100.0/100. These actions suggest that Kenneth Verma may have been attempting to exfiltrate sensitive data or perform unauthorized administrative operations.",
-      "devils_advocate": "Insufficient context to mount a defence. Proceed with investigation.",
-      "doubt_score": 0.4,
-      "final_severity": "CRITICAL",
-      "recommendation": "Verify access patterns with direct manager before escalating.",
-      "breach_impact": "If compromised, Kenneth Verma's account could lead to the exfiltration of sensitive data from high-value targets such as AWS_IAM, SIEM, and PROD_DB. Lateral movement through the network could also compromise additional critical systems including Salesforce, ServiceNow, and VPN (via 206 pivot users).",
-      "prosecutor_model": "LMStudioClient",
-      "da_model": "OllamaClient(qwen3:8b)"
-    },
+    "narrative": null,
     "suppressed": false,
     "feedback_note": "",
     "login_fail_count": 1
@@ -10266,7 +10248,7 @@
       {
         "rule_id": "SOD-001",
         "description": "Admin privilege plus export on high-sensitivity resources.",
-        "explanation": "Admin/power-user performed 2 high-sensitivity export(s) on: PROD_DB, GL_System.",
+        "explanation": "Admin/power-user performed 2 high-sensitivity export(s) on: GL_System, PROD_DB.",
         "severity": "HIGH"
       }
     ],
@@ -21628,16 +21610,7 @@
     "fail_ratio": 0.5,
     "export_count": 0,
     "admin_op_count": 1,
-    "narrative": {
-      "prosecution": "Edward Esposito, with user ID USR00292 and a high risk score of 65.39, has been flagged for suspicious identity and access patterns. Specifically, on 2025-11-08 at 02:16:00, he attempted to access the Data_Lake with a failure status during night hours, indicating potential unauthorized activity. Additionally, on 2026-04-14 at 10:54:05, he successfully performed an admin operation on the Data_Lake during unusual hours, further raising concerns. These actions, combined with his high after-hours ratio of 100.0% and a compliance gap, suggest a significant risk to the enterprise's security.",
-      "devils_advocate": "Insufficient context to mount a defence. Proceed with investigation.",
-      "doubt_score": 0.4,
-      "final_severity": "CRITICAL",
-      "recommendation": "Verify access patterns with direct manager before escalating.",
-      "breach_impact": "If this account is compromised, it could lead to catastrophic data breaches affecting high-value targets such as ADMIN_SYS, AWS_IAM, Azure_AD, GCP, PROD_DB, and SIEM. Lateral movement could reach systems like AWS_IAM, PROD_DB, Salesforce, ServiceNow, and VPN (via 242 pivot users), with direct critical systems being ADMIN_SYS and SIEM.",
-      "prosecutor_model": "LMStudioClient",
-      "da_model": "OllamaClient(qwen3:8b)"
-    },
+    "narrative": null,
     "suppressed": false,
     "feedback_note": "",
     "login_fail_count": 0

@@ -83,7 +83,7 @@ export default function App() {
   const visiblePanel = useMemo(() => {
     if (activeTab === 'org')        return <OrgAnomalyPanel anomalies={orgAnomalies} stats={stats} />
     if (activeTab === 'compliance') return <CompliancePanel users={users} />
-    if (activeTab === 'clusters')   return <ClusterPanel clusters={clusters} />
+    if (activeTab === 'clusters') return <ClusterPanel clusters={clusters} users={users} onSelectUser={setSelectedUser} />
     return <RiskTable users={users} onSelectUser={setSelectedUser} selectedUser={selectedUser} />
   }, [activeTab, orgAnomalies, users, stats, selectedUser, clusters])
 
