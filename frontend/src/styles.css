@@ -1183,3 +1183,30 @@ button.rv-cite:hover { color: var(--on-accent); background: var(--accent); borde
 .rl-detail p { margin: 12px 0 10px; }
 .rl-code-label { margin: 10px 0 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); }
 .rl-code { margin: 0; padding: 10px 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; line-height: 1.5; color: var(--text-primary); white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-high); border-radius: 8px; }
+
+/* ── Actors: profile cards + detail modal ───────────────────────────── */
+.ac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.ac-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 14px 16px; text-align: center; color: var(--text-primary); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.ac-card:hover { transform: translateY(-3px); border-color: var(--ac-color); box-shadow: 0 10px 24px -12px var(--ac-color); }
+.ac-avatar { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 4px; font-size: 16px; font-weight: 700; color: #fff; background: linear-gradient(145deg, var(--ac-color), color-mix(in srgb, var(--ac-color) 60%, black)); border-radius: 50%; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ac-color) 22%, transparent); }
+.ac-avatar.large { width: 64px; height: 64px; font-size: 19px; flex-shrink: 0; }
+.ac-name { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.ac-stats { display: flex; gap: 10px; margin-top: 4px; font-size: 11.5px; color: var(--text-muted); }
+.ac-stats span { display: inline-flex; align-items: center; gap: 3px; }
+.ac-incidents { color: var(--c-critical); font-weight: 600; }
+
+.ac-overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px; background: rgba(0,0,0,.6); backdrop-filter: blur(2px); animation: ac-fade .15s ease; }
+.ac-modal { position: relative; width: 100%; max-width: 560px; max-height: 84vh; overflow-y: auto; padding: 26px 26px 24px; animation: ac-pop .18s cubic-bezier(.2,.8,.3,1.1); }
+.ac-close { position: absolute; top: 14px; right: 14px; display: grid; place-items: center; width: 28px; height: 28px; color: var(--text-muted); background: var(--surface-high); border: 0; border-radius: 50%; cursor: pointer; }
+.ac-close:hover { color: var(--text-primary); }
+.ac-modal-head { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.ac-modal-head h3 { margin: 0 0 4px; font-size: 17px; color: var(--text-primary); }
+.ac-section { padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--border); }
+.ac-section:first-of-type { padding-top: 0; margin-top: 0; border-top: 0; }
+.ac-section h4 { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); }
+.ac-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.ac-evidence { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--text-secondary); }
+.ac-ev-kind { display: inline-block; margin-right: 6px; padding: 1px 7px; font-size: 10.5px; font-weight: 600; text-transform: uppercase; color: var(--accent-ink); background: var(--accent-subtle); border-radius: 6px; }
+
+@keyframes ac-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes ac-pop { from { opacity: 0; transform: scale(.92) translateY(8px) } to { opacity: 1; transform: scale(1) translateY(0) } }
