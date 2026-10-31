@@ -97,6 +97,24 @@ class Settings:
     )
     CACHE_DIR: str = os.path.join(os.path.dirname(__file__), "data", "cache")
 
+    # ── Kill chain & attack path (hackathon PRD) ──────────────────────────────
+    KILLCHAIN_LOG_PATH: str = os.getenv(
+        "KILLCHAIN_LOG_PATH", str(root_dir / "REAL_10G_DATA" / "firex-10G.log")
+    )
+    KILLCHAIN_DATA_DIR: str = os.getenv("KILLCHAIN_DATA_DIR", str(base_dir / "data" / "killchain"))
+    KILLCHAIN_RULES_DIR: str = os.getenv(
+        "KILLCHAIN_RULES_DIR", str(root_dir / "config" / "detection_rules")
+    )
+    KILLCHAIN_MITRE_PATH: str = os.getenv(
+        "KILLCHAIN_MITRE_PATH", str(root_dir / "config" / "mitre_techniques.yaml")
+    )
+    KILLCHAIN_ASSETS_PATH: str = os.getenv(
+        "KILLCHAIN_ASSETS_PATH", str(root_dir / "config" / "assets.yaml")
+    )
+    KILLCHAIN_GT_PATH: str = os.getenv(
+        "KILLCHAIN_GT_PATH", str(root_dir / "data" / "ground_truth" / "firex_planted.yaml")
+    )
+
 
 @functools.lru_cache(maxsize=1)
 def get_settings() -> Settings:
