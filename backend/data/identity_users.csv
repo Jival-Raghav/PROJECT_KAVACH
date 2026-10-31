@@ -1,301 +1,408 @@
 user_id,username,email,department,job_title,privilege_level,systems_access,last_login,days_inactive,is_active,hire_date
-USR00000,pooja.murphy,pooja.murphy@company.com,Executive,Developer,user,AD,2026-02-20,59,true,2024-12-21
-USR00001,daniel.singh,daniel.singh@company.com,Compliance,Lead,user,Azure_AD|Salesforce,2026-03-31,20,true,2024-04-04
-USR00002,kenneth.moore,kenneth.moore@company.com,Sales,Architect,service-account,EMAIL|PROD_DB,2026-04-07,13,true,2025-12-07
-USR00003,sanjana.li,sanjana.li@company.com,Marketing,Director,user,AD|AWS_IAM,2026-04-07,13,true,2023-04-21
-USR00004,diya.anderson,diya.anderson@company.com,Marketing,Administrator,user,ServiceNow|AWS_IAM,2026-04-06,14,true,2022-10-18
-USR00005,george.lim,george.lim@company.com,Engineering,Administrator,user,GCP,2026-02-22,57,true,2025-05-25
-USR00006,kevin.ramirez,kevin.ramirez@company.com,Legal,Architect,power-user,Azure_AD|Salesforce|SIEM,2026-03-05,46,true,2024-05-08
-USR00007,robert.smith,robert.smith@company.com,Operations,Lead,user,VPN|Okta,2026-03-07,44,true,2025-05-25
-USR00008,thomas.iyer,thomas.iyer@company.com,Sales,Administrator,user,AD|AWS_IAM,2026-02-22,57,true,2022-04-27
-USR00009,aditya.burke,aditya.burke@company.com,Finance,Architect,power-user,SIEM|Azure_AD,2026-03-28,23,true,2024-02-27
-USR00010,jacob.patel,jacob.patel@company.com,Marketing,Architect,user,PROD_DB|ADMIN_SYS,2026-04-19,1,true,2025-09-20
-USR00011,maria.o'brien,maria.o'brien@company.com,Security,Administrator,user,SIEM,2026-04-04,16,true,2025-09-10
-USR00012,vikram.white,vikram.white@company.com,Operations,Director,service-account,SIEM|Azure_AD,2026-03-26,25,true,2024-12-04
-USR00013,jonathan.jackson,jonathan.jackson@company.com,Sales,Administrator,user,EMAIL,2026-03-17,34,true,2022-05-30
-USR00014,david.thomas,david.thomas@company.com,Support,Architect,user,ADMIN_SYS,2026-04-18,2,true,2025-06-17
-USR00015,sophia.white,sophia.white@company.com,Security,Developer,admin,Okta|SIEM|Azure_AD|ServiceNow|AWS_IAM|VPN|ADMIN_SYS,2026-03-27,24,true,2025-10-04
-USR00016,elena.dubois,elena.dubois@company.com,IT,Specialist,user,Azure_AD,2026-03-19,32,true,2024-12-06
-USR00017,diya.schulz,diya.schulz@company.com,Executive,Manager,power-user,ADMIN_SYS|GCP|Okta,2026-03-05,46,true,2025-04-02
-USR00018,meera.burke,meera.burke@company.com,Operations,Executive,power-user,EMAIL|ServiceNow|ADMIN_SYS|Azure_AD,2026-02-20,59,true,2025-10-04
-USR00019,joshua.white,joshua.white@company.com,Finance,Coordinator,user,VPN|EMAIL,2026-04-18,2,true,2024-06-20
-USR00020,karan.white,karan.white@company.com,IT,Specialist,user,GCP,2026-03-26,25,true,2023-12-14
-USR00021,rohan.harris,rohan.harris@company.com,Marketing,Executive,user,Azure_AD,2026-03-18,33,true,2022-12-22
-USR00022,harsh.patel,harsh.patel@company.com,Legal,Specialist,user,ADMIN_SYS|Okta,2026-02-27,52,true,2025-04-22
-USR00023,isha.jones,isha.jones@company.com,Legal,Director,power-user,SIEM|AD|EMAIL,2026-02-24,55,true,2024-03-25
-USR00024,nicholas.jackson,nicholas.jackson@company.com,Compliance,Lead,user,PROD_DB,2026-03-20,31,true,2023-11-01
-USR00025,diya.romano,diya.romano@company.com,Marketing,Coordinator,power-user,EMAIL|ADMIN_SYS,2026-04-07,13,true,2022-06-12
-USR00026,stephen.bhat,stephen.bhat@company.com,Finance,Director,user,ADMIN_SYS|PROD_DB,2026-03-18,33,true,2022-12-14
-USR00027,pooja.sullivan,pooja.sullivan@company.com,Support,Lead,admin,VPN|Salesforce|AWS_IAM|ADMIN_SYS|SIEM|Azure_AD|ServiceNow,2026-03-17,34,true,2024-02-21
-USR00028,paul.singh,paul.singh@company.com,HR,Officer,admin,GCP|Salesforce|EMAIL|VPN|ServiceNow|ADMIN_SYS,2026-03-23,28,true,2023-11-27
-USR00029,zainab.wagner,zainab.wagner@company.com,Support,Engineer,user,ADMIN_SYS,2026-03-16,35,true,2023-12-12
-USR00030,yuki.meyer,yuki.meyer@company.com,Marketing,Manager,service-account,EMAIL|AWS_IAM,2026-03-27,24,true,2025-04-07
-USR00031,amitabh.taylor,amitabh.taylor@company.com,Finance,Director,power-user,Azure_AD|ServiceNow|Salesforce,2026-03-21,30,true,2024-01-24
-USR00032,pooja.martin,pooja.martin@company.com,Support,Coordinator,user,SIEM|AWS_IAM,2026-04-07,13,true,2023-06-21
-USR00033,michael.sharma,michael.sharma@company.com,Legal,Officer,power-user,AWS_IAM|EMAIL|Azure_AD|GCP,2026-03-25,26,true,2023-06-10
-USR00034,harsh.jones,harsh.jones@company.com,Operations,Specialist,service-account,EMAIL|AWS_IAM,2026-03-08,43,true,2024-10-23
-USR00035,nikhil.rao,nikhil.rao@company.com,Executive,Lead,admin,PROD_DB|EMAIL|ServiceNow|SIEM|Salesforce|AD,2026-02-23,56,true,2025-07-05
-USR00036,nicholas.harris,nicholas.harris@company.com,Marketing,Analyst,user,AD|Azure_AD,2026-03-11,40,true,2025-11-25
-USR00037,ronald.wilson,ronald.wilson@company.com,Finance,Coordinator,power-user,AD|AWS_IAM|Azure_AD|EMAIL,2026-03-26,25,true,2024-03-06
-USR00038,aisha.kim,aisha.kim@company.com,Compliance,Engineer,user,Azure_AD,2026-04-15,5,true,2022-07-14
-USR00039,stephen.bhat,stephen.bhat@company.com,Engineering,Engineer,user,GCP|VPN,2026-03-26,25,true,2023-09-11
-USR00040,nicholas.romano,nicholas.romano@company.com,Security,Officer,power-user,EMAIL|VPN,2026-02-27,52,true,2023-12-02
-USR00041,matthew.huang,matthew.huang@company.com,Operations,Lead,power-user,Salesforce|EMAIL,2026-04-13,7,true,2025-10-08
-USR00042,kenneth.sanchez,kenneth.sanchez@company.com,Support,Engineer,user,ServiceNow,2026-03-05,46,true,2023-12-06
-USR00043,matthew.bernard,matthew.bernard@company.com,Operations,Coordinator,power-user,GCP|AD|SIEM|Okta,2026-03-18,33,true,2024-11-02
-USR00044,pooja.mishra,pooja.mishra@company.com,Finance,Developer,admin,EMAIL|SIEM|ADMIN_SYS|Salesforce|Azure_AD,2026-02-20,59,true,2023-11-18
-USR00045,stephen.kumar,stephen.kumar@company.com,Security,Coordinator,user,Azure_AD|Salesforce,2026-03-25,26,true,2022-09-10
-USR00046,deepika.li,deepika.li@company.com,Support,Manager,user,PROD_DB,2026-03-03,48,true,2024-07-14
-USR00047,george.clark,george.clark@company.com,Engineering,Lead,power-user,Azure_AD|ServiceNow,2026-02-24,55,true,2024-04-12
-USR00048,xiulan.colombo,xiulan.colombo@company.com,Compliance,Administrator,user,GCP|Azure_AD,2026-03-17,34,true,2023-10-28
-USR00049,thomas.kang,thomas.kang@company.com,Engineering,Administrator,user,EMAIL|AWS_IAM,2026-03-27,24,true,2022-08-24
-USR00050,nisha.martinez,nisha.martinez@company.com,HR,Architect,user,EMAIL,2026-03-26,25,true,2024-02-19
-USR00051,meera.quinn,meera.quinn@company.com,Executive,Developer,user,VPN|ServiceNow,2026-03-21,30,true,2025-01-26
-USR00052,leila.sun,leila.sun@company.com,Engineering,Administrator,user,AD,2026-02-26,53,true,2024-04-05
-USR00053,timothy.jo,timothy.jo@company.com,Engineering,Engineer,user,SIEM|PROD_DB,2026-04-09,11,true,2025-09-20
-USR00054,edward.smith,edward.smith@company.com,Support,Specialist,user,ADMIN_SYS,2026-04-08,12,true,2023-07-28
-USR00055,neha.johnson,neha.johnson@company.com,Sales,Analyst,user,GCP,2026-03-02,49,true,2025-05-20
-USR00056,william.kumar,william.kumar@company.com,Compliance,Manager,user,Azure_AD|VPN,2026-02-21,58,true,2023-09-13
-USR00057,zainab.jo,zainab.jo@company.com,Sales,Architect,admin,GCP|ADMIN_SYS|AD|SIEM,2026-04-06,14,true,2024-06-15
-USR00058,anthony.taylor,anthony.taylor@company.com,Finance,Administrator,user,AD,2026-02-28,51,true,2024-07-06
-USR00059,thomas.lewis,thomas.lewis@company.com,Finance,Director,power-user,ServiceNow|EMAIL|SIEM|Azure_AD,2026-02-21,58,true,2024-08-12
-USR00060,vikram.gonzalez,vikram.gonzalez@company.com,Sales,Developer,power-user,EMAIL|AD|ADMIN_SYS|VPN,2026-04-16,4,true,2022-06-14
-USR00061,sophia.hernandez,sophia.hernandez@company.com,Support,Developer,user,Okta|SIEM,2026-03-16,35,true,2023-04-13
-USR00062,nisha.jones,nisha.jones@company.com,Marketing,Coordinator,power-user,GCP|ServiceNow|PROD_DB,2026-03-15,36,true,2023-10-20
-USR00063,daniel.colombo,daniel.colombo@company.com,Sales,Specialist,power-user,GCP|VPN,2026-02-27,52,true,2025-03-04
-USR00064,zainab.pillai,zainab.pillai@company.com,HR,Director,user,VPN,2026-02-21,58,true,2023-08-19
-USR00065,timothy.xu,timothy.xu@company.com,Marketing,Architect,user,Salesforce|ADMIN_SYS,2026-04-14,6,true,2023-02-03
-USR00066,ronald.martin,ronald.martin@company.com,Security,Specialist,user,ADMIN_SYS,2026-03-22,29,true,2025-12-10
-USR00067,donald.wang,donald.wang@company.com,Marketing,Manager,user,PROD_DB|ADMIN_SYS,2026-02-25,54,true,2023-07-01
-USR00068,robert.patel,robert.patel@company.com,Support,Lead,admin,ADMIN_SYS|PROD_DB|AWS_IAM|Salesforce|EMAIL,2026-04-13,7,true,2024-10-25
-USR00069,nikhil.jang,nikhil.jang@company.com,HR,Analyst,user,ServiceNow|Okta,2026-03-21,30,true,2023-07-16
-USR00070,jeffrey.chen,jeffrey.chen@company.com,IT,Administrator,power-user,Salesforce|ADMIN_SYS,2026-04-01,19,true,2024-02-02
-USR00071,richard.johnson,richard.johnson@company.com,HR,Administrator,user,AD|ServiceNow,2026-03-28,23,true,2022-03-25
-USR00072,amitabh.park,amitabh.park@company.com,Legal,Analyst,user,EMAIL,2026-03-07,44,true,2025-12-13
-USR00073,joshua.becker,joshua.becker@company.com,Security,Engineer,user,ServiceNow|VPN,2026-03-31,20,true,2025-02-03
-USR00074,mark.he,mark.he@company.com,Security,Officer,user,SIEM|AWS_IAM,2026-04-20,0,true,2022-03-26
-USR00075,timothy.huang,timothy.huang@company.com,Sales,Manager,user,ADMIN_SYS,2026-03-30,21,true,2023-12-15
-USR00076,stephen.guo,stephen.guo@company.com,Finance,Lead,user,PROD_DB|VPN,2026-04-12,8,true,2025-10-30
-USR00077,neha.taylor,neha.taylor@company.com,Finance,Architect,power-user,AD|EMAIL|PROD_DB,2026-04-09,11,true,2023-08-29
-USR00078,christopher.menon,christopher.menon@company.com,Executive,Officer,service-account,Azure_AD,2026-03-29,22,true,2023-01-02
-USR00079,varun.weber,varun.weber@company.com,Engineering,Engineer,user,AWS_IAM,2026-02-27,52,true,2025-02-10
-USR00080,david.rodriguez,david.rodriguez@company.com,HR,Developer,service-account,Okta,2026-03-08,43,true,2023-04-22
-USR00081,isha.ghosh,isha.ghosh@company.com,IT,Manager,power-user,AWS_IAM|VPN|Azure_AD,2026-03-07,44,true,2025-12-26
-USR00082,arjun.hwang,arjun.hwang@company.com,Legal,Manager,admin,PROD_DB|Okta|VPN|AD|GCP,2026-02-27,52,true,2024-09-21
-USR00083,ryan.thomas,ryan.thomas@company.com,Marketing,Executive,service-account,VPN|SIEM,2026-04-03,17,true,2025-02-21
-USR00084,aditya.gupta,aditya.gupta@company.com,Engineering,Analyst,admin,Okta|Salesforce|ServiceNow|EMAIL|Azure_AD|AWS_IAM,2026-02-20,59,true,2023-06-17
-USR00085,varun.rao,varun.rao@company.com,Marketing,Developer,user,Salesforce,2026-03-07,44,true,2022-07-24
-USR00086,ryan.colombo,ryan.colombo@company.com,Engineering,Analyst,service-account,GCP|VPN,2026-03-02,49,true,2024-11-18
-USR00087,aditya.taylor,aditya.taylor@company.com,Marketing,Manager,power-user,SIEM|VPN|ServiceNow,2026-03-23,28,true,2023-04-29
-USR00088,william.jang,william.jang@company.com,Engineering,Engineer,admin,ServiceNow|VPN|EMAIL|AD,2026-03-15,36,true,2024-10-14
-USR00089,isha.chen,isha.chen@company.com,Compliance,Coordinator,service-account,Salesforce|ServiceNow,2026-04-02,18,true,2025-06-09
-USR00090,neha.o'brien,neha.o'brien@company.com,Finance,Officer,admin,Azure_AD|VPN|AD|PROD_DB,2026-02-22,57,true,2024-07-03
-USR00091,steven.thompson,steven.thompson@company.com,Support,Lead,power-user,AD|PROD_DB,2026-03-25,26,true,2023-02-06
-USR00092,charles.sullivan,charles.sullivan@company.com,IT,Executive,user,ADMIN_SYS,2026-03-23,28,true,2025-12-05
-USR00093,nadia.muller,nadia.muller@company.com,Sales,Director,user,PROD_DB,2026-03-05,46,true,2024-02-07
-USR00094,donald.schulz,donald.schulz@company.com,Sales,Officer,user,VPN,2026-03-23,28,true,2024-01-04
-USR00095,priya.petit,priya.petit@company.com,HR,Architect,user,ADMIN_SYS,2026-03-31,20,true,2023-04-28
-USR00096,edward.thomas,edward.thomas@company.com,Operations,Officer,service-account,ServiceNow,2026-03-27,24,true,2023-04-08
-USR00097,leila.lopez,leila.lopez@company.com,IT,Executive,user,EMAIL|VPN,2026-03-08,43,true,2025-01-27
-USR00098,jason.white,jason.white@company.com,Compliance,Lead,power-user,Okta|Azure_AD|AWS_IAM,2026-02-27,52,true,2023-04-03
-USR00099,maria.bianchi,maria.bianchi@company.com,Marketing,Officer,service-account,ADMIN_SYS,2026-03-11,40,true,2025-10-01
-USR00100,aisha.hernandez,aisha.hernandez@company.com,Security,Manager,user,EMAIL,2026-03-19,32,true,2026-01-09
-USR00101,paul.hoffmann,paul.hoffmann@company.com,Finance,Director,user,EMAIL,2026-04-15,5,true,2024-04-16
-USR00102,william.garcia,william.garcia@company.com,Engineering,Administrator,power-user,ADMIN_SYS|AD,2026-04-05,15,true,2022-12-30
-USR00103,priya.garcia,priya.garcia@company.com,Support,Specialist,user,EMAIL,2026-04-02,18,true,2025-09-11
-USR00104,jeffrey.ghosh,jeffrey.ghosh@company.com,Marketing,Administrator,user,ServiceNow|ADMIN_SYS,2026-03-17,34,true,2023-12-18
-USR00105,gary.murphy,gary.murphy@company.com,Security,Analyst,power-user,AWS_IAM|AD,2026-03-20,31,true,2023-06-09
-USR00106,sanjana.quinn,sanjana.quinn@company.com,Sales,Engineer,user,EMAIL|AD,2026-03-12,39,true,2024-07-30
-USR00107,daniel.anderson,daniel.anderson@company.com,Finance,Manager,power-user,GCP|AWS_IAM|EMAIL,2026-03-05,46,true,2024-12-26
-USR00108,xiulan.romano,xiulan.romano@company.com,Sales,Engineer,user,VPN,2026-03-21,30,true,2022-05-25
-USR00109,richard.martinez,richard.martinez@company.com,HR,Specialist,user,Salesforce|ServiceNow,2026-02-23,56,true,2022-06-13
-USR00110,joshua.bhat,joshua.bhat@company.com,Operations,Executive,user,ADMIN_SYS,2026-03-23,28,true,2025-04-04
-USR00111,james.sharma,james.sharma@company.com,Security,Coordinator,admin,PROD_DB|EMAIL|ADMIN_SYS|ServiceNow,2026-03-23,28,true,2022-05-22
-USR00112,ryan.rao,ryan.rao@company.com,Marketing,Officer,user,Okta|AD,2026-02-25,54,true,2025-09-04
-USR00113,aisha.lewis,aisha.lewis@company.com,Security,Coordinator,service-account,ADMIN_SYS,2026-03-12,39,true,2025-03-14
-USR00114,anjali.romano,anjali.romano@company.com,Sales,Analyst,power-user,AWS_IAM|PROD_DB|GCP|EMAIL,2026-04-12,8,true,2023-11-22
-USR00115,steven.becker,steven.becker@company.com,Sales,Engineer,user,ServiceNow|ADMIN_SYS,2026-04-20,0,true,2022-04-27
-USR00116,nikhil.fischer,nikhil.fischer@company.com,Engineering,Coordinator,user,Azure_AD|ADMIN_SYS,2026-03-26,25,true,2025-10-01
-USR00117,richard.kelly,richard.kelly@company.com,Marketing,Lead,power-user,SIEM|ServiceNow,2026-04-09,11,true,2024-03-17
-USR00118,michael.quinn,michael.quinn@company.com,Operations,Executive,user,EMAIL,2026-03-01,50,true,2024-01-27
-USR00119,thomas.muller,thomas.muller@company.com,Operations,Specialist,user,Salesforce|ADMIN_SYS,2026-03-26,25,true,2024-04-07
-USR00120,david.sullivan,david.sullivan@company.com,Compliance,Lead,power-user,AWS_IAM|Azure_AD|Okta|Salesforce,2026-02-21,58,true,2024-07-01
-USR00121,joseph.perez,joseph.perez@company.com,Security,Coordinator,admin,AWS_IAM|Salesforce|ServiceNow|GCP,2026-03-15,36,true,2023-09-05
-USR00122,nisha.li,nisha.li@company.com,Marketing,Manager,admin,Okta|PROD_DB|EMAIL|Salesforce|ServiceNow|AD,2026-03-08,43,true,2024-09-15
-USR00123,paul.lee,paul.lee@company.com,Finance,Specialist,user,SIEM,2026-03-17,34,true,2022-05-08
-USR00124,david.russo,david.russo@company.com,IT,Manager,user,VPN,2026-03-20,31,true,2024-07-06
-USR00125,kenneth.verma,kenneth.verma@company.com,Marketing,Coordinator,admin,SIEM|AWS_IAM|Azure_AD|EMAIL|Okta|GCP,2026-03-08,43,true,2024-08-12
-USR00126,mark.patel,mark.patel@company.com,Operations,Developer,admin,ADMIN_SYS|AD|Okta|ServiceNow|GCP,2026-03-29,22,true,2025-01-22
-USR00127,amitabh.davis,amitabh.davis@company.com,Security,Executive,user,Salesforce,2026-03-29,22,true,2025-05-19
-USR00128,michael.rossi,michael.rossi@company.com,Marketing,Developer,user,ADMIN_SYS,2026-04-07,13,true,2024-01-04
-USR00129,sanjana.burke,sanjana.burke@company.com,Legal,Engineer,user,PROD_DB,2026-04-03,17,true,2022-09-09
-USR00130,jeffrey.garcia,jeffrey.garcia@company.com,HR,Specialist,user,ADMIN_SYS|VPN,2026-04-18,2,true,2025-08-30
-USR00131,david.yang,david.yang@company.com,Engineering,Coordinator,user,EMAIL,2026-03-16,35,true,2022-06-08
-USR00132,xiulan.lim,xiulan.lim@company.com,Security,Director,user,ServiceNow,2026-02-20,59,true,2022-10-02
-USR00133,fatima.patel,fatima.patel@company.com,Compliance,Director,user,AD|GCP,2026-04-19,1,true,2025-01-31
-USR00134,richard.li,richard.li@company.com,Marketing,Architect,user,Salesforce,2026-03-15,36,true,2023-11-18
-USR00135,pooja.murphy,pooja.murphy@company.com,Sales,Director,user,PROD_DB,2026-02-25,54,true,2024-08-19
-USR00136,maria.jo,maria.jo@company.com,Executive,Coordinator,user,GCP,2026-03-31,20,true,2024-09-05
-USR00137,jason.dubois,jason.dubois@company.com,Operations,Director,user,AD,2026-02-20,59,true,2024-04-27
-USR00138,pooja.lewis,pooja.lewis@company.com,Security,Lead,power-user,Okta|AWS_IAM,2026-03-02,49,true,2023-03-14
-USR00139,akshay.choi,akshay.choi@company.com,Marketing,Coordinator,power-user,SIEM|Okta|VPN|AWS_IAM,2026-03-20,31,true,2024-06-09
-USR00140,riya.lim,riya.lim@company.com,Legal,Coordinator,user,EMAIL|Azure_AD,2026-03-16,35,true,2025-01-10
-USR00141,richard.yang,richard.yang@company.com,HR,Administrator,power-user,ADMIN_SYS|ServiceNow|AWS_IAM|AD,2026-03-27,24,true,2025-01-16
-USR00142,harsh.bernard,harsh.bernard@company.com,IT,Manager,user,AWS_IAM|SIEM,2026-03-25,26,true,2024-03-30
-USR00143,maria.gonzalez,maria.gonzalez@company.com,Operations,Executive,user,Salesforce|Okta,2026-02-28,51,true,2023-11-13
-USR00144,amitabh.rossi,amitabh.rossi@company.com,Operations,Executive,user,VPN|EMAIL,2026-04-08,12,true,2025-08-15
-USR00145,daniel.davis,daniel.davis@company.com,Marketing,Administrator,user,AWS_IAM|AD,2026-04-06,14,true,2025-06-12
-USR00146,pooja.clark,pooja.clark@company.com,IT,Manager,user,GCP|Azure_AD,2026-03-05,46,true,2025-09-25
-USR00147,anthony.davis,anthony.davis@company.com,Support,Lead,user,PROD_DB,2026-03-13,38,true,2025-03-15
-USR00148,mark.hwang,mark.hwang@company.com,Engineering,Architect,user,PROD_DB|AWS_IAM,2026-04-10,10,true,2023-03-04
-USR00149,amara.sullivan,amara.sullivan@company.com,Legal,Specialist,admin,ServiceNow|ADMIN_SYS|Okta|AD,2026-03-12,39,true,2023-10-12
-USR00150,daniel.wagner,daniel.wagner@company.com,Security,Director,user,ADMIN_SYS,2026-02-25,54,true,2024-02-13
-USR00151,priya.white,priya.white@company.com,IT,Engineer,power-user,ServiceNow|EMAIL|SIEM|ADMIN_SYS,2026-04-02,18,true,2023-08-27
-USR00152,diya.ghosh,diya.ghosh@company.com,Sales,Administrator,power-user,PROD_DB|AWS_IAM,2026-03-04,47,true,2024-03-22
-USR00153,edward.rizzo,edward.rizzo@company.com,Security,Executive,user,Salesforce,2026-02-26,53,true,2025-05-02
-USR00154,varun.petit,varun.petit@company.com,Executive,Manager,admin,Salesforce|EMAIL|Azure_AD|ServiceNow|AD,2026-03-16,35,true,2025-04-25
-USR00155,varun.colombo,varun.colombo@company.com,Sales,Administrator,admin,Azure_AD|AWS_IAM|ServiceNow|Okta|VPN|EMAIL,2026-03-16,35,true,2023-05-02
-USR00156,amitabh.white,amitabh.white@company.com,Compliance,Lead,user,GCP|EMAIL,2026-03-07,44,true,2023-09-23
-USR00157,shruti.rossi,shruti.rossi@company.com,IT,Lead,user,VPN,2026-03-31,20,true,2025-06-26
-USR00158,arjun.sanchez,arjun.sanchez@company.com,Compliance,Developer,user,Salesforce,2026-03-27,24,true,2025-01-05
-USR00159,fatima.lee,fatima.lee@company.com,Engineering,Analyst,user,GCP|AWS_IAM,2026-03-09,42,true,2023-06-02
-USR00160,kevin.rao,kevin.rao@company.com,Security,Analyst,user,PROD_DB|AWS_IAM,2026-03-04,47,true,2022-10-31
-USR00161,timothy.rao,timothy.rao@company.com,Security,Executive,user,ServiceNow|SIEM,2026-03-06,45,true,2023-01-15
-USR00162,thomas.russo,thomas.russo@company.com,Security,Director,admin,Okta|EMAIL|Salesforce|GCP|AWS_IAM|SIEM,2026-03-17,34,true,2023-04-05
-USR00163,sofia.rao,sofia.rao@company.com,Sales,Administrator,power-user,PROD_DB|Salesforce|AD,2026-03-31,20,true,2024-09-13
-USR00164,anjali.sun,anjali.sun@company.com,Engineering,Developer,user,SIEM|AD,2026-03-14,37,true,2025-12-02
-USR00165,paul.o'brien,paul.o'brien@company.com,Finance,Administrator,user,VPN,2026-02-25,54,true,2023-10-20
-USR00166,amara.smith,amara.smith@company.com,Legal,Coordinator,power-user,EMAIL|SIEM,2026-03-26,25,true,2023-06-26
-USR00167,michael.kelly,michael.kelly@company.com,Compliance,Architect,power-user,SIEM|EMAIL|VPN,2026-04-09,11,true,2022-11-13
-USR00168,amitabh.colombo,amitabh.colombo@company.com,Operations,Executive,power-user,ADMIN_SYS|ServiceNow|Salesforce,2026-03-04,47,true,2025-04-07
-USR00169,nadia.taylor,nadia.taylor@company.com,Operations,Executive,user,Salesforce,2026-04-12,8,true,2024-10-14
-USR00170,sophia.smith,sophia.smith@company.com,Marketing,Administrator,user,Azure_AD,2026-02-28,51,true,2022-05-26
-USR00171,xiulan.schulz,xiulan.schulz@company.com,Finance,Administrator,power-user,VPN|Okta,2026-03-16,35,true,2025-08-22
-USR00172,anjali.jo,anjali.jo@company.com,HR,Manager,service-account,SIEM|Okta,2026-03-10,41,true,2023-07-27
-USR00173,christopher.meyer,christopher.meyer@company.com,Compliance,Director,service-account,VPN|Azure_AD,2026-03-19,32,true,2025-04-21
-USR00174,pooja.romano,pooja.romano@company.com,Executive,Coordinator,user,SIEM,2026-04-05,15,true,2024-02-16
-USR00175,aditya.chen,aditya.chen@company.com,Compliance,Manager,user,SIEM|Salesforce,2026-04-12,8,true,2022-09-04
-USR00176,nisha.sharma,nisha.sharma@company.com,Finance,Engineer,admin,Okta|VPN|EMAIL|Azure_AD,2026-03-31,20,true,2025-05-24
-USR00177,timothy.mishra,timothy.mishra@company.com,Sales,Architect,power-user,Okta|AD|SIEM|ADMIN_SYS,2026-03-14,37,true,2022-12-27
-USR00178,sofia.ferrari,sofia.ferrari@company.com,Engineering,Engineer,user,ServiceNow|ADMIN_SYS,2026-03-12,39,true,2023-08-28
-USR00179,xiulan.sharma,xiulan.sharma@company.com,Sales,Developer,user,SIEM,2026-03-10,41,true,2024-02-07
-USR00180,nikhil.rodriguez,nikhil.rodriguez@company.com,Marketing,Coordinator,user,GCP,2026-03-06,45,true,2022-04-25
-USR00181,george.smith,george.smith@company.com,Marketing,Executive,power-user,PROD_DB|Salesforce,2026-03-05,46,true,2023-04-12
-USR00182,ronald.bhat,ronald.bhat@company.com,Sales,Engineer,user,PROD_DB|VPN,2026-03-11,40,true,2024-03-27
-USR00183,kenneth.johnson,kenneth.johnson@company.com,Engineering,Lead,user,Okta,2026-04-19,1,true,2024-04-22
-USR00184,vikram.williams,vikram.williams@company.com,Marketing,Engineer,user,EMAIL|GCP,2026-03-21,30,true,2022-11-17
-USR00185,anthony.thompson,anthony.thompson@company.com,Marketing,Architect,user,SIEM,2026-03-08,43,true,2022-09-17
-USR00186,deepika.jang,deepika.jang@company.com,HR,Executive,user,Okta,2026-03-24,27,true,2024-10-28
-USR00187,joshua.miller,joshua.miller@company.com,Sales,Coordinator,admin,PROD_DB|AD|Okta|ADMIN_SYS,2026-03-14,37,true,2023-08-14
-USR00188,meera.schmidt,meera.schmidt@company.com,Marketing,Engineer,power-user,EMAIL|ADMIN_SYS|VPN,2026-03-06,45,true,2022-10-20
-USR00189,meera.rizzo,meera.rizzo@company.com,Support,Manager,user,AD,2026-02-20,59,true,2023-11-17
-USR00190,donald.hoffmann,donald.hoffmann@company.com,Executive,Director,user,AWS_IAM|EMAIL,2026-03-01,50,true,2025-02-02
-USR00191,robert.nair,robert.nair@company.com,IT,Manager,user,Azure_AD,2026-04-10,10,true,2023-08-29
-USR00192,timothy.taylor,timothy.taylor@company.com,HR,Executive,user,Azure_AD|SIEM,2026-02-26,53,true,2025-07-31
-USR00193,christopher.kang,christopher.kang@company.com,Executive,Coordinator,user,PROD_DB|Azure_AD,2026-04-09,11,true,2023-03-30
-USR00194,varun.taylor,varun.taylor@company.com,HR,Manager,user,ADMIN_SYS|Okta,2026-04-06,14,true,2024-11-30
-USR00195,mark.becker,mark.becker@company.com,Engineering,Manager,user,VPN,2026-03-07,44,true,2025-09-17
-USR00196,anjali.jackson,anjali.jackson@company.com,Security,Manager,user,SIEM,2026-04-19,1,true,2022-09-01
-USR00197,kevin.white,kevin.white@company.com,HR,Developer,user,ADMIN_SYS|Okta,2026-04-06,14,true,2026-01-10
-USR00198,joshua.gonzalez,joshua.gonzalez@company.com,Marketing,Developer,power-user,Salesforce|VPN,2026-03-22,29,true,2022-07-07
-USR00199,anjali.williams,anjali.williams@company.com,Compliance,Engineer,user,ADMIN_SYS,2026-04-19,1,true,2025-02-23
-USR00200,joseph.guo,joseph.guo@company.com,Compliance,Engineer,user,AWS_IAM|Azure_AD,2026-04-08,12,true,2024-10-31
-USR00201,daniel.jackson,daniel.jackson@company.com,Operations,Manager,power-user,SIEM|AWS_IAM|Azure_AD,2026-03-24,27,true,2022-09-27
-USR00202,jason.white,jason.white@company.com,Security,Director,user,VPN,2026-03-03,48,true,2023-04-26
-USR00203,zainab.moore,zainab.moore@company.com,Security,Specialist,admin,SIEM|VPN|AWS_IAM|ServiceNow|EMAIL|AD|GCP,2026-03-09,42,true,2024-06-13
-USR00204,christopher.rodriguez,christopher.rodriguez@company.com,Executive,Engineer,user,PROD_DB|ServiceNow,2026-03-23,28,true,2025-06-07
-USR00205,paul.choi,paul.choi@company.com,Executive,Architect,power-user,Azure_AD|ADMIN_SYS|Salesforce,2026-04-01,19,true,2024-07-27
-USR00206,fatima.gupta,fatima.gupta@company.com,Support,Analyst,user,EMAIL|Okta,2026-04-03,17,true,2023-03-11
-USR00207,joseph.young,joseph.young@company.com,IT,Architect,power-user,AWS_IAM|EMAIL|ADMIN_SYS|Azure_AD,2026-04-14,6,true,2023-11-27
-USR00208,sanjana.moore,sanjana.moore@company.com,HR,Executive,service-account,Azure_AD|EMAIL,2026-03-03,48,true,2022-05-15
-USR00209,nikhil.martinez,nikhil.martinez@company.com,Operations,Executive,user,SIEM|VPN,2026-03-14,37,true,2025-09-22
-USR00210,charles.lopez,charles.lopez@company.com,Security,Director,user,Okta,2026-03-22,29,true,2025-07-20
-USR00211,rajesh.gupta,rajesh.gupta@company.com,Security,Administrator,user,Azure_AD,2026-04-08,12,true,2024-09-14
-USR00212,david.liu,david.liu@company.com,Engineering,Officer,power-user,SIEM|Azure_AD|ServiceNow|AD,2026-03-24,27,true,2022-08-10
-USR00213,riya.colombo,riya.colombo@company.com,Sales,Lead,service-account,Salesforce,2026-03-10,41,true,2022-09-06
-USR00214,ryan.sanchez,ryan.sanchez@company.com,Engineering,Lead,user,Azure_AD,2026-03-14,37,true,2024-06-26
-USR00215,nikhil.choi,nikhil.choi@company.com,Engineering,Architect,power-user,Salesforce|VPN|PROD_DB,2026-03-20,31,true,2025-12-27
-USR00216,gary.lee,gary.lee@company.com,Operations,Specialist,user,SIEM|ADMIN_SYS,2026-04-08,12,true,2025-02-14
-USR00217,rohan.hernandez,rohan.hernandez@company.com,Compliance,Executive,service-account,VPN|Salesforce,2026-03-14,37,true,2025-03-06
-USR00218,zainab.garcia,zainab.garcia@company.com,Sales,Executive,power-user,EMAIL|AWS_IAM|Salesforce|GCP,2026-03-22,29,true,2024-09-03
-USR00219,eric.iyer,eric.iyer@company.com,Legal,Analyst,user,AWS_IAM|AD,2026-03-31,20,true,2025-07-24
-USR00220,arjun.hwang,arjun.hwang@company.com,Legal,Developer,power-user,VPN|Salesforce|AD,2026-03-25,26,true,2022-07-20
-USR00221,rajesh.smith,rajesh.smith@company.com,Engineering,Administrator,user,Salesforce|SIEM,2026-02-28,51,true,2024-02-26
-USR00222,jason.rizzo,jason.rizzo@company.com,IT,Director,power-user,PROD_DB|Okta,2026-04-04,16,true,2022-09-12
-USR00223,nadia.quinn,nadia.quinn@company.com,Marketing,Architect,service-account,ServiceNow,2026-03-05,46,true,2025-06-26
-USR00224,larry.sanchez,larry.sanchez@company.com,Marketing,Coordinator,user,Salesforce|ADMIN_SYS,2026-03-06,45,true,2024-05-06
-USR00225,raja.rizzo,raja.rizzo@company.com,Sales,Lead,admin,Salesforce|EMAIL|ADMIN_SYS|SIEM,2026-02-23,56,true,2025-03-27
-USR00226,ronald.esposito,ronald.esposito@company.com,Operations,Developer,user,Salesforce,2026-03-13,38,true,2024-12-16
-USR00227,vikram.russo,vikram.russo@company.com,Sales,Manager,admin,PROD_DB|ADMIN_SYS|Azure_AD|VPN|EMAIL,2026-03-15,36,true,2024-02-09
-USR00228,anthony.clark,anthony.clark@company.com,HR,Architect,user,AWS_IAM,2026-04-11,9,true,2023-06-18
-USR00229,deepika.park,deepika.park@company.com,IT,Architect,user,Okta|Azure_AD,2026-04-20,0,true,2023-12-20
-USR00230,nicholas.romano,nicholas.romano@company.com,HR,Director,service-account,GCP,2026-04-04,16,true,2025-03-04
-USR00231,rajesh.pillai,rajesh.pillai@company.com,Engineering,Specialist,user,PROD_DB|Azure_AD,2026-03-20,31,true,2022-12-14
-USR00232,nisha.moore,nisha.moore@company.com,Finance,Manager,power-user,Salesforce|ADMIN_SYS|SIEM|EMAIL,2026-03-19,32,true,2023-08-06
-USR00233,ronald.reddy,ronald.reddy@company.com,HR,Coordinator,user,EMAIL,2026-03-29,22,true,2024-11-09
-USR00234,maria.perez,maria.perez@company.com,HR,Architect,power-user,GCP|Okta|AD|ADMIN_SYS,2026-02-27,52,true,2023-03-12
-USR00235,michael.clark,michael.clark@company.com,Compliance,Analyst,admin,EMAIL|SIEM|ServiceNow|GCP,2026-04-16,4,true,2024-01-16
-USR00236,harsh.connor,harsh.connor@company.com,Legal,Director,service-account,PROD_DB|ADMIN_SYS,2026-03-11,40,true,2024-01-28
-USR00237,ryan.davis,ryan.davis@company.com,Support,Lead,user,ServiceNow|Salesforce,2026-04-14,6,true,2022-09-01
-USR00238,robert.martinez,robert.martinez@company.com,IT,Architect,power-user,GCP|ServiceNow|Okta,2026-03-25,26,true,2025-12-22
-USR00239,kevin.xu,kevin.xu@company.com,Sales,Executive,user,ServiceNow,2026-04-15,5,true,2024-06-30
-USR00240,jacob.park,jacob.park@company.com,Compliance,Engineer,admin,Azure_AD|EMAIL|AD|GCP,2026-03-30,21,true,2022-07-19
-USR00241,amitabh.harris,amitabh.harris@company.com,Compliance,Analyst,user,PROD_DB|Salesforce,2026-03-20,31,true,2024-05-03
-USR00242,deepika.garcia,deepika.garcia@company.com,Security,Analyst,user,SIEM,2026-04-12,8,true,2024-12-28
-USR00243,mark.sanchez,mark.sanchez@company.com,HR,Developer,user,Salesforce,2026-03-19,32,true,2023-02-05
-USR00244,stephen.iyer,stephen.iyer@company.com,IT,Developer,user,GCP|EMAIL,2026-02-21,58,true,2022-10-11
-USR00245,nicholas.hoffmann,nicholas.hoffmann@company.com,Marketing,Manager,power-user,ADMIN_SYS|GCP,2026-03-03,48,true,2025-03-22
-USR00246,isha.ramirez,isha.ramirez@company.com,Finance,Specialist,admin,AD|SIEM|ServiceNow|GCP|Salesforce,2026-03-16,35,true,2024-03-02
-USR00247,joshua.bernard,joshua.bernard@company.com,Compliance,Engineer,power-user,SIEM|AD|PROD_DB,2026-04-18,2,true,2023-10-11
-USR00248,vikram.smith,vikram.smith@company.com,Security,Specialist,user,PROD_DB,2026-04-16,4,true,2023-05-23
-USR00249,james.muller,james.muller@company.com,Compliance,Executive,user,SIEM|AWS_IAM,2026-03-10,41,true,2022-09-28
-USR00250,akshay.rao,akshay.rao@company.com,Finance,Analyst,user,GCP,2026-03-29,22,true,2025-10-27
-USR00251,jonathan.robinson,jonathan.robinson@company.com,Engineering,Specialist,user,VPN,2026-03-22,29,true,2023-03-06
-USR00252,nadia.singh,nadia.singh@company.com,Finance,Officer,power-user,Okta|ServiceNow|Salesforce|EMAIL,2026-03-05,46,true,2025-05-09
-USR00253,christopher.anderson,christopher.anderson@company.com,Compliance,Developer,power-user,GCP|PROD_DB,2026-02-26,53,true,2025-08-23
-USR00254,james.kumar,james.kumar@company.com,Finance,Coordinator,user,Salesforce,2026-03-03,48,true,2022-05-14
-USR00255,jason.lim,jason.lim@company.com,Finance,Analyst,admin,SIEM|Azure_AD|ServiceNow|EMAIL|PROD_DB|AD,2026-03-11,40,true,2025-02-09
-USR00256,timothy.fischer,timothy.fischer@company.com,HR,Manager,admin,AD|Salesforce|VPN|GCP,2026-03-05,46,true,2024-01-26
-USR00257,ryan.verma,ryan.verma@company.com,Compliance,Director,power-user,ServiceNow|ADMIN_SYS,2026-02-26,53,true,2026-01-08
-USR00258,meera.reddy,meera.reddy@company.com,Executive,Administrator,user,Okta,2026-03-04,47,true,2024-01-23
-USR00259,anthony.verma,anthony.verma@company.com,Marketing,Architect,user,Azure_AD,2026-04-12,8,true,2022-12-22
-USR00260,sofia.lewis,sofia.lewis@company.com,Support,Analyst,user,SIEM,2026-04-10,10,true,2022-06-28
-USR00261,nikhil.thomas,nikhil.thomas@company.com,Marketing,Developer,user,Okta|ADMIN_SYS,2026-03-20,31,true,2024-03-24
-USR00262,aditya.mishra,aditya.mishra@company.com,Engineering,Manager,admin,SIEM|PROD_DB|ADMIN_SYS|AWS_IAM|EMAIL,2026-04-15,5,true,2023-08-08
-USR00263,paul.ramirez,paul.ramirez@company.com,Marketing,Analyst,user,VPN|ADMIN_SYS,2026-03-12,39,true,2024-10-13
-USR00264,elena.johnson,elena.johnson@company.com,Marketing,Officer,power-user,Azure_AD|SIEM,2026-04-10,10,true,2023-04-05
-USR00265,jacob.lee,jacob.lee@company.com,HR,Specialist,user,EMAIL,2026-02-22,57,true,2022-08-01
-USR00266,robert.thomas,robert.thomas@company.com,Operations,Coordinator,user,PROD_DB,2026-03-06,45,true,2024-03-31
-USR00267,jeffrey.ramirez,jeffrey.ramirez@company.com,Operations,Officer,user,Okta,2026-04-03,17,true,2025-07-06
-USR00268,mark.sun,mark.sun@company.com,Security,Engineer,user,EMAIL,2026-04-14,6,true,2023-10-01
-USR00269,priya.lim,priya.lim@company.com,Marketing,Executive,user,ServiceNow|VPN,2026-03-14,37,true,2022-08-14
-USR00270,robert.ramirez,robert.ramirez@company.com,Marketing,Lead,user,VPN,2026-04-13,7,true,2024-03-22
-USR00271,donald.reddy,donald.reddy@company.com,Support,Analyst,power-user,GCP|Azure_AD|Salesforce|ADMIN_SYS,2026-03-05,46,true,2024-10-03
-USR00272,ryan.davis,ryan.davis@company.com,Operations,Director,user,VPN,2026-04-01,19,true,2023-12-10
-USR00273,rohan.bianchi,rohan.bianchi@company.com,Support,Director,user,Salesforce|AD,2026-03-16,35,true,2023-02-03
-USR00274,joseph.reilly,joseph.reilly@company.com,Sales,Coordinator,user,AD|Okta,2026-04-16,4,true,2022-09-15
-USR00275,meera.martinez,meera.martinez@company.com,Marketing,Developer,power-user,GCP|Okta|Salesforce,2026-03-18,33,true,2025-07-11
-USR00276,william.perez,william.perez@company.com,Engineering,Engineer,power-user,Salesforce|Okta,2026-04-05,15,true,2023-09-19
-USR00277,nicholas.schulz,nicholas.schulz@company.com,Compliance,Specialist,power-user,Okta|Salesforce|VPN|PROD_DB,2026-04-04,16,true,2023-08-18
-USR00278,sofia.martin,sofia.martin@company.com,Engineering,Executive,user,SIEM,2026-02-26,53,true,2022-07-30
-USR00279,nadia.reilly,nadia.reilly@company.com,Security,Developer,user,Azure_AD|Okta,2026-04-16,4,true,2022-07-12
-USR00280,aditya.yang,aditya.yang@company.com,Engineering,Architect,user,AWS_IAM,2026-04-08,12,true,2024-08-29
-USR00281,nikhil.verma,nikhil.verma@company.com,Finance,Analyst,user,GCP,2026-03-13,38,true,2023-11-22
-USR00282,raja.romano,raja.romano@company.com,Legal,Engineer,power-user,ADMIN_SYS|SIEM|EMAIL|GCP,2026-04-02,18,true,2023-06-20
-USR00283,thomas.meyer,thomas.meyer@company.com,Sales,Lead,power-user,Azure_AD|Okta,2026-04-05,15,true,2022-12-16
-USR00284,william.patel,william.patel@company.com,Compliance,Analyst,power-user,ServiceNow|SIEM,2026-04-04,16,true,2023-09-01
-USR00285,deepika.murphy,deepika.murphy@company.com,Operations,Coordinator,power-user,EMAIL|GCP|ServiceNow,2026-03-28,23,true,2025-08-25
-USR00286,ronald.lee,ronald.lee@company.com,HR,Engineer,power-user,SIEM|VPN|PROD_DB|Okta,2026-02-28,51,true,2022-03-18
-USR00287,nisha.ferrari,nisha.ferrari@company.com,Support,Analyst,user,EMAIL|Salesforce,2026-04-20,0,true,2023-11-07
-USR00288,arjun.dubois,arjun.dubois@company.com,Marketing,Analyst,admin,ADMIN_SYS|EMAIL|Okta|ServiceNow|SIEM|AD|AWS_IAM,2026-03-27,24,true,2023-12-24
-USR00289,rajesh.jang,rajesh.jang@company.com,Support,Developer,user,EMAIL|AD,2026-03-03,48,true,2024-10-04
-USR00290,thomas.sharma,thomas.sharma@company.com,Compliance,Architect,power-user,AWS_IAM|Salesforce|Okta,2026-04-18,2,true,2024-03-12
-USR00291,daniel.romano,daniel.romano@company.com,Sales,Analyst,power-user,AWS_IAM|Azure_AD,2026-03-03,48,true,2025-11-02
-USR00292,edward.esposito,edward.esposito@company.com,Sales,Officer,admin,ADMIN_SYS|Okta|GCP|AD|EMAIL|Azure_AD|SIEM,2026-04-10,10,true,2024-08-26
-USR00293,gary.kang,gary.kang@company.com,Operations,Lead,user,ADMIN_SYS,2026-04-09,11,true,2025-09-25
-USR00294,kenneth.colombo,kenneth.colombo@company.com,Executive,Developer,user,AD,2026-04-09,11,true,2023-09-07
-USR00295,james.sun,james.sun@company.com,Security,Developer,service-account,ServiceNow,2026-02-26,53,true,2024-07-31
-USR00296,joseph.taylor,joseph.taylor@company.com,Security,Analyst,user,GCP,2026-02-20,59,true,2024-03-07
-USR00297,sofia.schmidt,sofia.schmidt@company.com,Security,Lead,power-user,ADMIN_SYS|ServiceNow,2026-04-07,13,true,2024-08-03
-USR00298,joseph.miller,joseph.miller@company.com,Compliance,Administrator,user,VPN,2026-03-12,39,true,2025-11-28
-USR00299,leila.lee,leila.lee@company.com,Finance,Administrator,user,AD,2026-04-05,15,true,2024-01-10
+USR00000,kabir.nair0,kabir.nair0@company.com,Legal,Compliance Officer,user,EMAIL|Okta|AD,2026-04-03,17,true,2021-01-11
+USR00001,aditya.menon1,aditya.menon1@company.com,Operations,Coordinator,user,ServiceNow,2026-04-02,18,true,2022-07-15
+USR00002,zoya.patel2,zoya.patel2@company.com,Engineering,Developer,user,AD,2026-03-31,20,true,2023-08-15
+USR00003,nisha.pillai3,nisha.pillai3@company.com,Finance,Controller,user,Okta,2026-04-18,2,true,2019-09-17
+USR00004,nisha.khan4,nisha.khan4@company.com,Operations,Manager,user,Salesforce|AD,2026-04-10,10,true,2019-02-13
+USR00005,dhruv.reddy5,dhruv.reddy5@company.com,Legal,Compliance Officer,user,Salesforce|Okta,2026-03-28,23,true,2021-04-15
+USR00006,om.patel6,om.patel6@company.com,Sales,Account Executive,user,AD,2026-04-08,12,true,2019-07-17
+USR00007,diya.naidu7,diya.naidu7@company.com,Sales,Sales Manager,service-account,EMAIL|Okta,2026-04-05,15,true,2019-09-17
+USR00008,arnav.sharma8,arnav.sharma8@company.com,HR,HR Generalist,user,Okta|VPN|Salesforce,2026-04-11,9,true,2024-09-15
+USR00009,ritika.gupta9,ritika.gupta9@company.com,Finance,Accountant,admin,ServiceNow|AD,2026-04-13,7,true,2022-01-12
+USR00010,anika.singh10,anika.singh10@company.com,Operations,Operations Analyst,power-user,ServiceNow|Okta|AD,2026-04-13,7,true,2018-05-18
+USR00011,reyansh.bose11,reyansh.bose11@company.com,Operations,Operations Analyst,user,ServiceNow|EMAIL|AD,2026-04-12,8,true,2024-01-16
+USR00012,ira.naidu12,ira.naidu12@company.com,Support,Support Agent,service-account,EMAIL,2026-04-11,9,true,2019-04-11
+USR00013,leela.patel13,leela.patel13@company.com,Finance,Controller,user,Okta|VPN|EMAIL,2026-04-08,12,true,2023-03-10
+USR00014,vivaan.pillai14,vivaan.pillai14@company.com,Support,Support Agent,user,ServiceNow|EMAIL|VPN,2026-03-30,21,true,2021-07-19
+USR00015,myra.menon15,myra.menon15@company.com,Sales,Account Executive,power-user,Okta|VPN|AD,2026-03-31,20,true,2022-08-12
+USR00016,ishaan.kulkarni16,ishaan.kulkarni16@company.com,Legal,Paralegal,service-account,AD,2026-04-02,18,true,2023-08-19
+USR00017,aditya.shetty17,aditya.shetty17@company.com,Engineering,Software Engineer,user,AD,2026-04-13,7,true,2020-06-13
+USR00018,aarav.bose18,aarav.bose18@company.com,Operations,Operations Analyst,user,ServiceNow,2026-04-01,19,true,2023-09-14
+USR00019,reyansh.rao19,reyansh.rao19@company.com,Marketing,Campaign Manager,power-user,Okta|ServiceNow|AD,2026-04-13,7,true,2019-02-14
+USR00020,rudra.rao20,rudra.rao20@company.com,Engineering,Software Engineer,user,AD|Okta,2026-04-01,19,true,2022-02-13
+USR00021,dhruv.reddy21,dhruv.reddy21@company.com,Finance,Accountant,user,ServiceNow,2026-04-04,16,true,2018-08-17
+USR00022,rudra.naidu22,rudra.naidu22@company.com,Engineering,Developer,user,EMAIL,2026-04-13,7,true,2025-01-18
+USR00023,dhruv.pillai23,dhruv.pillai23@company.com,Marketing,Campaign Manager,service-account,Okta,2026-03-30,21,true,2020-07-17
+USR00024,om.patel24,om.patel24@company.com,Legal,Paralegal,user,Okta|EMAIL|VPN,2026-04-07,13,true,2022-09-15
+USR00025,shreya.patel25,shreya.patel25@company.com,Operations,Manager,admin,VPN,2026-04-16,4,true,2019-06-12
+USR00026,diya.bose26,diya.bose26@company.com,Sales,Sales Manager,power-user,Salesforce|EMAIL,2026-04-10,10,true,2019-08-17
+USR00027,anika.mehta27,anika.mehta27@company.com,Legal,Counsel,power-user,ServiceNow|Salesforce|Okta,2026-04-07,13,true,2018-06-18
+USR00028,pooja.pillai28,pooja.pillai28@company.com,Operations,Coordinator,user,VPN|AD,2026-04-03,17,true,2024-07-10
+USR00029,shreya.patel29,shreya.patel29@company.com,Engineering,Software Engineer,user,Okta|Salesforce,2026-03-26,25,true,2022-09-19
+USR00030,aarav.verma30,aarav.verma30@company.com,Support,Support Agent,power-user,Okta|VPN,2026-04-18,2,true,2022-02-19
+USR00031,arnav.patel31,arnav.patel31@company.com,Support,Support Agent,user,EMAIL,2026-04-13,7,true,2022-09-12
+USR00032,shreya.patel32,shreya.patel32@company.com,Finance,Controller,user,Salesforce,2026-03-31,20,true,2018-04-11
+USR00033,saanvi.patel33,saanvi.patel33@company.com,Operations,Operations Analyst,admin,AD|Okta,2026-04-17,3,true,2020-04-15
+USR00034,pooja.mehta34,pooja.mehta34@company.com,Legal,Counsel,user,Okta|VPN,2026-04-08,12,true,2020-09-15
+USR00035,yash.singh35,yash.singh35@company.com,Operations,Coordinator,user,VPN,2026-04-13,7,true,2019-04-14
+USR00036,anika.shetty36,anika.shetty36@company.com,Support,Specialist,user,Okta|EMAIL|AD,2026-04-02,18,true,2023-02-10
+USR00037,arnav.bose37,arnav.bose37@company.com,Marketing,Analyst,user,EMAIL|VPN|ServiceNow,2026-03-30,21,true,2019-06-14
+USR00038,ishaan.chopra38,ishaan.chopra38@company.com,Engineering,Software Engineer,user,Okta|VPN|EMAIL,2026-04-13,7,true,2022-09-10
+USR00039,reyansh.bose39,reyansh.bose39@company.com,Legal,Paralegal,user,EMAIL,2026-03-29,22,true,2018-02-16
+USR00040,ira.nair40,ira.nair40@company.com,Legal,Counsel,user,Salesforce|VPN|EMAIL,2026-04-03,17,true,2023-08-11
+USR00041,shreya.shetty41,shreya.shetty41@company.com,Support,Specialist,user,Okta,2026-04-12,8,true,2020-03-17
+USR00042,arnav.bose42,arnav.bose42@company.com,Sales,Sales Manager,power-user,Salesforce,2026-04-13,7,true,2023-02-13
+USR00043,shreya.mehta43,shreya.mehta43@company.com,Sales,Sales Manager,admin,AD|EMAIL|Okta,2026-04-19,1,true,2019-07-19
+USR00044,ishaan.pillai44,ishaan.pillai44@company.com,HR,HR Generalist,user,EMAIL|Salesforce,2026-03-31,20,true,2019-01-15
+USR00045,ritika.verma45,ritika.verma45@company.com,Sales,Coordinator,power-user,VPN,2026-04-15,5,true,2022-01-16
+USR00046,aditya.singh46,aditya.singh46@company.com,Support,Specialist,user,Okta|EMAIL,2026-04-10,10,true,2025-01-11
+USR00047,manav.naidu47,manav.naidu47@company.com,Engineering,Developer,user,AD|EMAIL,2026-03-29,22,true,2024-08-15
+USR00048,kavya.reddy48,kavya.reddy48@company.com,Legal,Paralegal,power-user,Okta|ServiceNow|Salesforce,2026-04-04,16,true,2023-06-12
+USR00049,ira.singh49,ira.singh49@company.com,HR,HR Partner,admin,Salesforce|AD,2026-04-16,4,true,2021-09-13
+USR00050,anika.kulkarni50,anika.kulkarni50@company.com,Engineering,Software Engineer,power-user,ServiceNow|AD|VPN,2026-04-06,14,true,2020-03-10
+USR00051,saanvi.singh51,saanvi.singh51@company.com,Engineering,Architect,user,Okta|EMAIL,2026-04-15,5,true,2025-01-17
+USR00052,harsh.chopra52,harsh.chopra52@company.com,Sales,Coordinator,user,Salesforce|AD,2026-03-30,21,true,2021-02-10
+USR00053,yash.sharma53,yash.sharma53@company.com,Sales,Sales Manager,admin,AD|EMAIL|VPN,2026-04-16,4,true,2022-01-14
+USR00054,tejas.bose54,tejas.bose54@company.com,Sales,Sales Manager,user,ServiceNow|EMAIL,2026-04-16,4,true,2025-09-17
+USR00055,sameer.singh55,sameer.singh55@company.com,Operations,Manager,user,Okta|VPN|ServiceNow,2026-04-09,11,true,2018-06-12
+USR00056,harsh.das56,harsh.das56@company.com,Finance,Financial Analyst,user,EMAIL,2026-04-10,10,true,2019-05-12
+USR00057,dhruv.mehta57,dhruv.mehta57@company.com,Support,Support Lead,power-user,Okta|VPN,2026-04-04,16,true,2018-03-16
+USR00058,saanvi.kulkarni58,saanvi.kulkarni58@company.com,Legal,Compliance Officer,user,EMAIL|AD|VPN,2026-03-27,24,true,2018-04-18
+USR00059,zoya.sharma59,zoya.sharma59@company.com,Engineering,Developer,admin,VPN|Salesforce|EMAIL,2026-04-08,12,true,2019-06-12
+USR00060,vivaan.gupta60,vivaan.gupta60@company.com,Operations,Manager,user,ServiceNow|Okta,2026-03-30,21,true,2025-06-15
+USR00061,vivaan.iyer61,vivaan.iyer61@company.com,Engineering,Developer,admin,AD,2026-04-16,4,true,2022-04-18
+USR00062,rudra.das62,rudra.das62@company.com,HR,HR Generalist,user,AD|EMAIL|VPN,2026-03-30,21,true,2023-07-15
+USR00063,vivaan.patel63,vivaan.patel63@company.com,Support,Specialist,power-user,EMAIL,2026-04-05,15,true,2020-02-12
+USR00064,ritika.chopra64,ritika.chopra64@company.com,Support,Support Agent,user,ServiceNow|Okta|EMAIL,2026-04-04,16,true,2018-03-16
+USR00065,amrita.sharma65,amrita.sharma65@company.com,Sales,Sales Manager,user,EMAIL|Okta|Salesforce,2026-03-31,20,true,2020-03-11
+USR00066,myra.khan66,myra.khan66@company.com,Support,Specialist,power-user,AD|Okta|ServiceNow,2026-03-30,21,true,2021-09-12
+USR00067,ishaan.singh67,ishaan.singh67@company.com,Engineering,Software Engineer,admin,VPN|EMAIL,2026-04-12,8,true,2024-07-15
+USR00068,amrita.singh68,amrita.singh68@company.com,Marketing,Analyst,power-user,EMAIL|AD|ServiceNow,2026-04-17,3,true,2021-01-12
+USR00069,harsh.joshi69,harsh.joshi69@company.com,Operations,Coordinator,user,AD|VPN,2026-04-12,8,true,2024-05-15
+USR00070,aarav.rao70,aarav.rao70@company.com,Legal,Counsel,user,AD,2026-04-08,12,true,2019-06-15
+USR00071,nikhil.iyer71,nikhil.iyer71@company.com,HR,Recruiter,power-user,EMAIL|AD|Salesforce,2026-04-17,3,true,2020-06-10
+USR00072,pooja.chopra72,pooja.chopra72@company.com,Engineering,Architect,admin,AD|VPN|Okta,2026-04-18,2,true,2020-09-10
+USR00073,manav.bose73,manav.bose73@company.com,Legal,Counsel,user,AD|ServiceNow,2026-04-14,6,true,2020-07-12
+USR00074,nikhil.das74,nikhil.das74@company.com,Finance,Financial Analyst,power-user,Okta,2026-03-27,24,true,2019-08-17
+USR00075,aditya.nair75,aditya.nair75@company.com,Engineering,Architect,user,Okta,2026-04-10,10,true,2020-02-11
+USR00076,myra.shetty76,myra.shetty76@company.com,Engineering,Developer,user,EMAIL|AD,2026-04-19,1,true,2020-09-13
+USR00077,tejas.chopra77,tejas.chopra77@company.com,Sales,Account Executive,service-account,VPN|Salesforce|EMAIL,2026-04-17,3,true,2022-03-15
+USR00078,anika.menon78,anika.menon78@company.com,Marketing,Campaign Manager,user,Salesforce|VPN|ServiceNow,2026-04-09,11,true,2019-09-12
+USR00079,om.mehta79,om.mehta79@company.com,Finance,Controller,user,VPN,2026-03-27,24,true,2020-04-12
+USR00080,ira.singh80,ira.singh80@company.com,Support,Specialist,user,Okta,2026-03-30,21,true,2018-06-14
+USR00081,tejas.reddy81,tejas.reddy81@company.com,Sales,Account Executive,power-user,EMAIL,2026-04-18,2,true,2022-02-12
+USR00082,zoya.iyer82,zoya.iyer82@company.com,Legal,Compliance Officer,user,Salesforce|VPN,2026-04-10,10,true,2023-08-17
+USR00083,kabir.das83,kabir.das83@company.com,Sales,Account Executive,user,Okta|EMAIL,2026-03-27,24,true,2024-05-15
+USR00084,manav.gupta84,manav.gupta84@company.com,Legal,Paralegal,admin,AD,2026-04-09,11,true,2022-05-10
+USR00085,sameer.rao85,sameer.rao85@company.com,Operations,Coordinator,user,Okta|Salesforce,2026-04-19,1,true,2021-08-12
+USR00086,diya.khan86,diya.khan86@company.com,Support,Specialist,user,Salesforce|AD|VPN,2026-04-03,17,true,2021-03-10
+USR00087,rudra.pillai87,rudra.pillai87@company.com,Operations,Operations Analyst,user,EMAIL|VPN,2026-04-01,19,true,2018-03-10
+USR00088,shreya.chopra88,shreya.chopra88@company.com,Marketing,Analyst,user,VPN,2026-03-27,24,true,2023-03-16
+USR00089,aditya.chopra89,aditya.chopra89@company.com,Legal,Paralegal,user,ServiceNow|Okta|Salesforce,2026-04-12,8,true,2020-09-18
+USR00090,sameer.sharma90,sameer.sharma90@company.com,Support,Support Lead,user,EMAIL|Okta|AD,2026-04-08,12,true,2024-06-18
+USR00091,amrita.naidu91,amrita.naidu91@company.com,Operations,Manager,user,Salesforce|Okta|ServiceNow,2026-03-27,24,true,2021-07-11
+USR00092,aditya.naidu92,aditya.naidu92@company.com,HR,Recruiter,user,AD,2026-04-05,15,true,2025-04-12
+USR00093,kavya.khan93,kavya.khan93@company.com,HR,HR Partner,user,Salesforce|VPN|Okta,2026-04-08,12,true,2021-04-13
+USR00094,saanvi.menon94,saanvi.menon94@company.com,Support,Support Lead,user,Okta,2026-04-06,14,true,2020-09-17
+USR00095,amrita.mehta95,amrita.mehta95@company.com,Marketing,Content Strategist,user,Okta|VPN,2026-04-19,1,true,2022-08-10
+USR00096,shreya.verma96,shreya.verma96@company.com,Legal,Compliance Officer,service-account,AD|ServiceNow,2026-04-01,19,true,2024-09-18
+USR00097,nikhil.menon97,nikhil.menon97@company.com,Operations,Coordinator,service-account,Salesforce|Okta,2026-04-03,17,true,2023-07-19
+USR00098,myra.rao98,myra.rao98@company.com,Support,Support Agent,user,VPN,2026-04-04,16,true,2022-03-17
+USR00099,saanvi.rao99,saanvi.rao99@company.com,HR,Recruiter,user,EMAIL|VPN|Salesforce,2026-04-03,17,true,2021-08-12
+USR00100,aarav.chopra100,aarav.chopra100@company.com,Marketing,Analyst,power-user,EMAIL|AD|Salesforce,2026-04-14,6,true,2022-05-13
+USR00101,anika.mehta101,anika.mehta101@company.com,HR,HR Generalist,power-user,Okta|VPN|AD,2026-04-17,3,true,2018-01-14
+USR00102,rudra.bose102,rudra.bose102@company.com,Operations,Operations Analyst,user,Salesforce,2026-03-27,24,true,2020-08-18
+USR00103,harsh.mehta103,harsh.mehta103@company.com,HR,HR Partner,user,EMAIL,2026-04-08,12,true,2022-02-18
+USR00104,aditya.verma104,aditya.verma104@company.com,Marketing,Content Strategist,service-account,EMAIL|Salesforce,2026-04-13,7,true,2025-09-17
+USR00105,myra.singh105,myra.singh105@company.com,Operations,Manager,user,Salesforce|ServiceNow|AD,2026-04-17,3,true,2022-02-17
+USR00106,tejas.nair106,tejas.nair106@company.com,Support,Support Agent,user,Salesforce|VPN,2026-04-07,13,true,2020-09-14
+USR00107,diya.nair107,diya.nair107@company.com,Support,Specialist,power-user,ServiceNow|Salesforce|AD,2026-04-07,13,true,2022-07-18
+USR00108,arnav.shetty108,arnav.shetty108@company.com,Support,Support Agent,user,ServiceNow,2026-04-02,18,true,2021-02-11
+USR00109,aarav.reddy109,aarav.reddy109@company.com,Sales,Sales Manager,user,ServiceNow|VPN|Okta,2026-04-05,15,true,2019-08-18
+USR00110,tejas.reddy110,tejas.reddy110@company.com,Operations,Coordinator,user,Salesforce|AD,2026-03-31,20,true,2025-02-12
+USR00111,tara.mehta111,tara.mehta111@company.com,Finance,Financial Analyst,power-user,Salesforce|AD|EMAIL,2026-04-10,10,true,2023-06-11
+USR00112,ritika.nair112,ritika.nair112@company.com,HR,HR Partner,user,ServiceNow|VPN,2026-04-07,13,true,2020-01-15
+USR00113,tejas.gupta113,tejas.gupta113@company.com,HR,Recruiter,user,VPN|EMAIL,2026-03-30,21,true,2018-09-13
+USR00114,vivaan.verma114,vivaan.verma114@company.com,Operations,Manager,user,AD|EMAIL|VPN,2026-04-11,9,true,2018-08-15
+USR00115,leela.gupta115,leela.gupta115@company.com,Legal,Counsel,user,AD|Okta,2026-04-18,2,true,2020-02-11
+USR00116,kabir.mehta116,kabir.mehta116@company.com,Marketing,Campaign Manager,user,ServiceNow|Salesforce|AD,2026-04-14,6,true,2023-04-14
+USR00117,aarav.bose117,aarav.bose117@company.com,Legal,Compliance Officer,user,Okta,2026-03-28,23,true,2020-04-15
+USR00118,arnav.mehta118,arnav.mehta118@company.com,Support,Specialist,user,ServiceNow|Okta|AD,2026-03-28,23,true,2024-04-15
+USR00119,ira.nair119,ira.nair119@company.com,Support,Support Agent,user,VPN|ServiceNow|EMAIL,2026-04-11,9,true,2024-02-14
+USR00120,ishaan.pillai120,ishaan.pillai120@company.com,Marketing,Campaign Manager,admin,VPN,2026-04-17,3,true,2018-02-19
+USR00121,amrita.naidu121,amrita.naidu121@company.com,Marketing,Analyst,power-user,ServiceNow|AD|Okta,2026-04-04,16,true,2025-07-17
+USR00122,vivaan.verma122,vivaan.verma122@company.com,Finance,Controller,power-user,AD|Salesforce,2026-03-29,22,true,2024-01-18
+USR00123,ira.iyer123,ira.iyer123@company.com,Legal,Compliance Officer,user,Okta|Salesforce|ServiceNow,2026-04-01,19,true,2018-04-18
+USR00124,ishaan.rao124,ishaan.rao124@company.com,Engineering,Developer,user,VPN|Salesforce,2026-04-15,5,true,2020-05-13
+USR00125,vivaan.singh125,vivaan.singh125@company.com,Engineering,Architect,user,AD,2026-04-08,12,true,2020-07-10
+USR00126,diya.patel126,diya.patel126@company.com,Support,Support Agent,user,Okta|AD|EMAIL,2026-04-14,6,true,2025-05-12
+USR00127,rudra.kulkarni127,rudra.kulkarni127@company.com,Support,Specialist,user,EMAIL|Okta,2026-03-31,20,true,2019-01-16
+USR00128,leela.khan128,leela.khan128@company.com,Operations,Coordinator,user,VPN,2026-04-19,1,true,2024-08-14
+USR00129,tara.mehta129,tara.mehta129@company.com,HR,HR Generalist,user,AD|Salesforce,2026-04-06,14,true,2024-06-15
+USR00130,harsh.patel130,harsh.patel130@company.com,Operations,Operations Analyst,user,ServiceNow|EMAIL|VPN,2026-03-27,24,true,2022-04-16
+USR00131,ritika.khan131,ritika.khan131@company.com,Finance,Accountant,user,AD,2026-04-08,12,true,2023-04-12
+USR00132,sameer.reddy132,sameer.reddy132@company.com,Legal,Paralegal,user,ServiceNow|Salesforce|AD,2026-03-26,25,true,2020-05-17
+USR00133,leela.joshi133,leela.joshi133@company.com,HR,HR Partner,user,EMAIL,2026-04-12,8,true,2021-05-14
+USR00134,anika.rao134,anika.rao134@company.com,Sales,Account Executive,user,Okta|ServiceNow|VPN,2026-04-13,7,true,2018-04-12
+USR00135,myra.chopra135,myra.chopra135@company.com,Finance,Controller,power-user,ServiceNow,2026-04-06,14,true,2020-09-17
+USR00136,amrita.khan136,amrita.khan136@company.com,Finance,Financial Analyst,user,AD|ServiceNow|Okta,2026-04-08,12,true,2021-02-14
+USR00137,kavya.singh137,kavya.singh137@company.com,Support,Support Lead,admin,Okta,2026-04-14,6,true,2018-07-11
+USR00138,pooja.nair138,pooja.nair138@company.com,Marketing,Campaign Manager,user,Salesforce|ServiceNow,2026-04-07,13,true,2019-03-10
+USR00139,aarav.rao139,aarav.rao139@company.com,Sales,Sales Manager,user,EMAIL,2026-04-13,7,true,2024-09-13
+USR00140,aditya.reddy140,aditya.reddy140@company.com,HR,HR Partner,power-user,VPN|ServiceNow|Salesforce,2026-04-03,17,true,2020-06-13
+USR00141,yash.pillai141,yash.pillai141@company.com,Engineering,Developer,user,AD|ServiceNow,2026-03-31,20,true,2020-04-12
+USR00142,nikhil.kulkarni142,nikhil.kulkarni142@company.com,Support,Support Agent,user,EMAIL,2026-03-29,22,true,2020-07-14
+USR00143,aditya.khan143,aditya.khan143@company.com,Legal,Counsel,user,Salesforce|ServiceNow|EMAIL,2026-03-27,24,true,2022-04-14
+USR00144,aditya.singh144,aditya.singh144@company.com,Finance,Accountant,admin,EMAIL,2026-04-10,10,true,2021-06-16
+USR00145,ira.naidu145,ira.naidu145@company.com,HR,Recruiter,user,ServiceNow|Salesforce|EMAIL,2026-04-09,11,true,2025-08-14
+USR00146,ritika.nair146,ritika.nair146@company.com,Sales,Sales Manager,user,Salesforce|Okta|VPN,2026-04-19,1,true,2019-09-17
+USR00147,anika.sharma147,anika.sharma147@company.com,Support,Support Lead,user,VPN|ServiceNow|Salesforce,2026-04-13,7,true,2023-06-12
+USR00148,ritika.pillai148,ritika.pillai148@company.com,Engineering,Software Engineer,user,Salesforce,2026-04-15,5,true,2025-01-18
+USR00149,reyansh.khan149,reyansh.khan149@company.com,Finance,Accountant,user,AD,2026-04-19,1,true,2025-01-19
+USR00150,yash.patel150,yash.patel150@company.com,Support,Specialist,power-user,ServiceNow,2026-04-18,2,true,2020-01-14
+USR00151,aditya.das151,aditya.das151@company.com,Sales,Sales Manager,power-user,VPN,2026-04-14,6,true,2021-03-14
+USR00152,sameer.gupta152,sameer.gupta152@company.com,Sales,Account Executive,admin,VPN,2026-04-12,8,true,2020-04-17
+USR00153,yash.gupta153,yash.gupta153@company.com,Sales,Coordinator,user,Okta|ServiceNow,2026-03-28,23,true,2024-08-17
+USR00154,aarav.joshi154,aarav.joshi154@company.com,Marketing,Campaign Manager,power-user,VPN|EMAIL,2026-04-03,17,true,2018-05-11
+USR00155,amrita.chopra155,amrita.chopra155@company.com,Marketing,Analyst,power-user,VPN,2026-04-16,4,true,2019-04-15
+USR00156,shreya.shetty156,shreya.shetty156@company.com,HR,Recruiter,user,VPN,2026-04-01,19,true,2024-05-18
+USR00157,ira.rao157,ira.rao157@company.com,Support,Support Agent,user,AD|Okta|Salesforce,2026-04-13,7,true,2023-03-15
+USR00158,om.kulkarni158,om.kulkarni158@company.com,Operations,Manager,user,EMAIL|ServiceNow|Salesforce,2026-04-09,11,true,2024-02-19
+USR00159,rudra.chopra159,rudra.chopra159@company.com,Legal,Paralegal,user,ServiceNow|VPN,2026-03-31,20,true,2019-07-18
+USR00160,manav.das160,manav.das160@company.com,Support,Support Agent,user,Salesforce|ServiceNow|EMAIL,2026-04-04,16,true,2025-01-13
+USR00161,tara.menon161,tara.menon161@company.com,Support,Support Agent,user,Okta,2026-04-16,4,true,2023-09-12
+USR00162,leela.reddy162,leela.reddy162@company.com,Sales,Coordinator,power-user,AD|VPN,2026-04-09,11,true,2018-09-15
+USR00163,nikhil.kulkarni163,nikhil.kulkarni163@company.com,Operations,Manager,user,ServiceNow,2026-04-04,16,true,2023-07-11
+USR00164,saanvi.reddy164,saanvi.reddy164@company.com,HR,HR Generalist,user,VPN,2026-03-26,25,true,2020-07-17
+USR00165,om.bose165,om.bose165@company.com,Engineering,Architect,user,AD|Salesforce,2026-04-05,15,true,2019-01-18
+USR00166,vivaan.patel166,vivaan.patel166@company.com,Finance,Financial Analyst,user,EMAIL|Okta|VPN,2026-04-05,15,true,2020-04-19
+USR00167,kavya.verma167,kavya.verma167@company.com,Finance,Accountant,power-user,AD|Okta|EMAIL,2026-03-29,22,true,2018-04-18
+USR00168,dhruv.pillai168,dhruv.pillai168@company.com,Legal,Compliance Officer,power-user,VPN,2026-03-29,22,true,2020-05-15
+USR00169,ira.joshi169,ira.joshi169@company.com,Marketing,Analyst,service-account,VPN,2026-04-01,19,true,2023-08-19
+USR00170,zoya.naidu170,zoya.naidu170@company.com,Engineering,Developer,power-user,Salesforce|ServiceNow,2026-03-26,25,true,2018-01-13
+USR00171,reyansh.das171,reyansh.das171@company.com,Finance,Accountant,admin,VPN|AD,2026-04-19,1,true,2019-08-12
+USR00172,ritika.iyer172,ritika.iyer172@company.com,HR,HR Partner,power-user,Salesforce|AD|Okta,2026-04-13,7,true,2019-08-19
+USR00173,dhruv.shetty173,dhruv.shetty173@company.com,HR,HR Partner,admin,Salesforce|ServiceNow,2026-04-12,8,true,2024-01-17
+USR00174,ishaan.khan174,ishaan.khan174@company.com,Finance,Accountant,user,ServiceNow|Salesforce|Okta,2026-04-10,10,true,2022-02-14
+USR00175,kabir.naidu175,kabir.naidu175@company.com,Legal,Counsel,user,EMAIL,2026-04-12,8,true,2020-06-18
+USR00176,anika.sharma176,anika.sharma176@company.com,Engineering,Software Engineer,admin,ServiceNow|Salesforce,2026-04-10,10,true,2021-05-10
+USR00177,reyansh.iyer177,reyansh.iyer177@company.com,Sales,Coordinator,power-user,Okta|EMAIL,2026-04-05,15,true,2023-01-10
+USR00178,nikhil.chopra178,nikhil.chopra178@company.com,HR,HR Generalist,user,ServiceNow,2026-04-02,18,true,2023-07-17
+USR00179,tejas.joshi179,tejas.joshi179@company.com,Operations,Manager,user,AD|Salesforce,2026-04-11,9,true,2020-08-10
+USR00180,anika.das180,anika.das180@company.com,Legal,Counsel,user,ServiceNow|Okta,2026-04-05,15,true,2023-09-13
+USR00181,tara.das181,tara.das181@company.com,Legal,Compliance Officer,user,EMAIL|Salesforce|Okta,2026-03-31,20,true,2019-05-16
+USR00182,leela.chopra182,leela.chopra182@company.com,Operations,Coordinator,user,EMAIL|VPN|AD,2026-04-01,19,true,2024-05-10
+USR00183,ritika.rao183,ritika.rao183@company.com,Legal,Counsel,user,Salesforce,2026-04-19,1,true,2020-06-10
+USR00184,ritika.bose184,ritika.bose184@company.com,Finance,Financial Analyst,power-user,VPN,2026-04-02,18,true,2025-07-14
+USR00185,reyansh.khan185,reyansh.khan185@company.com,Finance,Controller,user,ServiceNow,2026-03-30,21,true,2023-04-11
+USR00186,dhruv.verma186,dhruv.verma186@company.com,Support,Support Lead,user,AD|Okta|VPN,2026-04-09,11,true,2024-01-18
+USR00187,anika.joshi187,anika.joshi187@company.com,Engineering,Architect,user,AD|Salesforce,2026-04-13,7,true,2019-04-13
+USR00188,tejas.bose188,tejas.bose188@company.com,Operations,Manager,power-user,VPN|Salesforce,2026-04-15,5,true,2021-02-15
+USR00189,aarav.mehta189,aarav.mehta189@company.com,Support,Specialist,service-account,Okta,2026-04-16,4,true,2018-04-10
+USR00190,reyansh.das190,reyansh.das190@company.com,Finance,Controller,user,VPN|EMAIL|ServiceNow,2026-04-06,14,true,2023-05-13
+USR00191,vivaan.nair191,vivaan.nair191@company.com,Operations,Coordinator,user,Okta,2026-03-30,21,true,2024-09-11
+USR00192,rudra.iyer192,rudra.iyer192@company.com,Sales,Sales Manager,service-account,AD,2026-04-17,3,true,2019-07-12
+USR00193,leela.menon193,leela.menon193@company.com,Marketing,Analyst,user,Okta|Salesforce,2026-04-17,3,true,2020-08-16
+USR00194,aarav.reddy194,aarav.reddy194@company.com,HR,HR Generalist,power-user,Salesforce|EMAIL,2026-03-29,22,true,2020-05-15
+USR00195,leela.kulkarni195,leela.kulkarni195@company.com,Finance,Accountant,user,AD,2026-04-05,15,true,2024-07-15
+USR00196,rudra.gupta196,rudra.gupta196@company.com,HR,HR Generalist,user,ServiceNow|AD|EMAIL,2026-04-12,8,true,2020-02-13
+USR00197,sameer.singh197,sameer.singh197@company.com,Marketing,Campaign Manager,power-user,Okta|AD,2026-04-14,6,true,2022-03-17
+USR00198,leela.mehta198,leela.mehta198@company.com,Engineering,Software Engineer,power-user,ServiceNow,2026-04-10,10,true,2020-06-18
+USR00199,vivaan.bose199,vivaan.bose199@company.com,Finance,Controller,power-user,Salesforce,2026-04-01,19,true,2021-09-14
+USR00200,kavya.reddy200,kavya.reddy200@company.com,Support,Support Agent,user,AD|ServiceNow|VPN,2026-03-27,24,true,2020-02-19
+USR00201,leela.iyer201,leela.iyer201@company.com,Operations,Operations Analyst,admin,ServiceNow|Okta,2026-04-17,3,true,2018-09-12
+USR00202,myra.das202,myra.das202@company.com,Support,Specialist,user,Okta,2026-04-03,17,true,2019-06-16
+USR00203,manav.kulkarni203,manav.kulkarni203@company.com,Finance,Accountant,user,Salesforce,2026-04-06,14,true,2024-04-16
+USR00204,ira.chopra204,ira.chopra204@company.com,Marketing,Analyst,user,ServiceNow|EMAIL|Okta,2026-03-27,24,true,2020-06-14
+USR00205,manav.verma205,manav.verma205@company.com,Finance,Accountant,user,ServiceNow|VPN,2026-04-14,6,true,2018-09-10
+USR00206,nikhil.gupta206,nikhil.gupta206@company.com,Finance,Accountant,user,VPN|Okta,2026-04-14,6,true,2021-01-12
+USR00207,tara.kulkarni207,tara.kulkarni207@company.com,Engineering,Architect,user,AD,2026-04-03,17,true,2019-01-13
+USR00208,nisha.nair208,nisha.nair208@company.com,Engineering,Architect,user,VPN,2026-04-06,14,true,2022-06-19
+USR00209,tejas.das209,tejas.das209@company.com,HR,HR Generalist,user,VPN|EMAIL|Salesforce,2026-03-31,20,true,2018-01-11
+USR00210,ritika.chopra210,ritika.chopra210@company.com,Support,Support Lead,user,ServiceNow|AD|Okta,2026-04-16,4,true,2022-06-16
+USR00211,ira.kulkarni211,ira.kulkarni211@company.com,Finance,Controller,power-user,VPN|ServiceNow,2026-04-04,16,true,2021-01-11
+USR00212,reyansh.iyer212,reyansh.iyer212@company.com,Support,Specialist,user,ServiceNow|AD,2026-04-02,18,true,2020-07-13
+USR00213,kabir.pillai213,kabir.pillai213@company.com,Support,Specialist,user,EMAIL|VPN,2026-04-12,8,true,2023-09-15
+USR00214,myra.menon214,myra.menon214@company.com,Operations,Coordinator,user,Salesforce|EMAIL|AD,2026-03-28,23,true,2018-05-17
+USR00215,saanvi.sharma215,saanvi.sharma215@company.com,Legal,Compliance Officer,user,AD|EMAIL,2026-04-03,17,true,2022-01-14
+USR00216,kavya.iyer216,kavya.iyer216@company.com,Support,Specialist,power-user,ServiceNow|VPN,2026-04-13,7,true,2021-05-13
+USR00217,nikhil.shetty217,nikhil.shetty217@company.com,Operations,Operations Analyst,user,ServiceNow,2026-03-31,20,true,2023-07-10
+USR00218,reyansh.menon218,reyansh.menon218@company.com,Legal,Compliance Officer,power-user,EMAIL|VPN,2026-04-16,4,true,2024-07-12
+USR00219,harsh.gupta219,harsh.gupta219@company.com,Legal,Counsel,user,Okta,2026-04-18,2,true,2019-04-19
+USR00220,leela.verma220,leela.verma220@company.com,Finance,Financial Analyst,user,EMAIL|Salesforce,2026-04-05,15,true,2023-09-10
+USR00221,dhruv.chopra221,dhruv.chopra221@company.com,Operations,Operations Analyst,power-user,ServiceNow|AD,2026-04-09,11,true,2019-05-19
+USR00222,myra.singh222,myra.singh222@company.com,Finance,Controller,power-user,Okta|AD,2026-04-05,15,true,2024-08-14
+USR00223,amrita.pillai223,amrita.pillai223@company.com,Legal,Paralegal,user,VPN,2026-04-05,15,true,2023-02-12
+USR00224,pooja.iyer224,pooja.iyer224@company.com,Engineering,Architect,power-user,ServiceNow|Salesforce|VPN,2026-04-07,13,true,2022-03-17
+USR00225,dhruv.pillai225,dhruv.pillai225@company.com,Support,Support Lead,user,ServiceNow|VPN|Okta,2026-04-12,8,true,2021-08-16
+USR00226,nikhil.pillai226,nikhil.pillai226@company.com,Legal,Compliance Officer,user,EMAIL|Salesforce|VPN,2026-03-28,23,true,2018-02-16
+USR00227,aditya.joshi227,aditya.joshi227@company.com,Operations,Manager,user,VPN|EMAIL|ServiceNow,2026-04-16,4,true,2023-01-15
+USR00228,anika.das228,anika.das228@company.com,Legal,Compliance Officer,power-user,Okta|ServiceNow|VPN,2026-04-19,1,true,2023-05-13
+USR00229,arnav.patel229,arnav.patel229@company.com,Finance,Controller,user,AD|ServiceNow|VPN,2026-03-30,21,true,2022-09-15
+USR00230,manav.mehta230,manav.mehta230@company.com,Legal,Counsel,service-account,Salesforce,2026-03-31,20,true,2020-08-14
+USR00231,nisha.das231,nisha.das231@company.com,Finance,Financial Analyst,user,Okta|Salesforce|AD,2026-04-07,13,true,2025-06-11
+USR00232,diya.nair232,diya.nair232@company.com,Marketing,Analyst,user,AD|EMAIL|ServiceNow,2026-04-11,9,true,2022-03-12
+USR00233,tara.menon233,tara.menon233@company.com,Legal,Paralegal,user,ServiceNow|VPN|EMAIL,2026-03-27,24,true,2022-07-14
+USR00234,amrita.iyer234,amrita.iyer234@company.com,HR,HR Generalist,user,EMAIL,2026-03-28,23,true,2020-02-13
+USR00235,om.shetty235,om.shetty235@company.com,Marketing,Content Strategist,power-user,VPN|AD,2026-04-02,18,true,2024-06-12
+USR00236,ira.bose236,ira.bose236@company.com,Finance,Accountant,power-user,ServiceNow,2026-04-12,8,true,2025-09-17
+USR00237,sameer.naidu237,sameer.naidu237@company.com,Support,Support Agent,power-user,AD|ServiceNow,2026-03-29,22,true,2020-02-19
+USR00238,ritika.sharma238,ritika.sharma238@company.com,Legal,Compliance Officer,user,Salesforce|VPN,2026-04-08,12,true,2019-02-16
+USR00239,kabir.kulkarni239,kabir.kulkarni239@company.com,Finance,Controller,power-user,AD|VPN|Okta,2026-03-28,23,true,2021-07-10
+USR00240,ishaan.shetty240,ishaan.shetty240@company.com,Operations,Operations Analyst,user,Salesforce,2026-04-04,16,true,2023-01-15
+USR00241,dhruv.nair241,dhruv.nair241@company.com,Marketing,Analyst,user,EMAIL|AD|Salesforce,2026-04-09,11,true,2023-06-19
+USR00242,aarav.kulkarni242,aarav.kulkarni242@company.com,Support,Support Agent,user,ServiceNow,2026-04-05,15,true,2019-09-15
+USR00243,dhruv.shetty243,dhruv.shetty243@company.com,Legal,Compliance Officer,power-user,VPN,2026-03-28,23,true,2019-07-13
+USR00244,aarav.menon244,aarav.menon244@company.com,HR,Recruiter,user,ServiceNow,2026-04-15,5,true,2023-03-11
+USR00245,nisha.chopra245,nisha.chopra245@company.com,Marketing,Analyst,service-account,Okta|ServiceNow,2026-03-26,25,true,2019-03-19
+USR00246,tara.shetty246,tara.shetty246@company.com,HR,HR Generalist,service-account,EMAIL,2026-03-26,25,true,2020-07-10
+USR00247,ritika.sharma247,ritika.sharma247@company.com,Sales,Account Executive,user,VPN,2026-04-18,2,true,2025-04-19
+USR00248,diya.mehta248,diya.mehta248@company.com,Engineering,Software Engineer,user,VPN|Okta,2026-04-01,19,true,2021-09-13
+USR00249,leela.singh249,leela.singh249@company.com,Finance,Financial Analyst,user,EMAIL|ServiceNow,2026-03-28,23,true,2025-01-19
+USR00250,pooja.shetty250,pooja.shetty250@company.com,Legal,Paralegal,power-user,AD|VPN,2026-03-30,21,true,2018-01-19
+USR00251,tara.khan251,tara.khan251@company.com,Marketing,Campaign Manager,user,VPN|EMAIL,2026-04-09,11,true,2025-05-18
+USR00252,manav.iyer252,manav.iyer252@company.com,Support,Support Agent,user,Salesforce|Okta|VPN,2026-04-19,1,true,2022-09-18
+USR00253,myra.kulkarni253,myra.kulkarni253@company.com,Marketing,Analyst,user,ServiceNow,2026-04-04,16,true,2020-04-18
+USR00254,ritika.sharma254,ritika.sharma254@company.com,Engineering,Developer,power-user,Salesforce,2026-03-27,24,true,2020-03-19
+USR00255,pooja.patel255,pooja.patel255@company.com,Engineering,Software Engineer,user,Salesforce|VPN|EMAIL,2026-04-19,1,true,2025-08-13
+USR00256,kavya.pillai256,kavya.pillai256@company.com,Engineering,Software Engineer,user,ServiceNow,2026-04-01,19,true,2021-03-12
+USR00257,yash.das257,yash.das257@company.com,Legal,Compliance Officer,service-account,EMAIL,2026-04-14,6,true,2024-02-11
+USR00258,aarav.verma258,aarav.verma258@company.com,Legal,Paralegal,user,EMAIL|Salesforce,2026-04-13,7,true,2018-07-19
+USR00259,vivaan.kulkarni259,vivaan.kulkarni259@company.com,Sales,Account Executive,admin,VPN,2026-04-11,9,true,2025-09-12
+USR00260,kavya.rao260,kavya.rao260@company.com,Engineering,Architect,user,ServiceNow,2026-04-02,18,true,2025-04-10
+USR00261,zoya.nair261,zoya.nair261@company.com,HR,HR Partner,user,Salesforce|EMAIL|ServiceNow,2026-04-16,4,true,2023-04-14
+USR00262,nisha.pillai262,nisha.pillai262@company.com,Support,Support Lead,user,ServiceNow,2026-04-11,9,true,2022-05-12
+USR00263,kavya.reddy263,kavya.reddy263@company.com,Finance,Financial Analyst,power-user,EMAIL,2026-04-15,5,true,2020-07-15
+USR00264,arnav.gupta264,arnav.gupta264@company.com,Support,Support Lead,user,EMAIL,2026-04-11,9,true,2019-03-10
+USR00265,anika.joshi265,anika.joshi265@company.com,Sales,Account Executive,power-user,EMAIL,2026-04-01,19,true,2019-05-16
+USR00266,vivaan.rao266,vivaan.rao266@company.com,Sales,Sales Manager,user,Salesforce|EMAIL,2026-04-19,1,true,2024-05-19
+USR00267,tejas.joshi267,tejas.joshi267@company.com,Operations,Coordinator,power-user,Okta|ServiceNow|Salesforce,2026-04-18,2,true,2018-01-12
+USR00268,nikhil.patel268,nikhil.patel268@company.com,Marketing,Content Strategist,user,VPN|Salesforce,2026-03-29,22,true,2020-06-17
+USR00269,aarav.bose269,aarav.bose269@company.com,Engineering,Software Engineer,user,EMAIL|VPN,2026-04-10,10,true,2025-08-14
+USR00270,arnav.bose270,arnav.bose270@company.com,Finance,Financial Analyst,user,EMAIL|ServiceNow|Okta,2026-04-15,5,true,2023-04-11
+USR00271,dhruv.shetty271,dhruv.shetty271@company.com,HR,HR Generalist,user,VPN|Salesforce|Okta,2026-04-11,9,true,2024-07-11
+USR00272,reyansh.menon272,reyansh.menon272@company.com,Marketing,Analyst,user,EMAIL|Salesforce|Okta,2026-04-06,14,true,2024-07-10
+USR00273,yash.rao273,yash.rao273@company.com,Support,Support Agent,user,ServiceNow|Okta,2026-04-09,11,true,2021-09-19
+USR00274,vivaan.bose274,vivaan.bose274@company.com,Engineering,Architect,user,Okta|ServiceNow|EMAIL,2026-03-28,23,true,2018-02-10
+USR00275,yash.das275,yash.das275@company.com,Support,Support Agent,user,Salesforce|Okta|VPN,2026-04-10,10,true,2019-03-13
+USR00276,nisha.iyer276,nisha.iyer276@company.com,Support,Support Lead,power-user,ServiceNow|EMAIL|AD,2026-03-27,24,true,2019-06-12
+USR00277,dhruv.naidu277,dhruv.naidu277@company.com,Finance,Financial Analyst,user,ServiceNow|Salesforce,2026-04-10,10,true,2024-02-16
+USR00278,anika.singh278,anika.singh278@company.com,Marketing,Content Strategist,user,Salesforce|EMAIL,2026-04-06,14,true,2022-01-17
+USR00279,tejas.naidu279,tejas.naidu279@company.com,Sales,Coordinator,admin,VPN|Okta,2026-04-17,3,true,2024-01-12
+USR00280,ira.bose280,ira.bose280@company.com,Support,Specialist,power-user,Okta,2026-04-06,14,true,2023-06-19
+USR00281,aditya.khan281,aditya.khan281@company.com,Finance,Accountant,power-user,Salesforce,2026-03-30,21,true,2022-06-15
+USR00282,om.khan282,om.khan282@company.com,Support,Support Lead,user,EMAIL,2026-04-05,15,true,2025-04-15
+USR00283,leela.sharma283,leela.sharma283@company.com,Sales,Coordinator,admin,EMAIL|Okta|Salesforce,2026-04-15,5,true,2021-08-18
+USR00284,yash.singh284,yash.singh284@company.com,HR,HR Generalist,user,AD,2026-04-04,16,true,2021-05-18
+USR00285,tejas.menon285,tejas.menon285@company.com,Marketing,Campaign Manager,admin,Okta|ServiceNow,2026-04-09,11,true,2022-02-19
+USR00286,vivaan.reddy286,vivaan.reddy286@company.com,Marketing,Campaign Manager,user,ServiceNow,2026-04-02,18,true,2022-08-10
+USR00287,nikhil.iyer287,nikhil.iyer287@company.com,Engineering,Software Engineer,user,ServiceNow,2026-04-05,15,true,2021-05-16
+USR00288,leela.gupta288,leela.gupta288@company.com,HR,HR Generalist,power-user,VPN|Okta,2026-03-27,24,true,2020-08-15
+USR00289,kabir.menon289,kabir.menon289@company.com,Operations,Coordinator,user,AD,2026-04-14,6,true,2025-01-14
+USR00290,nisha.patel290,nisha.patel290@company.com,Marketing,Campaign Manager,power-user,Okta,2026-04-15,5,true,2020-01-12
+USR00291,reyansh.das291,reyansh.das291@company.com,Legal,Compliance Officer,power-user,Salesforce,2026-04-18,2,true,2018-07-17
+USR00292,tara.singh292,tara.singh292@company.com,Sales,Coordinator,user,ServiceNow|Salesforce,2026-04-14,6,true,2018-06-16
+USR00293,anika.chopra293,anika.chopra293@company.com,Finance,Controller,user,VPN|ServiceNow|EMAIL,2026-04-14,6,true,2019-01-15
+USR00294,leela.reddy294,leela.reddy294@company.com,Legal,Paralegal,user,AD,2026-04-17,3,true,2023-05-19
+USR00295,saanvi.nair295,saanvi.nair295@company.com,Legal,Paralegal,user,Salesforce,2026-04-04,16,true,2018-01-19
+USR00296,ritika.gupta296,ritika.gupta296@company.com,Finance,Controller,power-user,ServiceNow|VPN,2026-04-10,10,true,2018-07-12
+USR00297,saanvi.menon297,saanvi.menon297@company.com,Finance,Financial Analyst,user,Okta,2026-04-10,10,true,2020-08-19
+USR00298,ishaan.chopra298,ishaan.chopra298@company.com,Support,Specialist,power-user,AD|Salesforce,2026-04-17,3,true,2023-08-10
+USR00299,ira.sharma299,ira.sharma299@company.com,HR,HR Partner,power-user,Okta,2026-04-17,3,true,2022-03-14
+USR00300,nikhil.sharma300,nikhil.sharma300@company.com,Operations,Manager,user,AD,2026-04-06,14,true,2020-08-19
+USR00301,ritika.menon301,ritika.menon301@company.com,Support,Specialist,user,EMAIL|ServiceNow,2026-04-08,12,true,2024-01-17
+USR00302,ritika.gupta302,ritika.gupta302@company.com,Legal,Compliance Officer,power-user,AD|EMAIL|Salesforce,2026-04-07,13,true,2024-03-18
+USR00303,leela.singh303,leela.singh303@company.com,Support,Support Agent,user,Okta|AD,2026-03-26,25,true,2021-05-16
+USR00304,kabir.shetty304,kabir.shetty304@company.com,Support,Specialist,user,Salesforce|EMAIL|AD,2026-04-07,13,true,2022-07-18
+USR00305,aarav.iyer305,aarav.iyer305@company.com,Operations,Operations Analyst,user,EMAIL|ServiceNow,2026-04-11,9,true,2023-08-11
+USR00306,harsh.nair306,harsh.nair306@company.com,Marketing,Campaign Manager,power-user,Salesforce|Okta,2026-04-16,4,true,2018-08-18
+USR00307,om.reddy307,om.reddy307@company.com,Engineering,Developer,power-user,Okta|AD|VPN,2026-04-02,18,true,2024-07-10
+USR00308,rudra.chopra308,rudra.chopra308@company.com,Legal,Paralegal,user,VPN,2026-04-17,3,true,2018-06-11
+USR00309,diya.sharma309,diya.sharma309@company.com,Engineering,Architect,user,ServiceNow|Okta|EMAIL,2026-04-08,12,true,2021-08-15
+USR00310,kavya.patel310,kavya.patel310@company.com,Support,Specialist,user,EMAIL|AD|Okta,2026-03-29,22,true,2021-06-15
+USR00311,kabir.sharma311,kabir.sharma311@company.com,Marketing,Campaign Manager,user,EMAIL|Okta|VPN,2026-04-07,13,true,2025-02-12
+USR00312,kabir.reddy312,kabir.reddy312@company.com,Support,Support Agent,user,Okta,2026-04-06,14,true,2018-08-18
+USR00313,amrita.shetty313,amrita.shetty313@company.com,Marketing,Content Strategist,user,VPN|Salesforce|EMAIL,2026-03-28,23,true,2020-01-19
+USR00314,zoya.menon314,zoya.menon314@company.com,HR,Recruiter,user,Okta,2026-04-11,9,true,2023-04-16
+USR00315,vivaan.bose315,vivaan.bose315@company.com,Operations,Coordinator,user,EMAIL|Okta,2026-03-30,21,true,2021-07-16
+USR00316,diya.rao316,diya.rao316@company.com,Finance,Financial Analyst,user,ServiceNow|AD,2026-04-01,19,true,2023-07-17
+USR00317,vivaan.singh317,vivaan.singh317@company.com,Finance,Financial Analyst,user,ServiceNow|AD|EMAIL,2026-03-28,23,true,2025-06-12
+USR00318,ritika.rao318,ritika.rao318@company.com,Engineering,Developer,power-user,Salesforce|EMAIL,2026-04-06,14,true,2018-08-11
+USR00319,ira.reddy319,ira.reddy319@company.com,Engineering,Developer,power-user,EMAIL|Okta|Salesforce,2026-04-01,19,true,2019-05-17
+USR00320,anika.kulkarni320,anika.kulkarni320@company.com,Marketing,Campaign Manager,user,VPN,2026-04-03,17,true,2019-03-13
+USR00321,tara.kulkarni321,tara.kulkarni321@company.com,Marketing,Analyst,user,Okta|AD|ServiceNow,2026-04-05,15,true,2018-02-13
+USR00322,tara.singh322,tara.singh322@company.com,Operations,Coordinator,user,EMAIL|AD,2026-03-28,23,true,2019-03-13
+USR00323,kabir.verma323,kabir.verma323@company.com,Finance,Controller,user,ServiceNow|AD|EMAIL,2026-04-13,7,true,2025-01-17
+USR00324,yash.iyer324,yash.iyer324@company.com,Marketing,Campaign Manager,admin,Okta|Salesforce,2026-04-09,11,true,2025-01-10
+USR00325,arnav.das325,arnav.das325@company.com,Support,Support Lead,power-user,ServiceNow|VPN|Okta,2026-04-01,19,true,2019-07-10
+USR00326,aditya.joshi326,aditya.joshi326@company.com,Marketing,Content Strategist,user,ServiceNow,2026-04-13,7,true,2020-08-12
+USR00327,diya.gupta327,diya.gupta327@company.com,Engineering,Software Engineer,user,Okta,2026-04-07,13,true,2021-06-19
+USR00328,nikhil.nair328,nikhil.nair328@company.com,Support,Specialist,user,Salesforce|EMAIL|AD,2026-04-16,4,true,2018-02-14
+USR00329,om.naidu329,om.naidu329@company.com,Operations,Coordinator,user,ServiceNow,2026-03-29,22,true,2019-07-16
+USR00330,harsh.shetty330,harsh.shetty330@company.com,Engineering,Architect,user,VPN|EMAIL|ServiceNow,2026-04-18,2,true,2022-03-14
+USR00331,myra.patel331,myra.patel331@company.com,Operations,Coordinator,user,Okta|Salesforce|VPN,2026-03-30,21,true,2020-07-17
+USR00332,amrita.khan332,amrita.khan332@company.com,Marketing,Campaign Manager,user,EMAIL|Okta|ServiceNow,2026-04-09,11,true,2020-03-10
+USR00333,nikhil.rao333,nikhil.rao333@company.com,Marketing,Content Strategist,user,VPN|AD,2026-03-30,21,true,2022-04-16
+USR00334,sameer.joshi334,sameer.joshi334@company.com,Finance,Financial Analyst,user,EMAIL|Salesforce,2026-04-11,9,true,2023-07-11
+USR00335,nisha.pillai335,nisha.pillai335@company.com,Operations,Manager,user,Okta,2026-04-05,15,true,2022-02-17
+USR00336,arnav.khan336,arnav.khan336@company.com,HR,HR Partner,user,Salesforce|ServiceNow|EMAIL,2026-04-13,7,true,2019-05-10
+USR00337,nisha.menon337,nisha.menon337@company.com,Sales,Account Executive,user,AD|EMAIL|ServiceNow,2026-04-10,10,true,2022-01-14
+USR00338,sameer.patel338,sameer.patel338@company.com,Operations,Operations Analyst,user,AD|VPN|Okta,2026-04-02,18,true,2018-09-15
+USR00339,reyansh.rao339,reyansh.rao339@company.com,Engineering,Architect,service-account,Okta,2026-04-12,8,true,2019-09-14
+USR00340,nikhil.naidu340,nikhil.naidu340@company.com,Support,Support Lead,user,ServiceNow,2026-04-17,3,true,2018-04-11
+USR00341,reyansh.naidu341,reyansh.naidu341@company.com,Operations,Manager,power-user,VPN,2026-04-08,12,true,2024-07-15
+USR00342,dhruv.khan342,dhruv.khan342@company.com,Engineering,Developer,user,Okta|EMAIL|Salesforce,2026-04-12,8,true,2023-04-15
+USR00343,vivaan.singh343,vivaan.singh343@company.com,Engineering,Developer,user,ServiceNow|Salesforce,2026-04-04,16,true,2024-05-10
+USR00344,tara.khan344,tara.khan344@company.com,Support,Support Agent,user,Okta|AD,2026-03-27,24,true,2022-01-17
+USR00345,reyansh.iyer345,reyansh.iyer345@company.com,Engineering,Developer,user,EMAIL|VPN|ServiceNow,2026-03-26,25,true,2019-07-14
+USR00346,arnav.iyer346,arnav.iyer346@company.com,Engineering,Software Engineer,user,EMAIL|AD,2026-04-08,12,true,2024-09-11
+USR00347,zoya.joshi347,zoya.joshi347@company.com,Marketing,Content Strategist,user,Salesforce,2026-04-12,8,true,2021-06-19
+USR00348,vivaan.mehta348,vivaan.mehta348@company.com,Marketing,Content Strategist,user,Salesforce|AD|ServiceNow,2026-04-08,12,true,2023-05-12
+USR00349,ira.chopra349,ira.chopra349@company.com,Marketing,Analyst,user,Salesforce,2026-03-30,21,true,2025-05-14
+USR00350,ira.chopra350,ira.chopra350@company.com,Engineering,Architect,user,ServiceNow|EMAIL|Okta,2026-04-12,8,true,2022-09-10
+USR00351,dhruv.chopra351,dhruv.chopra351@company.com,HR,HR Generalist,user,EMAIL,2026-03-27,24,true,2022-01-15
+USR00352,anika.sharma352,anika.sharma352@company.com,Finance,Financial Analyst,user,Salesforce|AD|VPN,2026-04-07,13,true,2020-07-13
+USR00353,yash.singh353,yash.singh353@company.com,Finance,Financial Analyst,user,VPN,2026-04-10,10,true,2018-07-18
+USR00354,diya.chopra354,diya.chopra354@company.com,Legal,Counsel,power-user,Okta|ServiceNow|EMAIL,2026-04-02,18,true,2023-09-16
+USR00355,rudra.menon355,rudra.menon355@company.com,HR,HR Generalist,user,ServiceNow|Okta|EMAIL,2026-03-26,25,true,2023-02-12
+USR00356,sameer.rao356,sameer.rao356@company.com,Engineering,Developer,service-account,EMAIL,2026-04-13,7,true,2021-04-10
+USR00357,saanvi.chopra357,saanvi.chopra357@company.com,Operations,Operations Analyst,user,Salesforce|ServiceNow|VPN,2026-04-13,7,true,2021-09-12
+USR00358,manav.iyer358,manav.iyer358@company.com,Support,Specialist,user,VPN|Salesforce,2026-03-28,23,true,2023-06-11
+USR00359,ritika.naidu359,ritika.naidu359@company.com,Engineering,Developer,user,ServiceNow|EMAIL|AD,2026-04-12,8,true,2024-05-18
+USR00360,leela.singh360,leela.singh360@company.com,Legal,Paralegal,power-user,EMAIL,2026-04-10,10,true,2025-04-12
+USR00361,sameer.das361,sameer.das361@company.com,Engineering,Software Engineer,user,VPN,2026-04-10,10,true,2023-02-14
+USR00362,ishaan.nair362,ishaan.nair362@company.com,Legal,Paralegal,user,Salesforce,2026-04-02,18,true,2023-06-16
+USR00363,pooja.patel363,pooja.patel363@company.com,Sales,Sales Manager,user,Salesforce|Okta,2026-03-29,22,true,2020-06-17
+USR00364,manav.naidu364,manav.naidu364@company.com,Support,Support Lead,service-account,Salesforce|ServiceNow,2026-04-13,7,true,2022-07-10
+USR00365,pooja.reddy365,pooja.reddy365@company.com,Engineering,Software Engineer,user,AD,2026-03-30,21,true,2018-06-18
+USR00366,aditya.verma366,aditya.verma366@company.com,Operations,Operations Analyst,user,Salesforce|Okta|AD,2026-03-29,22,true,2018-03-15
+USR00367,pooja.naidu367,pooja.naidu367@company.com,Operations,Manager,user,ServiceNow|AD,2026-04-02,18,true,2019-01-10
+USR00368,harsh.chopra368,harsh.chopra368@company.com,Sales,Coordinator,user,Okta|Salesforce,2026-04-09,11,true,2025-08-14
+USR00369,manav.reddy369,manav.reddy369@company.com,Operations,Manager,service-account,Okta,2026-04-08,12,true,2024-07-14
+USR00370,ritika.pillai370,ritika.pillai370@company.com,Finance,Controller,power-user,VPN|EMAIL|AD,2026-04-05,15,true,2020-01-19
+USR00371,saanvi.menon371,saanvi.menon371@company.com,Operations,Coordinator,user,VPN|AD|ServiceNow,2026-04-13,7,true,2025-08-14
+USR00372,harsh.bose372,harsh.bose372@company.com,Marketing,Campaign Manager,user,AD|Salesforce|ServiceNow,2026-03-27,24,true,2023-03-15
+USR00373,kabir.shetty373,kabir.shetty373@company.com,Finance,Financial Analyst,user,AD,2026-03-30,21,true,2025-06-10
+USR00374,om.mehta374,om.mehta374@company.com,Engineering,Developer,user,Okta|VPN|EMAIL,2026-04-15,5,true,2022-02-15
+USR00375,nikhil.bose375,nikhil.bose375@company.com,Support,Support Lead,user,VPN,2026-03-26,25,true,2023-09-19
+USR00376,arnav.gupta376,arnav.gupta376@company.com,Legal,Compliance Officer,user,EMAIL,2026-04-16,4,true,2021-06-10
+USR00377,rudra.iyer377,rudra.iyer377@company.com,Operations,Manager,user,Okta,2026-03-28,23,true,2023-09-16
+USR00378,ishaan.verma378,ishaan.verma378@company.com,Operations,Coordinator,service-account,Okta|AD,2026-03-29,22,true,2024-03-10
+USR00379,sameer.menon379,sameer.menon379@company.com,Engineering,Architect,user,Okta|EMAIL,2026-03-28,23,true,2023-07-10
+USR8000,shift.agent0,shift.agent0@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8001,shift.agent1,shift.agent1@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8002,shift.agent2,shift.agent2@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8003,shift.agent3,shift.agent3@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8004,shift.agent4,shift.agent4@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8005,shift.agent5,shift.agent5@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8006,shift.agent6,shift.agent6@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8007,shift.agent7,shift.agent7@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8008,shift.agent8,shift.agent8@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8009,shift.agent9,shift.agent9@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8010,shift.agent10,shift.agent10@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8011,shift.agent11,shift.agent11@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8012,shift.agent12,shift.agent12@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR8013,shift.agent13,shift.agent13@company.com,Support,Support Agent,user,EMAIL|ServiceNow,2026-04-19,1,true,2022-05-10
+USR9101,meera.nair,meera.nair@company.com,Engineering,Site Reliability Engineer,admin,PROD_DB|Admin_Console|AWS_IAM,2026-04-18,2,true,2020-02-11
+USR9102,karan.mehta,karan.mehta@company.com,IT,Database Administrator,admin,CUSTOMER_DATA|PROD_DB|ADMIN_SYS,2026-04-17,3,true,2019-07-01
+USR9103,sneha.rao,sneha.rao@company.com,Engineering,Data Engineer,power-user,FINANCE_LAKE|Data_Lake,2026-04-19,1,true,2021-09-20
+USR9104,arjun.desai,arjun.desai@company.com,Finance,Financial Analyst,power-user,GL_System|Data_Lake,2026-04-18,2,true,2022-01-17
+USR9105,rahul.bose,rahul.bose@company.com,Support,Support Agent,user,Customer_Vault|ServiceNow,2026-04-19,1,true,2023-04-03
+USR9106,divya.kapoor,divya.kapoor@company.com,Security,Security Engineer,admin,AWS_IAM|SIEM|Admin_Console,2025-12-23,118,true,2018-11-12
+USR9201,imran.qureshi,imran.qureshi@company.com,Support,Support Agent,user,Customer_Vault|ServiceNow,2026-04-19,1,true,2024-08-19
+USR9202,pranav.joshi,pranav.joshi@company.com,Finance,Financial Analyst,power-user,GL_System|Customer_Vault|Data_Lake,2026-04-18,2,true,2021-03-08
+USR9203,tanvi.kulkarni,tanvi.kulkarni@company.com,Engineering,Software Engineer,admin,AWS_IAM|GCP|PROD_DB|Data_Lake|ADMIN_SYS|SIEM|VPN|Okta|AD|Salesforce,2026-04-19,1,true,2023-06-12
+USR9204,farhan.ali,farhan.ali@company.com,IT,Database Administrator,admin,PROD_DB|ADMIN_SYS,2026-04-18,2,true,2020-10-05
+USR9205,neha.gupta,neha.gupta@company.com,Finance,Controller,power-user,SAP|GL_System,2026-04-19,1,true,2019-02-25
+USR9206,dev.malhotra,dev.malhotra@company.com,Sales,Sales Manager,power-user,Customer_Vault|Salesforce,2026-04-19,1,true,2022-12-01
+USR9207,svc.etl.prod,svc.etl.prod@company.com,Engineering,Service Account,service-account,PROD_DB|AWS_IAM,2026-04-19,1,true,2021-01-04

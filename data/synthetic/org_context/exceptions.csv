@@ -1,2 +1,3 @@
 exception_id,user,entitlement,expiry_date,approver,justification
 EXC-901,U_APPROVED_EXCEPTION,aws_iam_admin,2026-06-30,CISO,Cloud migration temporary access
+EXC-4106,USR9106,AWS_IAM,2026-12-31,CISO,"Break-glass admin, dormant by design"

@@ -1,0 +1,2 @@
+exception_id,user,entitlement,expiry_date,approver,justification
+EXC-4106,USR9106,AWS_IAM,2026-12-31,CISO,"Break-glass admin, dormant by design"
