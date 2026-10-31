@@ -1,5 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
-import { AlertTriangle, ChevronRight, Loader2, Play, RefreshCw } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  AlertTriangle, ChevronRight, CircleDot, FileCode2, Fingerprint, Gauge, Loader2, Play,
+  RefreshCw, Route, Search,
+} from 'lucide-react'
 import { getIncidents, getKillchainRules, getKillchainStatus, runKillchain } from '../api'
 import IncidentDetail from './IncidentDetail'
 
@@ -132,29 +135,85 @@ export default function KillChain() {
   )
 }
 
+const KIND_META = {
+  match: { label: 'Match', icon: CircleDot, help: 'Fires on every event matching the condition.' },
+  threshold: { label: 'Threshold', icon: Gauge, help: 'Fires once a count of matching events crosses a limit in a time window.' },
+  rare_for_entity: { label: 'Rare for entity', icon: Fingerprint, help: 'Fires when a value is unusual for that specific entity’s own history.' },
+  sequence: { label: 'Sequence', icon: Route, help: 'Fires when two conditions happen in order, within a time window.' },
+}
+const KINDS = ['', 'match', 'threshold', 'rare_for_entity', 'sequence']
+
+function RuleCard({ r }) {
+  const [open, setOpen] = useState(false)
+  const meta = KIND_META[r.kind] || {}
+  const Icon = meta.icon || CircleDot
+  const hasSelection = r.selection && Object.keys(r.selection).length > 0
+  return (
+    <article className="card rl-card">
+      <button className="rl-card-top" onClick={() => setOpen(o => !o)} aria-expanded={open}>
+        <SeverityBadge severity={r.severity} />
+        <span className="rl-id mono">{r.id}</span>
+        <span className="rl-title">{r.title}</span>
+        <span className="chip kc-chip mono">{r.technique}</span>
+        <span className="rl-kind" title={meta.help}><Icon size={13} /> {meta.label || r.kind}</span>
+        <ChevronRight size={15} className={`rl-chevron${open ? ' open' : ''}`} />
+      </button>
+      {open && (
+        <div className="rl-detail">
+          <p className="kc-muted">{meta.help}</p>
+          <div className="rl-code-label">where</div>
+          <pre className="rl-code">{r.where || 'TRUE'}</pre>
+          {hasSelection && (
+            <>
+              <div className="rl-code-label">selection</div>
+              <pre className="rl-code">{JSON.stringify(r.selection, null, 1)}</pre>
+            </>
+          )}
+        </div>
+      )}
+    </article>
+  )
+}
+
 export function KillChainRules() {
   const [rules, setRules] = useState([])
+  const [kind, setKind] = useState('')
+  const [q, setQ] = useState('')
   useEffect(() => { getKillchainRules().then(setRules).catch(() => {}) }, [])
+  const shown = useMemo(() => {
+    const needle = q.trim().toLowerCase()
+    return rules.filter(r => (!kind || r.kind === kind)
+      && (!needle || r.title.toLowerCase().includes(needle) || r.id.toLowerCase().includes(needle)
+        || r.technique.toLowerCase().includes(needle)))
+  }, [rules, kind, q])
   return (
     <div className="kc-page">
       <div className="card kc-note">
-        Rules live in <code>config/detection_rules/*.yaml</code>. Add or tune a rule by editing YAML
-        (SQL <code>where</code> or a Sigma-style <code>selection</code>), then press
-        <b> Re-run detection</b> — no code change.
+        <FileCode2 size={16} className="an-note-icon" />
+        <div>
+          Rules live in <code>config/detection_rules/*.yaml</code>. Add or tune a rule by editing
+          YAML (SQL <code>where</code> or a Sigma-style <code>selection</code>), then press
+          <b> Re-run detection</b> — no code change. Click a rule to see what it actually checks.
+        </div>
       </div>
-      <div className="card kc-table-wrap">
-        <table className="kc-table static">
-          <thead><tr><th>ID</th><th>Title</th><th>ATT&amp;CK</th><th>Kind</th><th>Severity</th></tr></thead>
-          <tbody>
-            {rules.map(r => (
-              <tr key={r.id}>
-                <td className="mono">{r.id}</td><td>{r.title}</td>
-                <td className="mono">{r.technique}</td><td>{r.kind}</td>
-                <td><SeverityBadge severity={r.severity} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      <div className="an-toolbar">
+        <div className="an-kinds">
+          {KINDS.map(k => (
+            <button key={k} className={kind === k ? 'on' : ''} onClick={() => setKind(k)}>
+              {k ? (KIND_META[k]?.label || k) : 'All'}
+            </button>
+          ))}
+        </div>
+        <div className="an-search">
+          <Search size={13} />
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Filter by id, title or technique" />
+        </div>
+        <span className="kc-muted" style={{ marginLeft: 'auto' }}>{shown.length} of {rules.length} rules</span>
+      </div>
+
+      <div className="rl-list">
+        {shown.map(r => <RuleCard key={r.id} r={r} />)}
       </div>
     </div>
   )

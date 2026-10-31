@@ -1168,3 +1168,18 @@ button.rv-cite:hover { color: var(--on-accent); background: var(--accent); borde
 .an-reason.up { color: var(--text-primary); }
 .an-reason.up svg { color: var(--c-critical); }
 .an-reason.down svg { color: var(--text-muted); }
+
+/* ── Detection rules: expandable cards ──────────────────────────────── */
+.rl-list { display: flex; flex-direction: column; gap: 10px; }
+.rl-card { padding: 0; overflow: hidden; }
+.rl-card-top { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 18px; text-align: left; color: var(--text-primary); background: none; border: 0; cursor: pointer; }
+.rl-card-top:hover { background: var(--surface-mid); }
+.rl-id { font-size: 11.5px; color: var(--text-muted); }
+.rl-title { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rl-kind { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.rl-chevron { flex-shrink: 0; color: var(--text-muted); transition: transform .15s ease; }
+.rl-chevron.open { transform: rotate(90deg); }
+.rl-detail { padding: 0 18px 18px; border-top: 1px solid var(--border); }
+.rl-detail p { margin: 12px 0 10px; }
+.rl-code-label { margin: 10px 0 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); }
+.rl-code { margin: 0; padding: 10px 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; line-height: 1.5; color: var(--text-primary); white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-high); border-radius: 8px; }
