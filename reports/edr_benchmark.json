@@ -1,0 +1,55 @@
+{
+  "metrics": {
+    "total_events": 10000,
+    "actual_attacks": 500,
+    "actual_benign": 9500,
+    "true_positives": 500,
+    "false_positives": 0,
+    "true_negatives": 9500,
+    "false_negatives": 0,
+    "recall": 1.0,
+    "false_alarm_rate": 0.0,
+    "precision": 1.0,
+    "f1_score": 1.0,
+    "accuracy": 1.0,
+    "mitre_technique_accuracy": 1.0,
+    "kill_chain_tactic_accuracy": 1.0,
+    "recall_grade": "GREAT",
+    "fpr_grade": "GREAT",
+    "mitre_grade": "GREAT"
+  },
+  "per_technique": {
+    "T1071.001": {
+      "actual": 102,
+      "tp": 102,
+      "fp": 0,
+      "fn": 0
+    },
+    "T1059.001": {
+      "actual": 112,
+      "tp": 112,
+      "fp": 0,
+      "fn": 0
+    },
+    "T1547.001": {
+      "actual": 87,
+      "tp": 87,
+      "fp": 0,
+      "fn": 0
+    },
+    "T1110": {
+      "actual": 93,
+      "tp": 93,
+      "fp": 0,
+      "fn": 0
+    },
+    "T1486": {
+      "actual": 106,
+      "tp": 106,
+      "fp": 0,
+      "fn": 0
+    }
+  },
+  "attack_paths_count": 12,
+  "execution_time_seconds": 0.172
+}

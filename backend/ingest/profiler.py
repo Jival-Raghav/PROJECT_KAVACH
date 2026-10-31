@@ -141,12 +141,19 @@ def profile_column(series: pd.Series, name: str) -> ColumnProfile:
     null_rate = float(null_count / total_len) if total_len > 0 else 0.0
 
     valid_series = series.dropna()
-    cardinality = int(valid_series.nunique())
-
     sem_type = _detect_semantic_type(series, name)
 
-    # Top sample values (up to 10 most frequent)
-    top_vals_raw = valid_series.value_counts().head(10).index.tolist()
+    try:
+        cardinality = int(valid_series.nunique())
+        top_vals_raw = valid_series.value_counts().head(10).index.tolist()
+    except TypeError:
+        # Convert unhashable elements (e.g. lists, dicts) to tuple or string for profiling
+        hashable_series = valid_series.apply(
+            lambda x: tuple(x) if isinstance(x, list) else (str(x) if isinstance(x, dict) else x)
+        )
+        cardinality = int(hashable_series.nunique())
+        top_vals_raw = [list(x) if isinstance(x, tuple) else x for x in hashable_series.value_counts().head(10).index.tolist()]
+
     top_values = [mask_sample_value(v, sem_type) for v in top_vals_raw]
 
     # Min / Max

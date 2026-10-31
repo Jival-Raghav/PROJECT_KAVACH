@@ -47,6 +47,8 @@ events:
     - employee_id
     - user_mail
     - uid
+    - user.name
+    - user.id
   action:
     - event_name
     - eventName
@@ -67,6 +69,9 @@ events:
     - event_type
     - transaction_type
     - audit_action
+    - event.action
+    - event.category
+    - event.type
   resource:
     - object
     - target
@@ -80,6 +85,13 @@ events:
     - entity
     - item
     - file_path
+    - file.path
+    - destination.ip
+    - destination.domain
+    - destination.address
+    - registry.path
+    - process.command_line
+    - process.name
     - endpoint
     - uri
     - url
@@ -100,6 +112,8 @@ events:
     - platform
     - host
     - hostname
+    - host.name
+    - host.hostname
     - database
     - data_store
     - target_system
@@ -129,6 +143,7 @@ events:
     - access_result
     - return_code
     - status_code
+    - event.outcome
   source_ip:
     - ip
     - ip_addr
@@ -141,6 +156,15 @@ events:
     - src_ip
     - network_ip
     - host_ip
+    - source.ip
+    - host.ip
+  mitre_technique:
+    - threat.technique.id
+    - threat.technique.name
+    - mitre_technique
+  kill_chain_stage:
+    - threat.tactic.name
+    - kill_chain_stage
 
 identities:
   identity_id:

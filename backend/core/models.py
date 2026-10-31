@@ -67,6 +67,8 @@ class CanonicalEvent(BaseModel):
     device: str | None = None
     user_agent: str | None = None
     label: bool | None = None  # ground truth anomaly marker if available
+    mitre_technique: str | None = None  # e.g. T1110, T1059.001
+    kill_chain_stage: str | None = None  # e.g. Initial Access, Execution, Persistence
     raw: dict[str, Any] = Field(default_factory=dict)
     extra: dict[str, Any] = Field(default_factory=dict)
 
