@@ -58,7 +58,7 @@ def render_benchmark(m, meta: dict) -> str:
               f"{m.label_accuracy_lenient:.1%}; {m.incidents} incidents, {m.false_alarms} false "
               f"alarms; {meta.get('raw_alerts_merged', 0):,} raw alerts merged into "
               f"{m.incidents} incidents (B-3). Cold load of all incidents: {m.cold_open_ms} ms.", "",
-              f"Stage timings (s): " + ", ".join(f"{k} {v}" for k, v in s.items()), "",
+              "Stage timings (s): " + ", ".join(f"{k} {v}" for k, v in s.items()), "",
               "## Per scenario", "", "| Scenario | Steps | Path rebuilt | Incident |",
               "|---|---|---|---|"]
     for sc in m.per_scenario:
