@@ -56,21 +56,28 @@ def correlate(detections: list[Detection], strong_gap_hours: float = 72,
     pivot_gap = timedelta(hours=pivot_gap_hours)
     actor_gap = timedelta(hours=actor_gap_hours)
     keys = [_strong_keys(d, internal_prefixes) for d in dets]
+
+    def internal(d: Detection, role: str) -> set[str]:
+        return {ip for ip in d.entities.get(role, []) if _is_internal(ip, internal_prefixes)}
+
+    actors = [internal(d, "src_ip") for d in dets]
+    victims = [internal(d, "dst_ip") for d in dets]
     for i, a in enumerate(dets):
-        a_victims = {ip for ip in a.entities.get("dst_ip", []) if _is_internal(ip, internal_prefixes)}
         for j in range(i + 1, len(dets)):
             b = dets[j]
             if keys[i] & keys[j] and _interval_gap(a, b) <= strong_gap:
                 union(i, j)
-                continue
-            b_actors = {ip for ip in b.entities.get("src_ip", []) if _is_internal(ip, internal_prefixes)}
-            a_actors = {ip for ip in a.entities.get("src_ip", []) if _is_internal(ip, internal_prefixes)}
-            if a_actors & b_actors and _interval_gap(a, b) <= actor_gap:
+            elif actors[i] & actors[j] and _interval_gap(a, b) <= actor_gap:
                 union(i, j)
-                continue
-            if (a_victims & b_actors and b.first_seen >= a.first_seen
-                    and b.first_seen - a.last_seen <= pivot_gap):
-                union(i, j)
+    # Pivot: link a later detection acting FROM host H only to the most recent successful
+    # (not blocked) detection that landed ON H — never to every attacker that probed H.
+    for j, b in enumerate(dets):
+        candidates = [i for i, a in enumerate(dets)
+                      if i != j and a.outcome != "blocked" and victims[i] & actors[j]
+                      and a.first_seen <= b.first_seen
+                      and b.first_seen - a.last_seen <= pivot_gap]
+        if candidates:
+            union(max(candidates, key=lambda i: (dets[i].first_seen, dets[i].detection_id)), j)
 
     groups: dict[int, list[Detection]] = {}
     for i, d in enumerate(dets):

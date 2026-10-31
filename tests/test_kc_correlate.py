@@ -92,3 +92,19 @@ def test_title_prefers_external_destination_over_internal_source():
     a = det("C:1", "T1071", 0, src_ip=["10.10.40.1", "10.10.40.2"], dst_ip="154.0.0.1")
     (inc,) = correlate([a])
     assert inc.title.startswith("154.0.0.1")
+
+
+def test_blocked_attacks_on_shared_victim_do_not_pivot():
+    a = det("W:1", "T1190", 0, outcome="blocked", src_ip="1.1.1.1", dst_ip="10.10.20.20")
+    b = det("W:2", "T1190", 1, outcome="blocked", src_ip="2.2.2.2", dst_ip="10.10.20.20")
+    c = det("C:1", "T1071.001", 3, src_ip="10.10.20.20", dst_ip="7.7.7.7")
+    assert len(correlate([a, b, c])) == 3
+
+
+def test_pivot_links_only_latest_successful_victim_step():
+    a = det("W:1", "T1505.003", 0, src_ip="1.1.1.1", dst_ip="10.10.20.20")
+    b = det("W:2", "T1505.003", 2, src_ip="2.2.2.2", dst_ip="10.10.20.20")
+    c = det("C:1", "T1071.001", 3, src_ip="10.10.20.20", dst_ip="7.7.7.7")
+    incs = correlate([a, b, c])
+    assert sorted(sorted(d.detection_id for d in i.detections) for i in incs) == [
+        ["C:1", "W:2"], ["W:1"]]

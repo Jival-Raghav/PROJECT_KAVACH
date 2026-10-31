@@ -78,6 +78,12 @@ def _fixture(rule_id: str) -> list[str]:
                         dstip=f"10.10.20.{i + 1}", dstintfrole="dmz", dstport=port)
                 for i in range(12)]
     if rule_id == "KC-ID-001":
+        base = [fg_line(at(i), type="event", subtype="vpn", action="ssl-login", user="ops",
+                        srcip="4.4.4.4", srccountry="Japan") for i in range(150)]
+        return base + [_sys(at(200), logdesc="Admin login successful", user="ops",
+                            srcip="5.5.5.5", srccountry="Brazil", status="success",
+                            action="login")]
+    if rule_id == "KC-ID-004":
         return [_sys(at(0), logdesc="Admin login successful", user="newadmin", srcip="5.5.5.5",
                      srccountry="Brazil", status="success", action="login")]
     if rule_id == "KC-ID-002":
@@ -108,7 +114,7 @@ def _fixture(rule_id: str) -> list[str]:
 
 RULE_IDS = ["KC-RECON-001", "KC-RECON-002", "KC-WEB-001", "KC-WEB-002", "KC-C2-001",
             "KC-C2-002", "KC-C2-003", "KC-MAL-001", "KC-MAL-002", "KC-EXF-001", "KC-LAT-001", "KC-LAT-002",
-            "KC-ID-001", "KC-ID-002", "KC-ID-003", "KC-PER-001", "KC-PER-002", "KC-DEF-001",
+            "KC-ID-001", "KC-ID-002", "KC-ID-003", "KC-ID-004", "KC-PER-001", "KC-PER-002", "KC-DEF-001",
             "KC-DEF-002"]
 
 
@@ -179,3 +185,9 @@ def test_readme_example_rule_loads(tmp_path):
     (d / "x.yaml").write_text("rules:\n" + block)
     (rule,) = load_rules(d)
     assert rule.id == "KC-CUSTOM-001"
+
+
+def test_new_admin_account_is_not_called_unusual_country(tmp_path):
+    con = open_events(ingest_lines(tmp_path, _fixture("KC-ID-004")))
+    ids = {d.rule_id for d in run_rules(con, load_rules(RULES_DIR))}
+    assert ids == {"KC-ID-004"}

@@ -5,14 +5,18 @@
   "label_accuracy_lenient": 1.0,
   "paths_rebuilt": 20,
   "paths_total": 20,
+  "paths_multistep_rebuilt": 4,
+  "paths_multistep_total": 4,
+  "merged_incidents": 0,
+  "incident_purity": 1.0,
   "false_alarm_rate": 0.0,
   "incidents": 20,
   "false_alarms": 0,
   "steps_total": 28,
   "steps_found": 28,
-  "processing_seconds": 182.41,
-  "peak_memory_mb": 3222.9,
-  "cold_open_ms": 2.44,
+  "processing_seconds": 182.23,
+  "peak_memory_mb": 3271.6,
+  "cold_open_ms": 3.39,
   "p95_open_ms": 0.007,
   "per_step": [
    {
@@ -547,7 +551,7 @@
   ]
  },
  "run_meta": {
-  "generated_at": "2026-10-31T09:22:54+00:00",
+  "generated_at": "2026-10-31T09:33:31+00:00",
   "log_path": "/Users/sumeet/Desktop/PROJECT_KAVACH/REAL_10G_DATA/firex-10G.log",
   "ingest": {
    "lines_read": 9125382,
@@ -559,13 +563,13 @@
   },
   "seconds": {
    "ingest": 177.21,
-   "detect": 4.85,
+   "detect": 4.72,
    "correlate": 0.0,
-   "enrich": 0.35
+   "enrich": 0.3
   },
-  "total_seconds": 182.41,
-  "peak_rss_mb": 3222.9,
-  "rule_count": 19,
+  "total_seconds": 182.23,
+  "peak_rss_mb": 3271.6,
+  "rule_count": 20,
   "detection_count": 29,
   "incident_count": 20,
   "raw_alerts_merged": 11078

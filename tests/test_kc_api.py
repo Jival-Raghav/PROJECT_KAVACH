@@ -88,3 +88,10 @@ def test_main_app_mounts_router():
 
     paths = set(app.openapi()["paths"])
     assert "/api/incidents/{incident_id}/path" in paths
+
+
+def test_run_id_is_validated(client):
+    c, _ = client
+    assert c.get("/api/incidents?run_id=../../etc").status_code == 422
+    assert c.get("/api/incidents/1/path?run_id=a'b").status_code == 422
+    assert c.post("/api/killchain/run?run_id=../x").status_code == 422

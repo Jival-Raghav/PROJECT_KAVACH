@@ -54,6 +54,12 @@ def render_benchmark(m, meta: dict) -> str:
         rating = "🟢 Great" if great(v) else "🟡 Good" if good(v) else "🔴 Below target"
         lines.append(f"| {name} | **{fmt(v)}** | {wording} | {rating} |")
     s = meta.get("seconds", {})
+    lines += ["", f"Attack paths: {m.paths_rebuilt}/{m.paths_total} scenarios rebuilt, of which "
+              f"{m.paths_multistep_rebuilt}/{m.paths_multistep_total} are multi-step chains "
+              f"where step order is actually tested. A scenario only counts as rebuilt when its "
+              f"incident contains no other scenario. Incidents spanning more than one scenario: "
+              f"{m.merged_incidents}. Incident purity (share of an incident's events that are "
+              f"planted): {m.incident_purity:.1%}."]
     lines += ["", f"Steps found {m.steps_found}/{m.steps_total}; lenient label accuracy "
               f"{m.label_accuracy_lenient:.1%}; {m.incidents} incidents, {m.false_alarms} false "
               f"alarms; {meta.get('raw_alerts_merged', 0):,} raw alerts merged into "
@@ -74,6 +80,12 @@ def render_benchmark(m, meta: dict) -> str:
               "- The ground truth was reconstructed by us from the logs (rare events, the "
               "`crscore` field planted lines carry, periodicity and repeated-pair analysis). "
               "Rules are tested to contain none of its IPs, users or domains.",
+              "- The ground truth was widened once during tuning: the first rule run produced 4 "
+              "detections outside the then-ground-truth (a false-alarm rate of 4/20 at that "
+              "point). On inspection they were planted activity without the `crscore` marker "
+              "(periodic 300 s beacons; repeated ~20 KB transfers to the same attacker IPs), so "
+              "5 steps were added (GT-07 beacon + exfil, GT-16 scan + exfil, GT-20). The 0% "
+              "false-alarm figure is measured against that widened ground truth.",
               "- The supplied file was truncated: its last 1.7 GB was random bytes and was "
               "removed; 9.1M clean lines remain.",
               "- Timestamps are the firewall's local clock (+05:30)."]

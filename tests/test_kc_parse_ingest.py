@@ -48,3 +48,18 @@ def test_ingest_skips_invalid_utf8(tmp_path):
     p.write_bytes((fg_line(type="traffic") + "\n").encode() + b"date=\xff\xfe\xfd eventtime=1\n")
     stats = ingest_log(p, tmp_path / "run")
     assert (stats.lines_parsed, stats.lines_skipped) == (1, 1)
+
+
+def test_oversized_integers_do_not_kill_ingest(tmp_path):
+    big = fg_line(type="traffic", srcip="10.0.0.1", srcport="99999999999999999999999")
+    huge_ts = 'date=2026-10-23 time=08:48:26 eventtime=9999999999999999999999999 type="traffic"'
+    stats = ingest_log(write_log(tmp_path / "b.log", [big, huge_ts, fg_line(type="traffic")]),
+                       tmp_path / "run")
+    assert (stats.lines_parsed, stats.lines_skipped) == (2, 1)
+    assert parse_line(big, 1)["srcport"] is None
+
+
+def test_run_dir_with_quote_is_safe(tmp_path):
+    run = tmp_path / "it's"
+    ingest_log(write_log(tmp_path / "q.log", [fg_line(type="traffic")]), run)
+    assert open_events(run).execute("select count(*) from events").fetchone() == (1,)

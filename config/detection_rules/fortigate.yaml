@@ -164,6 +164,21 @@ rules:
     key: user
     value: srccountry
     max_share: 0.01
+    fire_without_baseline: false
+    entities: {src_ip: srcip, dst_ip: dstip, user: user, country: srccountry}
+
+  - id: KC-ID-004
+    title: Firewall admin login by an account with no prior history
+    technique: T1078
+    severity: critical
+    kind: rare_for_entity
+    where: "logdesc='Admin login successful'"
+    # Any other activity by the same user name counts as history; none at all = new account.
+    baseline_where: "user IS NOT NULL AND (logdesc IS NULL OR logdesc <> 'Admin login successful')"
+    key: user
+    value: user
+    max_share: 0
+    fire_without_baseline: true
     entities: {src_ip: srcip, dst_ip: dstip, user: user, country: srccountry}
 
   - id: KC-ID-002

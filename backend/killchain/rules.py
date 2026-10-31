@@ -60,6 +60,7 @@ class Rule(BaseModel):
     key: str | None = None
     value: str | None = None
     max_share: float = 0.01
+    fire_without_baseline: bool = True  # fire when the key has no baseline events at all
     # sequence
     then_where: str | None = None
     join_on: str | None = None
@@ -135,7 +136,8 @@ def _matched_cte(rule: Rule) -> tuple[str, list]:
           LEFT JOIN (SELECT {k} AS tk, count(*) AS t FROM events
                      WHERE {rule.baseline_where} GROUP BY ALL) tot
                  ON tot.tk = e.{k}
-          WHERE tot.t IS NULL OR coalesce(b.c, 0) < {float(rule.max_share)} * tot.t"""
+          WHERE (tot.t IS NULL AND {str(rule.fire_without_baseline).upper()})
+             OR coalesce(b.c, 0) < {float(rule.max_share)} * tot.t"""
         return sql, params
     # sequence
     j = rule.join_on

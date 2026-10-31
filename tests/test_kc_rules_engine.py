@@ -208,3 +208,10 @@ def test_having_with_gap_detects_regular_beacon_only(tmp_path):
         jitter.append(fg_line(at(t), action="accept", srcip="10.0.0.2", dstip="7.7.7.8"))
     _, dets = _run(tmp_path, regular + jitter, BEACON_RULE)
     assert [d.entities["src_ip"] for d in dets] == [["10.0.0.1"]]
+
+
+def test_rare_for_entity_can_ignore_missing_baseline(tmp_path):
+    lines = [fg_line(at(0), type="event", subtype="system", logdesc="Admin login successful",
+                     user="C", srccountry="Brazil", srcip="7.7.7.7")]
+    _, dets = _run(tmp_path, lines, RARE_RULE + "  fire_without_baseline: false\n")
+    assert dets == []

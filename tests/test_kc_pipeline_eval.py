@@ -102,3 +102,35 @@ def test_bench_report_renders_every_prd_target(run):
                  "Peak memory", "Investigation speed"):
         assert name in md
     assert "Below target" not in md
+
+
+GT_SAME_ATTACKER = """
+scenarios:
+  - id: S1
+    name: scan
+    steps:
+      - {id: S1-1, techniques: [T1595], where: "srcip='8.8.4.4' AND type='traffic'", expected_count: 120}
+  - id: S2
+    name: sqli then webshell
+    steps:
+      - {id: S2-1, techniques: [T1190], where: "srcip='8.8.4.4' AND subtype='ips'", expected_count: 12}
+      - {id: S2-2, techniques: [T1505.003], where: "srcip='8.8.4.4' AND subtype='webfilter'", expected_count: 6}
+"""
+
+
+def test_evaluate_penalises_merging_two_scenarios(tmp_path):
+    lines = [ln.replace("9.9.9.9", "8.8.4.4") for ln in _lines()]
+    run_dir = tmp_path / "run"
+    run_killchain(write_log(tmp_path / "f.log", lines), run_dir, RULES)
+    gt = tmp_path / "gt.yaml"
+    gt.write_text(GT_SAME_ATTACKER)
+    m = evaluate(run_dir, gt)
+    assert m.incidents == 1 and m.merged_incidents == 1
+    assert m.paths_rebuilt == 0
+    assert (m.paths_multistep_rebuilt, m.paths_multistep_total) == (0, 1)
+
+
+def test_evaluate_reports_purity(run):
+    run_dir, gt, _ = run()
+    m = evaluate(run_dir, gt)
+    assert m.incident_purity == 1.0 and m.merged_incidents == 0
