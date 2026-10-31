@@ -41,6 +41,7 @@ from api.graph import router as graph_router
 from api.remediation import router as remediation_router
 from api.posture import router as posture_router
 from api.security import router as security_router
+from api.incidents import router as incidents_router
 
 app.include_router(sources_router)
 app.include_router(schema_router)
@@ -51,6 +52,7 @@ app.include_router(graph_router)
 app.include_router(remediation_router)
 app.include_router(posture_router)
 app.include_router(security_router)
+app.include_router(incidents_router)
 
 
 class FeedbackPayload(BaseModel):
