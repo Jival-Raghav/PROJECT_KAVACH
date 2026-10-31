@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
 import data_loader
-from llm.narrator import generate_narrative, stream_narrative
+from llm.narrator import generate_narrative, get_provider_status, stream_narrative
 from pipeline import pipeline_state, run_pipeline_async
 
 
@@ -72,7 +72,13 @@ def run_pipeline_endpoint() -> dict[str, str]:
 @app.get("/status")
 def get_status() -> dict[str, Any]:
     """Returns the global pipeline state used by the frontend polling loop."""
-    return pipeline_state
+    return {**pipeline_state, "llm": get_provider_status()}
+
+
+@app.get("/llm-status")
+def get_llm_status() -> dict[str, Any]:
+    """Returns LLM provider connectivity status. Use this to check if LM Studio is running."""
+    return get_provider_status()
 
 
 @app.get("/users/risks")
