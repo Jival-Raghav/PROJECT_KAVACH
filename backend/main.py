@@ -10,7 +10,7 @@ from starlette.background import BackgroundTask
 
 import data_loader
 from models import breach_simulator
-from llm.narrator import generate_narrative, get_provider_status, stream_narrative
+from llm.narrator import generate_narrative, get_provider_status, stream_inference, stream_narrative
 from pipeline import pipeline_state, run_pipeline_async, lifespan
 from models.kmeans_events import get_cluster_summary
 
@@ -129,6 +129,42 @@ def get_user_narrative(user_id: str = Path(..., description="The user identifier
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(cached_stream(), media_type="text/event-stream")
+
+
+@app.get("/users/{user_id}/inference")
+def get_user_inference(user_id: str = Path(..., description="The user identifier from the CSV feed.")) -> StreamingResponse:
+    """Pass 3: streams an inference verdict that synthesises prosecutor + DA responses."""
+    profiles = _load_profiles_with_feedback()
+    profile = _find_profile(profiles, user_id)
+    if profile is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    narrative = profile.get("narrative")
+    if not isinstance(narrative, dict):
+        raise HTTPException(
+            status_code=400,
+            detail="Narrative not yet generated for this user. Generate the narrative first."
+        )
+
+    prosecution_text = narrative.get("prosecution", "")
+    da_text = narrative.get("devils_advocate", "")
+
+    if not prosecution_text or not da_text:
+        raise HTTPException(
+            status_code=400,
+            detail="Both prosecution and devil's advocate responses are required for inference."
+        )
+
+    return StreamingResponse(
+        stream_inference(
+            profile=profile,
+            prosecution_text=prosecution_text,
+            da_text=da_text,
+            doubt_score=narrative.get("doubt_score"),
+            final_severity=narrative.get("final_severity"),
+        ),
+        media_type="text/event-stream",
+    )
 
 
 @app.post("/feedback/{user_id}")

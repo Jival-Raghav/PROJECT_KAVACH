@@ -19,6 +19,7 @@ from llm.client import LLMClient, ProviderError, get_da_client, get_prosecutor_c
 from llm.prompts import (
     apply_doubt_gate,
     build_devils_advocate_messages,
+    build_inference_messages,
     build_prosecutor_messages,
 )
 
@@ -263,5 +264,46 @@ def stream_narrative(
             yield f"data: {chunk}\n\n"
     except ProviderError as exc:
         yield f"data: ERROR [Devil's Advocate]: {exc}\n\n"
+
+    yield "data: [DONE]\n\n"
+
+
+def stream_inference(
+    profile: dict[str, Any],
+    prosecution_text: str,
+    da_text: str,
+    doubt_score: float | None = None,
+    final_severity: str | None = None,
+) -> Iterator[str]:
+    """
+    Pass 3 — Inference.
+    Sends both prosecutor and DA outputs back to the prosecutor LLM to
+    synthesise a final verdict: what actually happened + remediation steps.
+    Streams as SSE events.
+    """
+    prosecutor = _get_prosecutor()
+    if prosecutor is None:
+        yield f"data: ERROR [Inference]: {_prosecutor_error or 'Prosecutor LLM not available'}\n\n"
+        yield "data: [DONE]\n\n"
+        return
+
+    username = profile.get("username", "unknown")
+    logger.info("Streaming inference for %s [model=%s]", username, prosecutor.name())
+
+    yield f"data: [INFERENCE — {prosecutor.name()}]\n\n"
+
+    inference_messages = build_inference_messages(
+        profile=profile,
+        prosecution_text=prosecution_text,
+        da_text=da_text,
+        doubt_score=doubt_score,
+        final_severity=final_severity,
+    )
+
+    try:
+        for chunk in prosecutor.stream(inference_messages, temperature=0.25, max_tokens=900):
+            yield f"data: {chunk}\n\n"
+    except ProviderError as exc:
+        yield f"data: ERROR [Inference]: {exc}\n\n"
 
     yield "data: [DONE]\n\n"
