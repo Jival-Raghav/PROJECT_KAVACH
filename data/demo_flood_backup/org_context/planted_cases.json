@@ -1,0 +1,78 @@
+{
+  "benign_cases": [
+    {
+      "user_id": "U_ONCALL_NIGHT",
+      "finding": "HIGH_SENS_EXPORT_NIGHT",
+      "system": "PROD_DB",
+      "timestamp": "2026-03-25T02:30:00Z",
+      "mitigating_tool": "was_on_call",
+      "expected_status": "refuted"
+    },
+    {
+      "user_id": "U_TICKET_APPROVED",
+      "finding": "HIGH_SENS_EXPORT_NIGHT",
+      "system": "CUSTOMER_DATA",
+      "timestamp": "2026-03-26T22:15:00Z",
+      "mitigating_tool": "change_ticket_covering",
+      "expected_status": "refuted"
+    },
+    {
+      "user_id": "U_PROJECT_MEMBER",
+      "finding": "CROSS_DEPT_ACCESS",
+      "system": "FINANCE_LAKE",
+      "timestamp": "2026-03-26T15:00:00Z",
+      "mitigating_tool": "project_membership",
+      "expected_status": "refuted"
+    },
+    {
+      "user_id": "U_RECENT_TRANSFER",
+      "finding": "CROSS_DEPT_ACCESS",
+      "system": "MARKETING_CRM",
+      "timestamp": "2026-03-25T11:00:00Z",
+      "mitigating_tool": "recent_role_change",
+      "expected_status": "refuted"
+    },
+    {
+      "user_id": "U_APPROVED_EXCEPTION",
+      "finding": "STALE_PRIVILEGED_ACCOUNT",
+      "system": "AWS",
+      "timestamp": "2026-03-25T10:00:00Z",
+      "mitigating_tool": "approved_exception",
+      "expected_status": "refuted"
+    }
+  ],
+  "malicious_cases": [
+    {
+      "user_id": "U_MALICIOUS_NO_TICKET",
+      "finding": "HIGH_SENS_EXPORT_NIGHT",
+      "system": "FINANCE_LAKE",
+      "timestamp": "2026-03-27T03:15:00Z",
+      "mitigating_tool": null,
+      "expected_status": "stands"
+    },
+    {
+      "user_id": "U_MALICIOUS_WRONG_SYSTEM",
+      "finding": "HIGH_SENS_EXPORT_NIGHT",
+      "system": "CORE_BANKING_PROD",
+      "timestamp": "2026-03-27T04:00:00Z",
+      "mitigating_tool": null,
+      "expected_status": "stands"
+    },
+    {
+      "user_id": "U_MALICIOUS_EXPIRED_TICKET",
+      "finding": "HIGH_SENS_EXPORT_NIGHT",
+      "system": "PROD_DB",
+      "timestamp": "2026-03-27T06:00:00Z",
+      "mitigating_tool": null,
+      "expected_status": "stands"
+    },
+    {
+      "user_id": "U_HARD_RULE_SOD",
+      "finding": "SOD_CONFLICT",
+      "system": "SAP",
+      "timestamp": "2026-03-27T07:00:00Z",
+      "mitigating_tool": null,
+      "expected_status": "stands"
+    }
+  ]
+}

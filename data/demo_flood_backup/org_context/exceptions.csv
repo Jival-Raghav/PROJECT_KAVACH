@@ -1,0 +1,2 @@
+exception_id,user,entitlement,expiry_date,approver,justification
+EXC-901,U_APPROVED_EXCEPTION,aws_iam_admin,2026-06-30,CISO,Cloud migration temporary access
