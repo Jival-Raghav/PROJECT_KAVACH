@@ -17,15 +17,21 @@ import GraphView        from './pages/GraphView'
 import Remediation      from './pages/Remediation'
 import ComplianceView   from './pages/Compliance'
 import AISecurityView   from './pages/AISecurity'
+import KillChain, { KillChainRules } from './pages/KillChain'
 import {
   Cpu, Loader2, Moon, Play, Shield, Sun, User, MessageSquareText, Network,
   Workflow, Fingerprint, ShieldAlert, FolderSearch, ListChecks, ClipboardCheck, Bot, Layers,
+  Crosshair, FileCode2,
 } from 'lucide-react'
 
 /* ── Constants ─────────────────────────────────────────── */
 
 // Grouped by the analyst's journey: bring data in, find risk, dig in, then act.
 const NAV_GROUPS = [
+  { label: 'Kill Chain', items: [
+    { id: 'kc-incidents', label: 'Attack Incidents', icon: Crosshair, hint: 'Firewall logs turned into ranked, MITRE-labelled attack paths: timeline, graph, reach and report.' },
+    { id: 'kc-rules',     label: 'Detection Rules',  icon: FileCode2, hint: 'YAML / Sigma-style rules mapped to ATT&CK. Edit config, not code.' },
+  ]},
   { label: 'Onboard', items: [
     { id: 'autopilot',  label: 'Schema Autopilot',     icon: Workflow,       hint: 'Connect sources, map fields and build the unified schema.' },
     { id: 'resolution', label: 'Identity Resolution',  icon: Fingerprint,    hint: 'Match accounts across systems to one person.' },
@@ -84,7 +90,7 @@ export default function App() {
   /* UI state */
   const [selectedUser, setSelectedUser] = useState(null)
   const [inspectorTab, setInspectorTab]   = useState('profile')
-  const [activeTab,    setActiveTab]    = useState('autopilot')
+  const [activeTab,    setActiveTab]    = useState('kc-incidents')
   const [wizardStep,   setWizardStep]   = useState('connect')
   const [ingestedSources, setIngestedSources] = useState([])
 
@@ -181,6 +187,8 @@ export default function App() {
         )
       }
     }
+    if (activeTab === 'kc-incidents') return <KillChain />
+    if (activeTab === 'kc-rules') return <KillChainRules />
     if (activeTab === 'resolution') return <ResolutionView />
     if (activeTab === 'investigate') {
       return (
@@ -302,13 +310,13 @@ export default function App() {
               <h1 className="display">{activeItem?.label || 'Overview'}</h1>
               {activeItem?.hint && <p>{activeItem.hint}</p>}
             </div>
-            <div className="kpis">
+            {!activeTab.startsWith('kc-') && <div className="kpis">
               <StatCard label="Total users"   value={stats.total_users}                    variant="total"    />
               <StatCard label="Critical"      value={stats.critical_count}                  variant="critical" />
               <StatCard label="High"          value={stats.high_count}                      variant="high"     />
               <StatCard label="To review"     value={stats.review_count}                    variant="review"   />
               <StatCard label="Avg score"     value={stats.avg_risk_score?.toFixed(1) ?? 0} variant="avg"      />
-            </div>
+            </div>}
           </div>
 
           <div className="content-area">
