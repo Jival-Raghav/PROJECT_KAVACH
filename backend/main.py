@@ -11,15 +11,14 @@ for _p in (_backend_dir, _root_dir):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 
-from fastapi import FastAPI, HTTPException, Path
+from fastapi import FastAPI, HTTPException, Path, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from starlette.background import BackgroundTask
 
 import data_loader
 from models import breach_simulator
-from llm.narrator import generate_narrative, get_provider_status, stream_inference, stream_narrative
+from llm.narrator import _sse, get_provider_status, narrative_is_valid, stream_inference, stream_narrative
 from pipeline import pipeline_state, run_pipeline_async, lifespan
 from models.kmeans_events import get_cluster_summary
 
@@ -68,6 +67,10 @@ def _load_profiles_with_feedback() -> list[dict[str, Any]]:
             profile["suppressed"] = bool(entry.get("suppressed", profile.get("suppressed", False)))
             profile["feedback_note"] = str(entry.get("note", profile.get("feedback_note", "")))
     return profiles
+
+
+def _save_narrative(user_id: str, profile: dict[str, Any]) -> None:
+    data_loader.update_profile_fields(user_id, {"narrative": profile.get("narrative")})
 
 
 def _save_profile_list(updated_profiles: list[dict[str, Any]]) -> None:
@@ -129,7 +132,10 @@ def get_user(user_id: str = Path(..., description="The user identifier from the 
 
 
 @app.get("/users/{user_id}/narrative")
-def get_user_narrative(user_id: str = Path(..., description="The user identifier from the CSV feed.")) -> StreamingResponse:
+def get_user_narrative(
+    user_id: str = Path(..., description="The user identifier from the CSV feed."),
+    refresh: bool = Query(False, description="Ignore any cached narrative and regenerate."),
+) -> StreamingResponse:
     """Streams the cached or newly generated narrative back to the frontend as SSE."""
     profiles = _load_profiles_with_feedback()
     profile = _find_profile(profiles, user_id)
@@ -140,21 +146,23 @@ def get_user_narrative(user_id: str = Path(..., description="The user identifier
     flagged_events = list(profile.get("flagged_events", []))
     all_profiles = profiles
 
-    if profile.get("narrative") is None:
-        narrative = generate_narrative(profile, flagged_events, feedback_context, all_profiles=all_profiles)
-        profile["narrative"] = narrative
-        response = StreamingResponse(
-            stream_narrative(profile, flagged_events, feedback_context, all_profiles=all_profiles),
+    if refresh or not narrative_is_valid(profile.get("narrative")):
+        profile["narrative"] = None
+        return StreamingResponse(
+            stream_narrative(
+                profile, flagged_events, feedback_context, all_profiles=all_profiles,
+                on_complete=lambda _n: _save_narrative(user_id, profile),
+            ),
             media_type="text/event-stream",
-            background=BackgroundTask(_save_profile_list, profiles),
         )
-        return response
 
     cached_narrative = profile["narrative"]
 
     def cached_stream():
-        full_text = f"PROSECUTION:\n{cached_narrative['prosecution']}\n\nDEVIL'S ADVOCATE:\n{cached_narrative['devils_advocate']}"
-        yield f"data: {full_text}\n\n"
+        yield "data: [PROSECUTOR — cached]\n\n"
+        yield _sse(cached_narrative["prosecution"])
+        yield "data: [DEVIL'S ADVOCATE — cached]\n\n"
+        yield _sse(cached_narrative["devils_advocate"])
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(cached_stream(), media_type="text/event-stream")

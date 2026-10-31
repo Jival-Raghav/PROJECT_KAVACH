@@ -1,5 +1,5 @@
 """backend/detect/peers.py
-Peer Group Segmentation and Anomaly Z-Score Engine for ISPAD v2.
+Peer Group Segmentation and Anomaly Z-Score Engine for Kavach v2.
 
 Determines peer cohorts via:
 1. Hierarchical HR metadata: department -> job_title (or custom peer_group extra).

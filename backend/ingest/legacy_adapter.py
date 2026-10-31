@@ -185,6 +185,18 @@ def load_canonical(
                         setattr(org_ctx, name, list(csv.DictReader(f)))
             break
 
+    # HR terminations override the identity status; the IdP account keeps its own status,
+    # so "HR says terminated, account still live" surfaces as leaver-active.
+    terminated = {
+        str(h.get("user", "")): str(h.get("effective_date", ""))
+        for h in org_ctx.hr_events
+        if str(h.get("event_type", "")).upper() == "TERMINATION"
+    }
+    for ident in identities:
+        if ident.identity_id in terminated:
+            ident.employment_status = "terminated"
+            ident.termination_date = terminated[ident.identity_id]
+
     return CanonicalBundle(
         run_id=run_id,
         identities=identities,

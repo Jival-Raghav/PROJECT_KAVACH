@@ -1,5 +1,5 @@
 """backend/detect/models.py
-Isolation Forest & Behavioral Clustering Detection Models for ISPAD v2.
+Isolation Forest & Behavioral Clustering Detection Models for Kavach v2.
 
 Features:
 - Fixed random seeds for reproducible demo metrics.

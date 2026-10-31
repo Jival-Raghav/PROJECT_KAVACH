@@ -1,5 +1,5 @@
 """backend/resolve/classify.py
-Account Classification Engine for ISPAD v2.
+Account Classification Engine for Kavach v2.
 
 Categorizes accounts into:
 - leaver_active (Critical): Terminated HR identity with active account or post-termination activity.

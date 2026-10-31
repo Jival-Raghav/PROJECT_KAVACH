@@ -30,8 +30,23 @@ SYSTEM_DEVILS_ADVOCATE = (
     "You may ONLY mark a claim refuted or weakened if a cited tool result directly supports that conclusion. "
     "If no tool evidence supports the claim, mark it 'unverifiable' or 'stands'. "
     "Hard rule claims cannot be dismissed. "
+    "If a tool returns result=true with evidence rows covering the same user, system and time as the claim, "
+    "mark the claim 'refuted'; one covering tool call also refutes an overall after-hours pattern claim over the same events. "
+    "Use 'weakened' only when the evidence covers part of the activity (for example a recent role transfer into the "
+    "department that owns the accessed system weakens a sensitive-access claim). "
+    "Absence of evidence only counts after you have checked: before giving final rebuttals, call each of "
+    "was_on_call, change_ticket_covering, project_membership, approved_exception and recent_role_change at least once "
+    "for the case user, then apply every positive result to every claim it covers. "
     "Emit either a tool call request JSON: {\"tool\": \"<name>\", \"args\": {<args>}} "
     "or the final rebuttal evaluation JSON."
+)
+
+# Single-shot defence used by the narrative panel: no tools are available in that flow.
+SYSTEM_DEVILS_ADVOCATE_NARRATIVE = (
+    "You are a skeptical security architect acting as independent defense counsel. "
+    "Challenge the prosecution's finding using only the facts given, offering legitimate business explanations "
+    "and noting what evidence is missing. You have NO tools: never request a tool call. "
+    "Respond with a single valid JSON object only, using exactly the requested keys."
 )
 
 SYSTEM_ADJUDICATOR = (
@@ -77,7 +92,17 @@ def build_prosecutor_messages(
             "risk_score": profile.get("risk_score"),
             "peer_group": profile.get("peer_group"),
             "peer_zscore": profile.get("peer_zscore"),
+            "cluster_description": profile.get("cluster_description"),
+            "after_hours_ratio": profile.get("after_hours_ratio"),
+            "high_sensitivity_ratio": profile.get("high_sensitivity_ratio"),
+            "fail_ratio": profile.get("fail_ratio"),
+            "export_count": profile.get("export_count"),
+            "admin_op_count": profile.get("admin_op_count"),
         },
+        "risk_flags": profile.get("flags") or [],
+        "sod_violations": profile.get("sod_violations") or [],
+        "compliance_gaps": profile.get("compliance_gaps") or [],
+        "breach_simulation": breach_summary,
         "findings": actual_findings,
         "flagged_events": [
             {
@@ -87,7 +112,7 @@ def build_prosecutor_messages(
                 "resource": e.get("resource"),
                 "system": e.get("system"),
                 "resource_sensitivity": e.get("resource_sensitivity"),
-                "success": e.get("success"),
+                "success": e.get("success", e.get("status")),
                 "source_ip": e.get("source_ip"),
             }
             for e in actual_events[:20]
@@ -99,7 +124,9 @@ def build_prosecutor_messages(
     user_instructions = (
         f"Analyze the untrusted telemetry enclosed in the data block with nonce={nonce}.\n\n"
         f"{data_block}\n\n"
-        "Produce a JSON list of discrete claims. Respond in EXACTLY this JSON schema:\n"
+        "Produce a JSON list of discrete claims. Base them on the findings, risk_flags, sod_violations, "
+        "compliance_gaps and flagged_events; return at least one claim whenever any of these are non-empty "
+        "or risk_score is elevated. Respond in EXACTLY this JSON schema:\n"
         "{\n"
         '  "claims": [\n'
         "    {\n"
@@ -124,9 +151,14 @@ def build_da_tool_loop_messages(
     claims: list[dict[str, Any]],
     available_tools: list[dict[str, Any]],
     history: list[dict[str, Any]] | None = None,
+    context: dict[str, Any] | None = None,
 ) -> list[dict[str, str]]:
     """Constructs prompt for Pass 2 (Devil's Advocate) iterative tool execution."""
-    tools_desc = "\n".join([f"- {t['name']}: {t['description']}" for t in available_tools])
+    tools_desc = "\n".join([
+        f"- {t['name']}({', '.join(t.get('parameters', {}).get('properties', {}))}): {t['description']}"
+        for t in available_tools
+    ])
+    case_ctx = f"Case context (use these exact values as tool arguments):\n{json.dumps(context)}\n\n" if context else ""
 
     messages = [
         {"role": "system", "content": SYSTEM_DEVILS_ADVOCATE},
@@ -135,7 +167,10 @@ def build_da_tool_loop_messages(
             "content": (
                 "Here are the prosecutor's claims to investigate:\n"
                 f"{json.dumps(claims, indent=2)}\n\n"
+                f"{case_ctx}"
                 f"Available verification tools:\n{tools_desc}\n\n"
+                "Reply with plain JSON text only; never use native function calling. "
+                "Call one tool per turn, then wait for its result.\n"
                 "If you need to call a tool, respond with JSON:\n"
                 '{"tool": "<tool_name>", "args": {<arguments>}}\n\n'
                 "Once you have gathered sufficient evidence or no further tools apply, respond with the final JSON:\n"
@@ -255,7 +290,7 @@ def build_devils_advocate_messages(
     )
 
     return [
-        {"role": "system", "content": SYSTEM_DEVILS_ADVOCATE},
+        {"role": "system", "content": SYSTEM_DEVILS_ADVOCATE_NARRATIVE},
         {
             "role": "user",
             "content": (
@@ -297,6 +332,17 @@ def build_inference_messages(
         {"role": "system", "content": SYSTEM_INFERENCE},
         {
             "role": "user",
-            "content": f"Synthesise into a final verdict JSON:\n{context}",
+            "content": (
+                f"Synthesise into a final verdict.\n{context}\n\n"
+                "Respond with JSON in EXACTLY this schema (no other keys, no markdown):\n"
+                "{\n"
+                '  "recommended_action": "ESCALATE|INVESTIGATE|MONITOR|DISMISS",\n'
+                '  "confidence": "HIGH|MEDIUM|LOW",\n'
+                '  "what_happened": "<2-3 sentence plain-English summary of the incident>",\n'
+                '  "key_findings": ["<short finding>", "..."],\n'
+                '  "remediation_steps": ["<concrete action>", "..."],\n'
+                '  "rationale": "<1-2 sentences on why the verdict beats the opposing argument>"\n'
+                "}"
+            ),
         },
     ]

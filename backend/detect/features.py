@@ -1,5 +1,5 @@
 """backend/detect/features.py
-Schema-Independent Feature Engineering for ISPAD v2.
+Schema-Independent Feature Engineering for Kavach v2.
 
 Computes detection feature vectors strictly from canonical models:
 - Baseline features: after_hours_ratio, weekend_ratio, sensitivity_ratio, distinct_systems, inactivity_days

@@ -41,7 +41,7 @@ def generate_audit_pack_json(
     manifest_hash = hashlib.sha256(raw_payload.encode("utf-8")).hexdigest()
 
     pack = {
-        "ispad_version": "v2.0-cyberforge",
+        "kavach_version": "v2.0-cyberforge",
         "generated_at": timestamp,
         "manifest_sha256": manifest_hash,
         "hygiene_summary": hygiene_data,
@@ -130,7 +130,7 @@ def generate_audit_pack_pdf(
     story = []
 
     # Title & Header
-    story.append(Paragraph("ISPAD v2 · Enterprise Identity Compliance Pack", title_style))
+    story.append(Paragraph("Kavach v2 · Enterprise Identity Compliance Pack", title_style))
     story.append(Spacer(1, 4))
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     story.append(Paragraph(f"Generated: {timestamp} | Scope: Multi-Source Identity Fabric", body_style))

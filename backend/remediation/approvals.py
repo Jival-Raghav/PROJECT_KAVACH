@@ -24,7 +24,7 @@ VALID_TRANSITIONS = {
 }
 
 
-def create_proposal(proposal: RemediationProposal, actor: str = "ISPAD_Engine") -> RemediationProposal:
+def create_proposal(proposal: RemediationProposal, actor: str = "Kavach_Engine") -> RemediationProposal:
     """Registers a new remediation proposal in the queue and records an audit log entry."""
     _PROPOSALS[proposal.proposal_id] = proposal
     log_entry = {
@@ -99,4 +99,4 @@ def seed_default_proposals_if_empty(sample_proposals: list[RemediationProposal])
     """Seeds proposals if queue is currently empty."""
     if not _PROPOSALS:
         for p in sample_proposals:
-            create_proposal(p, actor="ISPAD_Detection_Engine")
+            create_proposal(p, actor="Kavach_Detection_Engine")

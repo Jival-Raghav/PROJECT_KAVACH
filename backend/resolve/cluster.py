@@ -1,5 +1,5 @@
 """backend/resolve/cluster.py
-Constrained Union-Find Clustering and Golden Identity Synthesis for ISPAD v2.
+Constrained Union-Find Clustering and Golden Identity Synthesis for Kavach v2.
 
 Enforces strict hard invariant:
     NEVER merge two records with different non-null employee IDs,

@@ -93,7 +93,7 @@ class Settings:
     # ── Paths ─────────────────────────────────────────────────────────────────
     DATA_DIR: str = os.path.join(os.path.dirname(__file__), "data")
     DB_PATH: str = os.getenv(
-        "DB_PATH", os.path.join(os.path.dirname(__file__), "data", "ispad.db")
+        "DB_PATH", os.path.join(os.path.dirname(__file__), "data", "kavach.db")
     )
     CACHE_DIR: str = os.path.join(os.path.dirname(__file__), "data", "cache")
 

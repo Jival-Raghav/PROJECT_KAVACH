@@ -1,4 +1,4 @@
-# config/sod.yaml — Separation of Duties (SoD) Conflict Matrix for ISPAD v2
+# config/sod.yaml — Separation of Duties (SoD) Conflict Matrix for Kavach v2
 # Configures mutually exclusive entitlements and actions to prevent fraud,
 # unauthorized access, and change-control violations.
 

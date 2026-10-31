@@ -1,5 +1,5 @@
 """backend/resolve/engine.py
-Identity Resolution Pipeline Orchestrator for ISPAD v2.
+Identity Resolution Pipeline Orchestrator for Kavach v2.
 
 Integrates:
 - Normalization (NFKD, nickname alias dictionary, email/username local-part)
@@ -12,6 +12,7 @@ Integrates:
 from __future__ import annotations
 
 import json
+import threading
 from typing import Any
 
 from core.db import (
@@ -157,7 +158,20 @@ def run_identity_resolution(
     return result
 
 
+_PERSIST_LOCK = threading.Lock()
+
+
 def _persist_resolution_result(
+    result: ResolutionResult,
+    refused_merges: list[dict[str, Any]],
+) -> None:
+    # The UI fires several GETs at once for a fresh run_id, each auto-running resolution; serialize the
+    # delete-then-insert so concurrent runs can't collide on the unique identity_id constraint.
+    with _PERSIST_LOCK:
+        _persist_resolution_result_locked(result, refused_merges)
+
+
+def _persist_resolution_result_locked(
     result: ResolutionResult,
     refused_merges: list[dict[str, Any]],
 ) -> None:

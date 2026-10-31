@@ -170,7 +170,7 @@ def export_dryrun(
         content=content,
         media_type=media_types.get(format, "text/plain"),
         headers={
-            "Content-Disposition": f"attachment; filename=ispad_{prop.proposal_id}_{format}.{exts.get(format, 'txt')}"
+            "Content-Disposition": f"attachment; filename=kavach_{prop.proposal_id}_{format}.{exts.get(format, 'txt')}"
         },
     )
 

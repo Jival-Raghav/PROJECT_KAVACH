@@ -1,5 +1,5 @@
 """
-core/db.py — SQLAlchemy database models and SQLite run persistence for ISPAD v2.
+core/db.py — SQLAlchemy database models and SQLite run persistence for Kavach v2.
 Manages runs, uploaded sources, mapping profiles, audit logs, and feedback loops.
 """
 from __future__ import annotations
@@ -106,8 +106,9 @@ class PostureSnapshotRecord(Base):
 class GoldenIdentityRecord(Base):
     __tablename__ = "identities_golden"
 
+    # Identity ids are deterministic, so they repeat across runs: the key is per-run.
+    run_id = Column(String(64), primary_key=True)
     identity_id = Column(String(64), primary_key=True)
-    run_id = Column(String(64), nullable=False, index=True)
     canonical_name = Column(String(256), nullable=False)
     primary_email = Column(String(256), nullable=True)
     employee_id = Column(String(64), nullable=True, index=True)
@@ -139,7 +140,7 @@ class ReviewQueueRecord(Base):
     __tablename__ = "resolution_review_queue"
 
     item_id = Column(String(64), primary_key=True)
-    run_id = Column(String(64), nullable=False, index=True)
+    run_id = Column(String(64), primary_key=True)
     account_id = Column(String(128), nullable=False)
     suggested_identity_id = Column(String(64), nullable=False)
     confidence = Column(Float, default=0.8)
@@ -182,8 +183,31 @@ def get_engine():
             f"sqlite:///{db_path}",
             connect_args={"check_same_thread": False},
         )
+        _migrate_per_run_keys(_engine)
         Base.metadata.create_all(_engine)
     return _engine
+
+
+def _migrate_per_run_keys(engine) -> None:
+    """Databases created before the key became (run_id, id) rejected a second run with the same
+    identity ids (UNIQUE constraint failed). Rebuild those tables with the per-run composite key."""
+    from sqlalchemy import inspect, text
+
+    insp = inspect(engine)
+    for table_name in ("identities_golden", "resolution_review_queue"):
+        if not insp.has_table(table_name):
+            continue
+        pk = insp.get_pk_constraint(table_name).get("constrained_columns") or []
+        if "run_id" in pk:
+            continue
+        cols = ", ".join(c["name"] for c in insp.get_columns(table_name))
+        with engine.begin() as conn:
+            for idx in insp.get_indexes(table_name):
+                conn.execute(text(f'DROP INDEX IF EXISTS "{idx["name"]}"'))
+            conn.execute(text(f'ALTER TABLE "{table_name}" RENAME TO "{table_name}_old"'))
+            Base.metadata.tables[table_name].create(conn)
+            conn.execute(text(f'INSERT INTO "{table_name}" ({cols}) SELECT {cols} FROM "{table_name}_old"'))
+            conn.execute(text(f'DROP TABLE "{table_name}_old"'))
 
 
 def get_session():

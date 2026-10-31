@@ -1,5 +1,5 @@
 """
-core/models.py — Canonical data model for ISPAD v2.
+core/models.py — Canonical data model for Kavach v2.
 All downstream detection, graph, and LLM reasoning consume ONLY these models.
 Column names appear nowhere else outside the ingestion/adapter layer.
 """

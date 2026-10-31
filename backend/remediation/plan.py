@@ -42,7 +42,7 @@ def generate_dryrun_script(proposal: RemediationProposal, target_format: str) ->
     """
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     banner = f"""# ==============================================================================
-# ISPAD v2 Remediation Export: DRY RUN ONLY
+# Kavach v2 Remediation Export: DRY RUN ONLY
 # Generated: {timestamp}
 # Proposal ID: {proposal.proposal_id}
 # Target: {proposal.target_account} ({proposal.target_identity}) on {proposal.target_system}
@@ -109,7 +109,7 @@ Remove-ADGroupMember -Identity "{ent}" -Members "{acc}" -WhatIf
         ticket_data = {
             "fields": {
                 "project": {"key": "SEC"},
-                "summary": f"[ISPAD-v2] Deprovision {ent} for {acc} ({proposal.target_system})",
+                "summary": f"[Kavach-v2] Deprovision {ent} for {acc} ({proposal.target_system})",
                 "description": (
                     f"*Automated Security Finding*\n\n"
                     f"*Target User:* {proposal.target_identity}\n"
@@ -119,11 +119,11 @@ Remove-ADGroupMember -Identity "{ent}" -Members "{acc}" -WhatIf
                     f"*Risk Severity:* {proposal.risk_severity}\n"
                     f"*Reason:* {proposal.reason}\n"
                     f"*Impact Assessment:* {proposal.impact_classification}\n"
-                    f"*Status:* Approved for remediation via ISPAD v2 Governance Queue."
+                    f"*Status:* Approved for remediation via Kavach v2 Governance Queue."
                 ),
                 "issuetype": {"name": "Security Task"},
                 "priority": {"name": "High" if proposal.risk_severity == "high" else "Medium"},
-                "labels": ["ispad-v2", "least-privilege", "dry-run"],
+                "labels": ["kavach-v2", "least-privilege", "dry-run"],
             }
         }
         return json.dumps(ticket_data, indent=2)

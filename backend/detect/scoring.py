@@ -1,5 +1,5 @@
 """backend/detect/scoring.py
-Self-Calibrating Score Fusion and Ground-Truth Evaluation Engine for ISPAD v2.
+Self-Calibrating Score Fusion and Ground-Truth Evaluation Engine for Kavach v2.
 
 Features:
 - Score-distribution knee estimation for dynamic Isolation Forest contamination.
