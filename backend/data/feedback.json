@@ -2,5 +2,13 @@
   "USR00039": {
     "suppressed": true,
     "note": "this is a false positive as the risk score is very less "
+  },
+  "USR00067": {
+    "suppressed": true,
+    "note": "this is a false positive"
+  },
+  "USR00125": {
+    "suppressed": true,
+    "note": "Dismiss"
   }
 }
