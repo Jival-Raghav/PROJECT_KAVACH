@@ -69,13 +69,14 @@ def test_compliance_endpoint(client, tmp_path):
 
 def test_anomalies_empty_without_a_run(client):
     c, _ = client
-    assert c.get("/api/anomalies").json() == {"total": 0, "items": []}
+    res = c.get("/api/anomalies").json()
+    assert res["total"] == 0 and res["items"] == []
 
 
 def test_anomalies_are_paged(client):
     c, run_dir = client
     run_dir.mkdir(parents=True)
-    rows = [{"entity": f"e{i}", "kind": "user", "score": 90 - i, "reasons": ["r"]} for i in range(5)]
+    rows = [{"entity": f"e{i}", "kind": "user", "score": 90 - i, "reasons": ["above the peer median"]} for i in range(5)]
     (run_dir / "anomalies.json").write_text(json.dumps(rows), encoding="utf-8")
     page = c.get("/api/anomalies?limit=2&offset=2").json()
     assert page["total"] == 5 and [r["entity"] for r in page["items"]] == ["e2", "e3"]
