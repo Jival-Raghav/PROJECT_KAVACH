@@ -1,15 +1,17 @@
+import { ClipboardCheck, Fingerprint, ListChecks, Radar } from 'lucide-react'
 import { ActorTable } from '../Actors'
 import { ControlTable } from '../ControlFindings'
 
-function Block({ title, help, count, empty, children }) {
+function Block({ icon: Icon, title, help, count, empty, children }) {
   return (
     <section className="card kc-block">
       <header className="kc-block-head">
+        <Icon size={15} className="kc-block-icon" />
         <h4>{title}</h4>
         <span className="kc-count">{count}</span>
       </header>
       {help && <p className="kc-muted">{help}</p>}
-      {count > 0 ? children : <p className="kc-muted">{empty}</p>}
+      {count > 0 ? children : <div className="kc-block-empty">{empty}</div>}
     </section>
   )
 }
@@ -26,7 +28,7 @@ export default function OtherInfoTab({ inc }) {
         <p>What to do next, plus supporting context from the rest of the analysis.</p>
       </div>
 
-      <Block title="What to do" count={response.length} help="Proposed actions only. Approve them on the Response Plan page; Kavach never changes the firewall."
+      <Block icon={ListChecks} title="What to do" count={response.length} help="Proposed actions only. Approve them on the Response Plan page; Kavach never changes the firewall."
         empty="No actions proposed for this incident.">
         <ul className="kc-actions-list">
           {response.map(a => (
@@ -35,12 +37,12 @@ export default function OtherInfoTab({ inc }) {
         </ul>
       </Block>
 
-      <Block title="Controls" count={controls.length} help="Security controls this incident shows failing or being tested. The standards mapping is ours and is not an audit."
+      <Block icon={ClipboardCheck} title="Controls" count={controls.length} help="Security controls this incident shows failing or being tested. The standards mapping is ours and is not an audit."
         empty="No controls linked to this incident.">
         <div className="kc-scroll-x"><ControlTable controls={controls} /></div>
       </Block>
 
-      <Block title="Unusual behaviour" count={anomaly.length} help="Context only: anomaly scores do not change this incident's risk score."
+      <Block icon={Radar} title="Unusual behaviour" count={anomaly.length} help="Context only: anomaly scores do not change this incident's risk score."
         empty="Nothing unusual recorded for the entities in this incident.">
         <div className="kc-scroll-x">
           <table className="kc-table static compact">
@@ -58,7 +60,7 @@ export default function OtherInfoTab({ inc }) {
         </div>
       </Block>
 
-      <Block title="Linked actors" count={actors.length} help="IPs and accounts tied together by successful logins, configuration changes or account creation."
+      <Block icon={Fingerprint} title="Linked actors" count={actors.length} help="IPs and accounts tied together by successful logins, configuration changes or account creation."
         empty="No linked actors for this incident.">
         <div className="kc-scroll-x"><ActorTable actors={actors} /></div>
       </Block>
