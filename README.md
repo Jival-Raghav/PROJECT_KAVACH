@@ -17,19 +17,19 @@ Traditional Identity and Access Management (IAM) tools generate hundreds of low-
 
 ---
 
-## 🏆 Key Benchmark Highlights (vs Legacy Baseline)
+## 🏆 Key Benchmark Highlights (synthetic dataset )
 
-| Capability / Benchmark | Baseline (Legacy Prototype) | Kavach v2 (Ours) | Real-World Impact |
-| :--- | :--- | :--- | :--- |
-| **Devil's Advocate FP Suppression** | 0% reduction (9 alerts, 5 FP) | **80.0% FP Reduction** (5 alerts, 1 FP) | F₁ Score improved from **0.615 $\to$ 0.889** |
-| **Malicious Attacks Wrongly Dismissed**| Vulnerable to hallucination | **Strictly ZERO (0)** | 100% security invariant on true attacks |
-| **Detection Quality (F₁ Score)** | 0.518 (single-schema baseline) | **0.789 (+0.271 improvement)** | Generalized 13-feature canonical core |
-| **Adversarial Prompt Injection Defense**| 100.0% Attack Success Rate (ASR) | **0.0% Defended ASR** (32/32 blocked) | Zero-trust sanitization, nonces & threat redaction |
-| **Benign Data Redaction False Positives**| N/A | **0.0% False Positives** | Tested across 100 benign corporate roles |
-| **Automated Verification Gate** | No unit test suite | **96 / 96 Pytest Tests Passing** | 100% automated coverage across all 8 phases |
-| **Legacy Column Invariant** | Hardcoded legacy column names | **0 Leaks** across active modules | Complete schema decoupling |
 
----
+| Capability / Benchmark | Kavach v2 | Real-World Impact |
+| :--- | :--- | :--- |
+| **Devil's Advocate FP Suppression** | **80.0% FP Reduction** (5 alerts, 1 FP) | defendable F1 score and reduction of false positives |
+| **Malicious Attacks Wrongly Dismissed** | **Strictly ZERO (0)** | 100% security invariant on true attacks |
+| **Detection Quality (F₁ Score)** | **0.789** | Generalized 13-feature canonical core |
+| **Adversarial Prompt Injection Defense** | **0.0% Defended ASR** (32/32 blocked) | Zero-trust sanitization, nonces & threat redaction |
+| **Benign Data Redaction False Positives** | **0.0% False Positives** | Tested across 100 benign corporate roles |
+| **Automated Verification Gate** | **96 / 96 Pytest Tests Passing** | 100% automated coverage across all 8 phases |
+| **Legacy Column Invariant** | **0 Leaks** across active modules | Complete schema decoupling |
+
 
 ## 🏗️ High-Level System Architecture
 
