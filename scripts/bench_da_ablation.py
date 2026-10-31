@@ -110,7 +110,7 @@ def load_planted_cases() -> tuple[CanonicalBundle, list[dict], list[dict]]:
 
 def run_ablation() -> dict:
     print("=" * 65)
-    print("ISPAD v2 Phase 4: Devil's Advocate Ablation Benchmark")
+    print("Kavach v2 Phase 4: Devil's Advocate Ablation Benchmark")
     print("=" * 65)
 
     bundle, benign_cases, malicious_cases = load_planted_cases()

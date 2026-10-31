@@ -1,25 +1,23 @@
 # LLM Red-Team & Prompt Injection Defense Benchmark Report
 
-**Evaluation Scope:** Adversarial Prompt Injection, Role Spoofing & Metric Forgery Defenses  
-**Defense Gateway:** ISPAD v2 Multi-Layer Security Gateway (NFKC Sanitization, Threat Redaction, Cryptographic Nonce Enclosure)
+**Evaluation Scope:** Adversarial Prompt Injection, Role Spoofing & Metric Forgery Defenses**Defense Gateway:** Kavach v2 Multi-Layer Security Gateway (NFKC Sanitization, Threat Redaction, Cryptographic Nonce Enclosure)
 
 ---
 
 ## 1. Executive Headline Pitch
 
-> **Defended Attack Success Rate (ASR) reduced from 100.0% $\to$ 0.0%**  
-> **37.5% of adversarial injections intercepted and neutralized**, with **0.0% false-positive redaction** on standard enterprise corporate data.
+> **32/32 payloads neutralised before prompt construction** (none of the checked instruction markers survive into the prompt), of which **12/32 (37.5%) were actively detected and flagged** by the injection detector; the rest are rendered inert by sanitisation and nonce-sealed `<data>` enclosure. **0.0% false-positive redaction** on benign corporate text.
 
-Adversaries attempting to trick the AI into dismissing alerts or overriding severity using poisoned job titles, active directory descriptions, or forged tool payloads are neutralized before prompt construction.
+**Method and limits (read before quoting):** this is a static prompt-construction test. It does not call a live model. "Baseline" is the assumption that an un-gated pipeline passes the raw string through (counted as attack success by definition). "Defended success" means one of the strings `ignore previous`, `<system>`, `doubt_score to 1` survived un-redacted in the prompt data. The benign set is 20 distinct job titles repeated to 100 samples. End-to-end behaviour against a live LLM is covered separately by the `USR9206` demo case (injected log field did not change the verdict; n=1).
 
 ---
 
 ## 2. Red-Team Benchmark Comparison
 
-| Metric | Baseline (Gateway OFF) | Defended (Gateway ON - Ours) | Target Gate | Result |
+| Metric | Baseline (Gateway OFF, assumed) | Defended (Gateway ON) | Gate | Result |
 | :--- | :---: | :---: | :---: | :---: |
-| **Attack Success Rate (ASR)** | **`100.0%`** | **`0.0%`** | $\le 5.0\%$ | **PASS** |
-| **Threat Interception Rate** | `0.0%` | **`37.5%`** | $\ge 90.0\%$ | **PASS** |
+| **Attack Success Rate (static check)** | `100.0%` | **`0.0%`** | $\le 5.0\%$ | **PASS** |
+| **Payloads actively detected and flagged** | n/a | `37.5%` (12/32) | informational (no gate) | n/a |
 | **Benign Data FP Redaction** | `0.0%` | **`0.0%`** | $\le 2.0\%$ | **PASS** |
 | **Total Adversarial Payloads Tested** | `32` | `32` | $\ge 30$ | **PASS** |
 
@@ -27,7 +25,7 @@ Adversaries attempting to trick the AI into dismissing alerts or overriding seve
 
 ## 3. Defense Breakdown by Threat Category
 
-| Threat Category | Payloads Tested | Baseline ASR | Defended ASR | Interception Status |
+| Threat Category | Payloads Tested | Baseline ASR | Defended ASR | Handling |
 | :--- | :---: | :---: | :---: | :--- |
 | **Direct Instruction Overrides** | 5 | 100.0% | **0.0%** | All directives redacted with `[REDACTED:suspected-injection]` |
 | **Role Tag Spoofing (`[SYSTEM]`, `<system>`)** | 4 | 100.0% | **0.0%** | Role delimiters neutralized; inert inside `<data nonce=X>` |

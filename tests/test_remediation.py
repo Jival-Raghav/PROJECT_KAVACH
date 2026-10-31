@@ -80,7 +80,7 @@ def test_dryrun_script_generation_formats():
 
     # 5. Ticket JSON
     ticket_json = generate_dryrun_script(prop, "ticket")
-    assert "ISPAD-v2" in ticket_json
+    assert "Kavach-v2" in ticket_json
     assert "Security Task" in ticket_json
 
     # 6. CSV

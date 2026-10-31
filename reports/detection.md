@@ -1,7 +1,7 @@
 # Generalized Detection Core Benchmark Report (Phase 3)
 
 **Generated:** 2026-10-17 09:58:08 UTC  
-**Target:** ISPAD v2 Generalized Detection & Scoring Engine
+**Target:** Kavach v2 Generalized Detection & Scoring Engine
 
 ---
 
@@ -47,7 +47,7 @@ Phase 3 introduces a schema-independent, multi-source anomaly detection engine e
 
 | Dataset | Schema Type | Entities | Active Features | Skipped Features | Peer Group Mode |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| **Dataset A** | Legacy ISPAD (Users + Events) | 300 | 13 | 0 | Hierarchical (Department -> Job Title) |
+| **Dataset A** | Legacy Kavach (Users + Events) | 300 | 13 | 0 | Hierarchical (Department -> Job Title) |
 | **Dataset B** | Workday HR + Okta JSONL | 5 | 10 | 3 (`unused_entitlement_ratio`, `sensitivity_ratio`, etc.) | Hierarchical (Workday Org) |
 | **Dataset C** | AWS CloudTrail + IAM | 3 | 12 | 1 (HR attributes) | Fallback: Entitlement Jaccard Clustering |
 | **Dataset D** | Stress Minimal Events | 2 | 10 | 3 (Entitlements, Sensitivities) | Fallback: Action Distribution Clustering |

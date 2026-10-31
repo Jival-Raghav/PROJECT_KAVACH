@@ -121,7 +121,7 @@ def test_audit_pack_exports():
     # 1. JSON
     json_str = generate_audit_pack_json(bundle, hygiene, compliance)
     parsed = json.loads(json_str)
-    assert parsed["ispad_version"] == "v2.0-cyberforge"
+    assert parsed["kavach_version"] == "v2.0-cyberforge"
     assert "manifest_sha256" in parsed
     assert len(parsed["manifest_sha256"]) == 64
 
