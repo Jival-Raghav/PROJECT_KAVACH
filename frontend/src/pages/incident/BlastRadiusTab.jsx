@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Crosshair, MoreHorizontal, MousePointerClick, Network, Server, ShieldCheck } from 'lucide-react'
+import { Crosshair, MousePointerClick, Network, ShieldCheck } from 'lucide-react'
 import IncidentGraph from './IncidentGraph'
 import { BASIS, SENSITIVITY_LABEL, SENSITIVITY_ORDER } from './format'
 
 const HUB = 'hub'
-const MAX_EXPANDED = 24
 const SENS_TONE = { crown: 'bad', high: 'warn', medium: 'info', low: 'plain' }
 
 function topSensitivity(targets) {
@@ -29,7 +28,10 @@ function hubTitle(footholds) {
   return `${footholds.length} compromised hosts`
 }
 
-function buildGraph(reach, groups, expanded) {
+/** A fixed, compact Hub → Segment summary. No inline expansion: a segment's own hosts are a
+ * flat list of (mostly identical, high-count) nodes with nothing useful to show as a diagram,
+ * so that detail lives in the side panel (filterable) instead of flooding the canvas. */
+function buildGraph(reach, groups) {
   const nodes = [{
     id: HUB, col: 0, title: hubTitle(reach.footholds), sub: 'Attacker foothold', icon: Crosshair, tone: 'bad',
   }]
@@ -40,28 +42,12 @@ function buildGraph(reach, groups, expanded) {
       id: g.id, col: 1, title: g.segment, icon: Network, tone: SENS_TONE[sens] || 'plain',
       sub: isWholeSegment(g) ? `Whole segment · ${SENSITIVITY_LABEL[sens] || sens}`
         : `${g.targets.length} ${g.targets.length === 1 ? 'host' : 'hosts'} · ${SENSITIVITY_LABEL[sens] || sens}`,
-      tag: !isWholeSegment(g) ? (expanded === g.id ? '− collapse' : '+ expand') : undefined,
     })
     const basis = BASIS[g.basis]
     edges.push({
       id: `edge:${g.id}`, source: HUB, target: g.id, tone: basis?.tone, dashed: !basis?.proven,
       pills: [{ text: basis?.label || g.basis, tone: basis?.tone }],
     })
-    if (expanded !== g.id) return
-    g.targets.slice(0, MAX_EXPANDED).forEach(t => {
-      const id = `target:${g.id}|${t.node}`
-      nodes.push({
-        id, col: 2, title: t.label, sub: `${SENSITIVITY_LABEL[t.sensitivity] || t.sensitivity} · ${t.hops} hop${t.hops === 1 ? '' : 's'}`,
-        icon: Server, tone: SENS_TONE[t.sensitivity] || 'plain',
-      })
-      edges.push({ id: `edge:${id}`, source: g.id, target: id, tone: basis?.tone, dashed: !basis?.proven })
-    })
-    const more = g.targets.length - MAX_EXPANDED
-    if (more > 0) {
-      const id = `more:${g.id}`
-      nodes.push({ id, col: 2, title: `${more} more hosts`, sub: 'Listed in the side panel', icon: MoreHorizontal })
-      edges.push({ id: `edge:${id}`, source: g.id, target: id, tone: basis?.tone, dashed: !basis?.proven })
-    }
   })
   return { nodes, edges }
 }
@@ -157,17 +143,14 @@ function HubPanel({ reach }) {
 export default function BlastRadiusTab({ inc }) {
   const { reach } = inc
   const groups = useMemo(() => groupTargets(reach.targets), [reach.targets])
-  const [expanded, setExpanded] = useState(null)
   const [selected, setSelected] = useState(null)
   const [pickedTarget, setPickedTarget] = useState(null)
-  const graph = useMemo(() => buildGraph(reach, groups, expanded), [reach, groups, expanded])
+  const graph = useMemo(() => buildGraph(reach, groups), [reach, groups])
   const graph3d = useMemo(() => build3DGraph(reach, groups), [reach, groups])
 
   const select = id => {
     setSelected(id)
     setPickedTarget(null)
-    const group = groups.find(g => g.id === id)
-    if (group && !isWholeSegment(group)) setExpanded(cur => (cur === id ? null : id))
   }
 
   const seen = reach.targets.filter(t => t.basis === 'observed').length
@@ -212,7 +195,7 @@ export default function BlastRadiusTab({ inc }) {
                       <div className="kc-panel-empty">
                         <MousePointerClick size={20} />
                         <b>Click a segment</b>
-                        <span>It expands to show its hosts, and all of them are listed here.</span>
+                        <span>Its hosts, filterable, are listed here.</span>
                       </div>
                     )}
             </aside>

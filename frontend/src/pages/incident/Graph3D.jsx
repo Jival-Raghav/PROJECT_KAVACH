@@ -99,7 +99,7 @@ export default function Graph3D({ nodes, edges, selected, onSelect, ariaLabel, p
     fg.scene().add(dir, new THREE.AmbientLight(0x404a5a, 0.8))
 
     const composer = fg.postProcessingComposer()
-    const bloom = new UnrealBloomPass(new THREE.Vector2(el.clientWidth || 800, el.clientHeight || 500), 0.45, 0.35, 0.28)
+    const bloom = new UnrealBloomPass(new THREE.Vector2(el.clientWidth || 800, el.clientHeight || 500), 0.32, 0.35, 0.32)
     composer.addPass(bloom)
 
     const controls = fg.controls()
@@ -132,9 +132,9 @@ export default function Graph3D({ nodes, edges, selected, onSelect, ariaLabel, p
       pulse += 0.045
       objRefs.current.forEach(({ core, glow }, id) => {
         const active = hoverRef.current.node === id || selectedRef.current === id
-        const k = active ? 0.85 : 0.3 + 0.08 * Math.sin(pulse + id.length)
-        if (core) core.material.emissiveIntensity = active ? 1.1 : k
-        if (glow) glow.material.opacity = active ? 0.65 : 0.22 + 0.06 * Math.sin(pulse + id.length)
+        const k = active ? 0.7 : 0.22 + 0.06 * Math.sin(pulse + id.length)
+        if (core) core.material.emissiveIntensity = active ? 0.9 : k
+        if (glow) glow.material.opacity = active ? 0.5 : 0.15 + 0.04 * Math.sin(pulse + id.length)
       })
     })
 
@@ -230,12 +230,12 @@ export default function Graph3D({ nodes, edges, selected, onSelect, ariaLabel, p
       const group = new THREE.Group()
       const core = new THREE.Mesh(
         new THREE.SphereGeometry(r, 20, 20),
-        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, roughness: 0.45, metalness: 0.1, transparent: true }),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.3, roughness: 0.5, metalness: 0.1, transparent: true }),
       )
       const glow = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: glowTexture(color), color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.3,
+        map: glowTexture(color), color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.22,
       }))
-      glow.scale.set(r * 3.5, r * 3.5, 1)
+      glow.scale.set(r * 2.8, r * 2.8, 1)
       group.add(glow, core)
       let label = null
       if (n.showLabel !== false) {
