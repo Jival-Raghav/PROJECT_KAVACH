@@ -15,5 +15,5 @@ def test_resolve_steps_on_fixture(tmp_path):
 
 def test_real_ground_truth_shape():
     sc = load_ground_truth(REPO / "data/ground_truth/firex_planted.yaml")
-    assert len(sc) == 19 and sum(len(s.steps) for s in sc) == 23
+    assert len(sc) == 20 and sum(len(s.steps) for s in sc) == 28
     assert all(s.steps and all(st.techniques for st in s.steps) for s in sc)
