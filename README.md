@@ -32,8 +32,16 @@ ollama pull qwen3:8b
 Open the LM Studio application, load a robust instruction-tuned model (e.g., Llama 3 8B Instruct), and click "Start Server" on the Local Server tab. It should default to port 1234.
 
 ### 2. Start the Backend API
-Navigate to the backend directory, install the dependencies, and start the FastAPI server:
+
+Before starting the backend, delete `data/user_profiles.json`. This file contains cached user profiles and may not reflect the latest dataset changes.
+
 ```bash
+# Linux/macOS
+rm -f data/user_profiles.json
+
+# Windows PowerShell
+Remove-Item -Path ".\data\user_profiles.json" -Force -ErrorAction SilentlyContinue
+
 cd backend
 pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
