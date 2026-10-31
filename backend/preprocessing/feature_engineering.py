@@ -27,26 +27,38 @@ PRIVILEGE_SCORE: dict[str, int] = {
 
 # Systems that are considered high-blast-radius (touching these raises score)
 HIGH_BLAST_SYSTEMS = {
-    "PROD-DB", "PROD-APP", "ADMIN-CONSOLE", "ALL-LOGS", "SIEM",
-    "ERP", "HRIS", "CUSTOMER-DB", "FINANCE-DB", "HR-System",
-    "Data_Lake", "Customer_PII",
+    # From identity_events.csv resource field
+    "PROD_DB",        # production database — highest blast radius
+    "Admin_Console",  # admin panel — direct system control
+    "SIEM",           # security system — attacker would want to blind this first
+    "Data_Lake",      # bulk data store
+    "Customer_Vault", # PII / customer data
+    "HRIS",           # HR sensitive data
+    "GL_System",      # finance/accounting records
+
+    # From identity_users.csv systems_access field
+    "ADMIN_SYS",      # admin system access
+    "AWS_IAM",        # cloud identity — if compromised, lateral movement everywhere
+    "GCP",            # same reasoning
 }
 
 # Departments whose month-end spikes are expected (reduces false positives)
 MONTH_END_EXEMPT_DEPTS = {"Finance", "Accounting", "Compliance"}
 
 # Cross-dept matrix: dept → systems they legitimately own
-DEPT_SYSTEM_MAP: dict[str, set[str]] = {
-    "Finance": {"ERP", "Finance-DB", "GL_System", "SAP", "Payroll"},
-    "HR": {"HRIS", "HR-System", "AD", "Azure_AD", "Workday"},
-    "IT": {"SIEM", "AD", "Azure_AD", "AWS_IAM", "GCP", "Okta", "All-Logs"},
-    "Engineering": {"PROD-DB", "PROD-APP", "Git", "JIRA", "AWS", "GCP"},
-    "Security": {"SIEM", "ALL-LOGS", "ADMIN-CONSOLE", "AWS_IAM"},
-    "Compliance": {"ERP", "ALL-LOGS", "SIEM", "Finance-DB"},
-    "Executive": set(),  # executives legitimately access anything
-    "CTO_OFFICE": set(),
-    "Sales": {"Salesforce", "CRM"},
-    "Marketing": {"Salesforce", "Analytics", "CRM"},
+DEPT_SYSTEM_MAP = {
+    "Finance": {"GL_System", "BI_Tool", "Email_Archive"},
+    "HR": {"HRIS", "File_Share"},
+    "Engineering": {"PROD_DB", "Admin_Console"},
+    "Security": {"SIEM", "Admin_Console"},
+    "IT": {"SIEM", "Admin_Console", "PROD_DB"},
+    "Legal": {"File_Share", "Email_Archive"},
+    "Operations": {"PROD_DB", "BI_Tool"},
+    "Support": {"Customer_Vault", "File_Share"},
+    "Sales": {"Customer_Vault", "BI_Tool"},
+    "Marketing": {"BI_Tool", "Customer_Vault"},
+    "Executive": set(),
+    "Compliance": {"GL_System", "SIEM", "Email_Archive"},
 }
 
 
@@ -204,7 +216,8 @@ FEATURE_NAMES = [
     "login_fail_count",
     "unique_systems_per_day_max",
     "cross_dept_access_ratio",
-    "high_blast_system_count",  # count of high-blast-radius systems
+    "high_blast_system_count",
+    "high_sens_after_hours",  # count of high-blast-radius systems
 ]
 
 
@@ -216,7 +229,7 @@ def extract_user_features(
     privilege_score = float(PRIVILEGE_SCORE.get(priv_level, 1))
     systems_access: list[str] = profile.get("systems_access", []) or []
     days_inactive = int(profile.get("days_inactive", 0) or 0)
-    is_active = bool(profile.get("is_active", True))
+    is_active = str(profile.get("is_active", "true")).strip().lower() == "true"
 
     # High-blast-radius systems the user can access
     high_blast_count = sum(
@@ -224,7 +237,7 @@ def extract_user_features(
     )
 
     cfg_stale = 30
-    cfg_very_stale = 90
+    cfg_very_stale = 45
 
     return {
         "privilege_score": privilege_score,
@@ -244,6 +257,8 @@ def extract_user_features(
         "unique_systems_per_day_max": float(event_agg.get("unique_systems_per_day_max", 0)),
         "cross_dept_access_ratio": float(event_agg.get("cross_dept_access_ratio", 0.0)),
         "high_blast_system_count": float(high_blast_count),
+        "high_sens_after_hours": float(event_agg.get("after_hours_ratio", 0.0)) 
+                         * float(event_agg.get("high_sensitivity_ratio", 0.0)),
     }
 
 

@@ -106,6 +106,7 @@ def generate_narrative(
     profile: dict[str, Any],
     flagged_events: list[dict[str, Any]],
     feedback_context: dict[str, Any],
+    all_profiles: list[dict[str, Any]] = [],
 ) -> dict[str, Any]:
     """
     Runs the two-pass workflow:
@@ -114,6 +115,14 @@ def generate_narrative(
 
     Raises ProviderError with human-readable message if either LLM is unavailable.
     """
+    # Run breach simulation to enrich the prosecutor prompt with lateral movement context
+    # If all_profiles is empty (e.g. cold start), simulate_breach gracefully returns
+    # a low-impact result with empty lateral movement — safe to always call
+    from models.breach_simulator import simulate_breach, summarise_for_prompt
+
+    breach_sim = simulate_breach(profile, all_profiles)
+    breach_summary = summarise_for_prompt(breach_sim)
+
     prosecutor = _get_prosecutor()
     da = _get_da()
 
@@ -131,7 +140,7 @@ def generate_narrative(
                 username, prosecutor.name(), da.name())
 
     # ── Pass 1: Prosecutor (LM Studio) ─────────────────────────────────────
-    prosecutor_messages = build_prosecutor_messages(profile, flagged_events)
+    prosecutor_messages = build_prosecutor_messages(profile, flagged_events, breach_summary)
     try:
         prosecutor_raw = prosecutor.chat(prosecutor_messages, temperature=0.3, max_tokens=800)
     except ProviderError:
@@ -167,6 +176,8 @@ def generate_narrative(
     )
     doubt_score = float(da_result.get("doubt_score", 0.4))
     doubt_score = max(0.0, min(1.0, doubt_score))
+    from models.feedback_model import apply_feedback_calibration
+    doubt_score = apply_feedback_calibration(profile, doubt_score)
     recommendation = da_result.get(
         "final_recommendation",
         "Verify access patterns with direct manager before escalating."
@@ -199,12 +210,21 @@ def stream_narrative(
     profile: dict[str, Any],
     flagged_events: list[dict[str, Any]],
     feedback_context: dict[str, Any],
+    all_profiles: list[dict[str, Any]] = [],
 ) -> Iterator[str]:
     """
     Streams the two-pass narrative as SSE events.
     Pass 1 (Prosecutor / LM Studio) and Pass 2 (DA / Ollama) stream in sequence.
     ProviderError on either pass yields a structured SSE error event.
     """
+    # Run breach simulation to enrich the prosecutor prompt with lateral movement context
+    # If all_profiles is empty (e.g. cold start), simulate_breach gracefully returns
+    # a low-impact result with empty lateral movement — safe to always call
+    from models.breach_simulator import simulate_breach, summarise_for_prompt
+
+    breach_sim = simulate_breach(profile, all_profiles)
+    breach_summary = summarise_for_prompt(breach_sim)
+
     prosecutor = _get_prosecutor()
     da = _get_da()
 
@@ -220,7 +240,7 @@ def stream_narrative(
 
     # ── Stream Pass 1: Prosecutor (LM Studio) ───────────────────────────────
     yield f"data: [PROSECUTOR — {prosecutor.name()}]\n\n"
-    prosecutor_messages = build_prosecutor_messages(profile, flagged_events)
+    prosecutor_messages = build_prosecutor_messages(profile, flagged_events, breach_summary)
     prosecution_chunks: list[str] = []
 
     try:

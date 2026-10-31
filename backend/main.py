@@ -9,11 +9,13 @@ from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
 import data_loader
+from models import breach_simulator
 from llm.narrator import generate_narrative, get_provider_status, stream_narrative
-from pipeline import pipeline_state, run_pipeline_async
+from pipeline import pipeline_state, run_pipeline_async, lifespan
+from models.kmeans_events import get_cluster_summary
 
 
-app = FastAPI(title="Identity Sprawl & Privilege Abuse Detection")
+app = FastAPI(title="Identity Sprawl & Privilege Abuse Detection", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -107,12 +109,13 @@ def get_user_narrative(user_id: str = Path(..., description="The user identifier
 
     feedback_context = data_loader.load_feedback().get(str(user_id), {})
     flagged_events = list(profile.get("flagged_events", []))
+    all_profiles = profiles
 
     if profile.get("narrative") is None:
-        narrative = generate_narrative(profile, flagged_events, feedback_context)
+        narrative = generate_narrative(profile, flagged_events, feedback_context, all_profiles=all_profiles)
         profile["narrative"] = narrative
         response = StreamingResponse(
-            stream_narrative(profile, flagged_events, feedback_context),
+            stream_narrative(profile, flagged_events, feedback_context, all_profiles=all_profiles),
             media_type="text/event-stream",
             background=BackgroundTask(_save_profile_list, profiles),
         )
@@ -162,6 +165,29 @@ def get_org_anomalies() -> list[dict[str, Any]]:
                 }
             )
     return anomalies
+
+
+@app.get("/clusters/summary")
+def get_clusters_summary() -> list[dict[str, Any]]:
+    """Returns per-cluster summary stats for already-scored user profiles."""
+    profiles = data_loader.load_profiles()
+    if not profiles:
+        raise HTTPException(status_code=400, detail="Pipeline has not run yet")
+    return get_cluster_summary(profiles)
+
+
+@app.get("/users/{user_id}/breach-simulation")
+def get_user_breach_simulation(user_id: str = Path(..., description="The user identifier from the CSV feed.")) -> dict[str, Any]:
+    """Simulates breach impact for a user using direct and two-hop access paths."""
+    all_profiles = data_loader.load_profiles()
+    if not all_profiles:
+        raise HTTPException(status_code=400, detail="Pipeline has not run yet")
+
+    profile = _find_profile(all_profiles, user_id)
+    if profile is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return breach_simulator.simulate_breach(profile, all_profiles)
 
 
 @app.get("/stats")

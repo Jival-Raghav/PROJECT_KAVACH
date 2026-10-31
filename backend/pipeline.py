@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 import threading
 from datetime import datetime, timezone
 from typing import Any
@@ -64,3 +66,12 @@ def run_pipeline_async() -> None:
     """Starts the pipeline in a background thread and marks the state as running immediately."""
     pipeline_state.update({"status": "running", "progress": 0, "message": "Loading data"})
     threading.Thread(target=run_pipeline, daemon=True).start()
+
+
+@asynccontextmanager
+async def lifespan(app):
+    # Auto-run pipeline on startup if user_profiles.json doesn't exist or is empty
+    # This means judges don't need to manually hit /run-pipeline
+    if not data_loader.load_profiles():
+        run_pipeline_async()
+    yield
