@@ -2,6 +2,7 @@
 # Kavach — one-command setup & launch (macOS / Linux).
 # Usage: ./run.sh            # setup (first time) + start backend and frontend
 #        ./run.sh --test     # setup, then run the test suite and exit
+#        ./run.sh --killchain  # setup, build kill-chain incidents from the log, then launch
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -32,6 +33,11 @@ if [ ! -f .env ]; then
   cp .env.example .env
   sed -i.bak 's/^LLM_REPLAY_ONLY=.*/LLM_REPLAY_ONLY=true/' .env && rm -f .env.bak
   echo "==> Created .env with LLM_REPLAY_ONLY=true (add GROQ_API_KEY and set it to 0 for live LLM calls)"
+fi
+
+if [ "${1:-}" = "--killchain" ]; then
+  echo "==> Building kill-chain incidents from ${KILLCHAIN_LOG_PATH:-REAL_10G_DATA/firex-10G.log}"
+  (cd backend && python -m killchain.cli run)
 fi
 
 if [ "${1:-}" = "--test" ]; then

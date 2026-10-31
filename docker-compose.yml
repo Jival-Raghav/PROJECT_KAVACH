@@ -1,0 +1,16 @@
+# docker compose up --build   → API on :8000, UI on :5173
+# Put the log at REAL_10G_DATA/firex-10G.log first (it is mounted read-only).
+services:
+  backend:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      KILLCHAIN_LOG_PATH: /app/REAL_10G_DATA/firex-10G.log
+      LLM_REPLAY_ONLY: "true"
+    volumes:
+      - ./REAL_10G_DATA:/app/REAL_10G_DATA:ro
+      - ./backend/data/killchain:/app/backend/data/killchain
+  frontend:
+    build: ./frontend
+    ports: ["5173:5173"]
+    depends_on: [backend]
