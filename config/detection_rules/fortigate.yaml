@@ -1,0 +1,231 @@
+# Kavach kill-chain detection rules for FortiGate (FortiOS key=value) logs.
+#
+# Add a rule by appending an entry here (or a new *.yaml file in this folder) — no code change.
+# `where` is a SQL predicate over the `events` table (columns: see backend/killchain/parse.py);
+# `selection` is an optional Sigma-style map (field, field|contains, |startswith, |endswith,
+# |re, |gte, |lte; list = IN). kinds: match | threshold | rare_for_entity | sequence.
+# Rules describe behaviour, never specific IOCs (IPs, users, domains) — a test enforces this.
+
+rules:
+  # ── Reconnaissance / discovery ────────────────────────────────────────────
+  - id: KC-RECON-001
+    title: External port scan
+    technique: T1595
+    severity: medium
+    kind: threshold
+    where: "type='traffic' AND action='deny' AND srcintfrole='wan'"
+    group_by: [srcip]
+    window_minutes: 10
+    min_count: 100
+    distinct: {field: dstport, min: 100}
+    entities: {src_ip: srcip, dst_ip: dstip}
+
+  - id: KC-RECON-002
+    title: Internal port scan
+    technique: T1046
+    severity: high
+    kind: threshold
+    where: "type='traffic' AND action='deny' AND srcintfrole IN ('lan','dmz')"
+    group_by: [srcip]
+    window_minutes: 10
+    min_count: 100
+    distinct: {field: dstport, min: 100}
+    entities: {src_ip: srcip, dst_ip: dstip}
+
+  # ── Initial access / exploitation of the DMZ ─────────────────────────────
+  - id: KC-WEB-001
+    title: Web exploit burst against a DMZ server
+    technique: T1190
+    severity: high
+    kind: threshold
+    where: "subtype='ips' AND srcintfrole='wan' AND dstintfrole='dmz'"
+    selection: {attack|startswith: "HTTP."}
+    group_by: [srcip, dstip]
+    window_minutes: 30
+    min_count: 10
+    entities: {src_ip: srcip, dst_ip: dstip, signature: attack}
+
+  - id: KC-WEB-002
+    title: Webshell request on a DMZ server
+    technique: T1505.003
+    severity: critical
+    kind: threshold
+    where: "subtype='webfilter' AND srcintfrole='wan' AND dstintfrole='dmz'"
+    selection:
+      url|re: '/(uploads|tmp|wp-content|\.well-known|assets)/.*\.(php|aspx|jsp)$'
+    group_by: [srcip, dstip]
+    window_minutes: 60
+    min_count: 5
+    entities: {src_ip: srcip, dst_ip: dstip, url: url}
+
+  # ── Command and control ──────────────────────────────────────────────────
+  - id: KC-C2-001
+    title: Many internal hosts flagged talking to one external host
+    technique: T1071
+    severity: critical
+    kind: threshold
+    where: "subtype='ips' AND srcintfrole IN ('lan','dmz') AND dstintfrole='wan'"
+    group_by: [dstip]
+    window_minutes: 60
+    min_count: 10
+    distinct: {field: srcip, min: 10}
+    entities: {src_ip: srcip, dst_ip: dstip, signature: attack}
+
+  - id: KC-C2-002
+    title: DNS tunnelling (long random subdomains to one domain)
+    technique: T1071.004
+    severity: high
+    kind: threshold
+    where: "subtype='dns' AND length(split_part(hostname, '.', 1)) >= 30"
+    group_by: [srcip, "regexp_extract(hostname, '([^.]+\\.[^.]+)$', 1)"]
+    window_minutes: 30
+    min_count: 50
+    entities: {src_ip: srcip, dst_ip: dstip, domain: "regexp_extract(hostname, '([^.]+\\.[^.]+)$', 1)"}
+
+  - id: KC-C2-003
+    title: Periodic beaconing to one external host
+    technique: T1071.001
+    severity: high
+    kind: threshold
+    where: "type='traffic' AND action='accept' AND srcintfrole IN ('lan','dmz') AND dstintfrole='wan' AND sentbyte < 5000"
+    group_by: [srcip, dstip]
+    window_minutes: 30
+    min_count: 50
+    having: "stddev_samp(gap_s) / avg(gap_s) < 0.2"
+    entities: {src_ip: srcip, dst_ip: dstip}
+
+  # ── Delivery / execution ─────────────────────────────────────────────────
+  - id: KC-MAL-001
+    title: Burst of different malware from one server
+    technique: T1105
+    severity: high
+    kind: threshold
+    where: "subtype='virus'"
+    group_by: [srcip, dstip]
+    window_minutes: 30
+    min_count: 3
+    distinct: {field: virus, min: 3}
+    entities: {src_ip: srcip, dst_ip: dstip, malware: virus}
+
+  - id: KC-MAL-002
+    title: Malware detected but not blocked
+    technique: T1204.002
+    severity: critical
+    kind: match
+    where: "subtype='virus' AND action='detected'"
+    group_by: [srcip]
+    window_minutes: 60
+    entities: {src_ip: srcip, dst_ip: dstip, malware: virus, domain: hostname}
+
+  # ── Actions on objectives ────────────────────────────────────────────────
+  - id: KC-EXF-001
+    title: Sustained outbound transfers to one external host
+    technique: T1041
+    severity: critical
+    kind: threshold
+    where: "type='traffic' AND action='accept' AND srcintfrole IN ('lan','dmz') AND dstintfrole='wan' AND sentbyte >= 5000"
+    group_by: [srcip, dstip]
+    window_minutes: 720
+    min_count: 200
+    entities: {src_ip: srcip, dst_ip: dstip}
+
+  - id: KC-LAT-001
+    title: SMB fan-out to many internal hosts
+    technique: T1021.002
+    severity: high
+    kind: threshold
+    where: "type='traffic' AND srcip LIKE '10.%' AND dstip LIKE '10.%' AND dstport=445"
+    group_by: [srcip]
+    window_minutes: 120
+    min_count: 10
+    distinct: {field: dstip, min: 10}
+    entities: {src_ip: srcip, dst_ip: dstip}
+
+  - id: KC-LAT-002
+    title: RDP fan-out to many internal hosts
+    technique: T1021.001
+    severity: high
+    kind: threshold
+    where: "type='traffic' AND srcip LIKE '10.%' AND dstip LIKE '10.%' AND dstport=3389"
+    group_by: [srcip]
+    window_minutes: 120
+    min_count: 10
+    distinct: {field: dstip, min: 10}
+    entities: {src_ip: srcip, dst_ip: dstip}
+
+  # ── Identity on the firewall itself ──────────────────────────────────────
+  - id: KC-ID-001
+    title: Firewall admin login from an unusual country
+    technique: T1078
+    severity: critical
+    kind: rare_for_entity
+    where: "logdesc='Admin login successful'"
+    baseline_where: "subtype='vpn' AND user IS NOT NULL"
+    key: user
+    value: srccountry
+    max_share: 0.01
+    entities: {src_ip: srcip, dst_ip: dstip, user: user, country: srccountry}
+
+  - id: KC-ID-002
+    title: VPN login from an unusual country
+    technique: T1133
+    severity: high
+    kind: rare_for_entity
+    where: "subtype='vpn' AND user IS NOT NULL AND action IN ('ssl-login','tunnel-up')"
+    baseline_where: "subtype='vpn' AND user IS NOT NULL AND action IN ('ssl-login','tunnel-up')"
+    key: user
+    value: srccountry
+    max_share: 0.01
+    entities: {src_ip: srcip, user: user, country: srccountry}
+
+  - id: KC-ID-003
+    title: Brute force followed by a successful admin login
+    technique: T1110
+    severity: critical
+    kind: sequence
+    where: "logdesc='Admin login failed'"
+    then_where: "logdesc='Admin login successful'"
+    join_on: srcip
+    then_within_minutes: 60
+    min_count: 50
+    entities: {src_ip: srcip, user: user}
+
+  - id: KC-PER-001
+    title: Firewall administrator account created
+    technique: T1136.001
+    severity: critical
+    kind: match
+    where: "logdesc='Object attribute configured' AND msg LIKE 'Add system.admin%'"
+    group_by: [srcip]
+    window_minutes: 60
+    entities: {src_ip: srcip, user: user, account: "regexp_extract(msg, 'system.admin (\\S+)', 1)"}
+
+  - id: KC-PER-002
+    title: Firewall administrator account deleted
+    technique: T1070
+    severity: high
+    kind: match
+    where: "logdesc='Object attribute configured' AND msg LIKE 'Delete system.admin%'"
+    group_by: [srcip]
+    window_minutes: 60
+    entities: {src_ip: srcip, user: user, account: "regexp_extract(msg, 'system.admin (\\S+)', 1)"}
+
+  - id: KC-DEF-001
+    title: Firewall logging settings changed
+    technique: T1562.001
+    severity: critical
+    kind: match
+    where: "logdesc='Attribute configured' AND msg ILIKE '%log%setting%'"
+    group_by: [user]
+    window_minutes: 1440
+    entities: {src_ip: srcip, user: user}
+
+  - id: KC-DEF-002
+    title: Firewall policies purged
+    technique: T1562.004
+    severity: critical
+    kind: match
+    where: "logdesc='Attribute configured' AND msg ILIKE '%firewall policy%purged%'"
+    group_by: [user]
+    window_minutes: 60
+    entities: {src_ip: srcip, user: user}

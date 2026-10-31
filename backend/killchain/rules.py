@@ -23,7 +23,7 @@ from typing import Any, Literal
 
 import pyarrow as pa
 import yaml
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from killchain.mitre import label
 from killchain.models import Detection, Severity
@@ -40,6 +40,8 @@ class DistinctSpec(BaseModel):
 
 
 class Rule(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     title: str
     technique: str
@@ -51,6 +53,7 @@ class Rule(BaseModel):
     window_minutes: float | None = None
     min_count: int = 1
     distinct: DistinctSpec | None = None
+    having: str | None = None  # extra SQL over aggregates; `gap_s` = seconds since previous event in session
     entities: dict[str, str] = Field(default_factory=dict)
     # rare_for_entity
     baseline_where: str | None = None
@@ -176,16 +179,19 @@ def compile_rule(rule: Rule) -> tuple[str, list]:
                  ({dfield}) AS dval FROM m),
     s AS (SELECT *, CASE WHEN lag(ts) OVER w IS NULL
                           OR epoch_us(ts) - epoch_us(lag(ts) OVER w) > {window_us}
-                         THEN 1 ELSE 0 END AS brk
+                         THEN 1 ELSE 0 END AS brk,
+                    (epoch_us(ts) - epoch_us(lag(ts) OVER w)) / 1e6 AS raw_gap
           FROM g WINDOW w AS (PARTITION BY {part} ORDER BY ts, line_no)),
     t AS (SELECT *, sum(brk) OVER (PARTITION BY {part} ORDER BY ts, line_no
-                                   ROWS UNBOUNDED PRECEDING) AS sess FROM s)
+                                   ROWS UNBOUNDED PRECEDING) AS sess,
+                 CASE WHEN brk = 0 THEN raw_gap END AS gap_s FROM s)
     SELECT {part}, sess, count(*) AS n, count(DISTINCT dval) AS d,
            min(ts) AS first_seen, max(ts) AS last_seen,
            list(line_no ORDER BY ts, line_no) AS lines,
            count(*) FILTER (WHERE action IN ({blocked})) AS n_blocked{ent_agg}
     FROM t GROUP BY {part}, sess
     HAVING count(*) >= {int(min_count)} AND count(DISTINCT dval) >= {int(dmin)}
+           AND ({rule.having or 'TRUE'})
     ORDER BY first_seen, {part}"""
     return sql, params
 

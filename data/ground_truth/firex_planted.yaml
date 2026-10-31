@@ -1,7 +1,8 @@
 # Ground truth for REAL_10G_DATA/firex-10G.log (FortiGate FGT60FTK00000000, 2026-10-23..30 +0530).
 # No official labels were supplied with this file; these scenarios were recovered by a manual
 # hunt on 2026-10-31 (rare logids, rare field values, the `crscore` field that only planted
-# lines carry, and behavioural aggregates). Each step's `where` is a DuckDB SQL predicate over
+# lines carry, and behavioural aggregates). GT-07-2/3, GT-16-1/4 and GT-20 carry no `crscore`;
+# they were found by repeated-pair / periodicity analysis and attacker-IP follow-up. Each step's `where` is a DuckDB SQL predicate over
 # the `events` view; `expected_count` is the number of log lines it must select.
 # `techniques` lists acceptable ATT&CK ids, primary first (strict label metric uses the first).
 dataset: firex-10G.log
@@ -57,12 +58,20 @@ scenarios:
         expected_count: 220
 
   - id: GT-07
-    name: Nemucod dropper detected but not blocked
+    name: Nemucod dropper gets through, beacons to its C2, then exfiltrates
     steps:
       - id: GT-07-1
         techniques: [T1204.002, T1105]
         where: "subtype='virus' AND action='detected' AND srcip='10.10.10.118'"
         expected_count: 3
+      - id: GT-07-2
+        techniques: [T1071.001, T1071]
+        where: "type='traffic' AND srcip='10.10.10.118' AND dstip='7.154.5.35' AND sentbyte < 5000"
+        expected_count: 400
+      - id: GT-07-3
+        techniques: [T1041, T1030, T1048]
+        where: "type='traffic' AND srcip='10.10.10.118' AND dstip='7.154.5.35' AND sentbyte >= 5000"
+        expected_count: 400
 
   - id: GT-08
     name: Low-and-slow exfiltration to one external host
@@ -129,16 +138,24 @@ scenarios:
         expected_count: 80
 
   - id: GT-16
-    name: SQL injection followed by webshell from one attacker
+    name: Scan, SQL injection, webshell and exfiltration by one attacker
     steps:
       - id: GT-16-1
+        techniques: [T1595, T1595.001, T1046]
+        where: "type='traffic' AND action='deny' AND srcip='32.127.48.11'"
+        expected_count: 240
+      - id: GT-16-2
         techniques: [T1190]
         where: "subtype='ips' AND srcip='32.127.48.11'"
         expected_count: 60
-      - id: GT-16-2
+      - id: GT-16-3
         techniques: [T1505.003]
         where: "subtype='webfilter' AND srcip='32.127.48.11'"
         expected_count: 40
+      - id: GT-16-4
+        techniques: [T1041, T1030, T1048]
+        where: "type='traffic' AND action='accept' AND srcip='32.127.48.11'"
+        expected_count: 600
 
   - id: GT-17
     name: Rogue firewall admin svc_backup30 created, used, deleted
@@ -175,3 +192,11 @@ scenarios:
         techniques: [T1021.002, T1021.001, T1021]
         where: "type='traffic' AND srcip='10.10.10.63' AND dstip LIKE '10.10.20.%' AND dstport IN (445, 3389)"
         expected_count: 180
+
+  - id: GT-20
+    name: Five-day HTTPS beacon from a LAN host (every 300 s)
+    steps:
+      - id: GT-20-1
+        techniques: [T1071.001, T1071]
+        where: "type='traffic' AND srcip='10.10.10.112' AND dstip='198.79.124.52'"
+        expected_count: 1612

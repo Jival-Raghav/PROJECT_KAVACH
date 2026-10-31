@@ -21,6 +21,7 @@ techniques:
   T1204.002: {name: "User Execution: Malicious File", tactic: execution, stage: Exploitation}
   T1036.007: {name: "Masquerading: Double File Extension", tactic: defense-evasion, stage: Delivery}
   T1071:     {name: Application Layer Protocol, tactic: command-and-control, stage: Command and Control}
+  T1071.001: {name: "Application Layer Protocol: Web Protocols", tactic: command-and-control, stage: Command and Control}
   T1071.004: {name: "Application Layer Protocol: DNS", tactic: command-and-control, stage: Command and Control}
   T1048:     {name: Exfiltration Over Alternative Protocol, tactic: exfiltration, stage: Actions on Objectives}
   T1048.003: {name: "Exfiltration Over Unencrypted Non-C2 Protocol", tactic: exfiltration, stage: Actions on Objectives}

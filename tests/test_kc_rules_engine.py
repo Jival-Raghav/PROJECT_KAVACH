@@ -179,3 +179,32 @@ def test_detection_ids_are_deterministic(tmp_path):
     _, a = _run(tmp_path, lines, SCAN_RULE)
     _, b = _run(tmp_path, lines, SCAN_RULE)
     assert [d.detection_id for d in a] == [d.detection_id for d in b]
+
+
+BEACON_RULE = """
+- id: BEACON
+  title: periodic beacon
+  technique: T1071.001
+  severity: high
+  kind: threshold
+  where: "type='traffic' AND action='accept'"
+  group_by: [srcip, dstip]
+  window_minutes: 30
+  min_count: 50
+  having: "stddev_samp(gap_s) / avg(gap_s) < 0.2"
+  entities: {src_ip: srcip, dst_ip: dstip}
+"""
+
+
+def test_having_with_gap_detects_regular_beacon_only(tmp_path):
+    import random
+
+    rnd = random.Random(1)
+    regular = [fg_line(at(i * 5 + rnd.uniform(-0.05, 0.05)), action="accept", srcip="10.0.0.1",
+                       dstip="7.7.7.7") for i in range(60)]
+    jitter, t = [], 0.0
+    for _ in range(60):
+        t += rnd.uniform(0.1, 20)
+        jitter.append(fg_line(at(t), action="accept", srcip="10.0.0.2", dstip="7.7.7.8"))
+    _, dets = _run(tmp_path, regular + jitter, BEACON_RULE)
+    assert [d.entities["src_ip"] for d in dets] == [["10.0.0.1"]]
