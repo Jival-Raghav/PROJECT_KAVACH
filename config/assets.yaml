@@ -1,0 +1,10 @@
+# Network map used for "what can the attacker reach next" (FR-6).
+# Segments come from the FortiGate interfaces seen in the logs (internal1..4 = LAN/DMZ, mgmt).
+firewall_mgmt_ip: 10.10.99.1
+segments:
+  - {cidr: 10.10.10.0/24, name: Corp LAN 1, sensitivity: medium}
+  - {cidr: 10.10.20.0/24, name: DMZ servers, sensitivity: high}
+  - {cidr: 10.10.30.0/24, name: Corp LAN 3, sensitivity: medium}
+  - {cidr: 10.10.40.0/24, name: IoT / devices, sensitivity: low}
+  - {cidr: 10.10.50.0/24, name: Corp LAN 5, sensitivity: medium}
+  - {cidr: 10.10.99.0/24, name: Management, sensitivity: crown}
