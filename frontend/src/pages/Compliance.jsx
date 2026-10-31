@@ -102,11 +102,11 @@ export default function Compliance() {
           <div className="card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{
               width: 80, height: 80, borderRadius: '50%', flexShrink: 0,
-              background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(99, 102, 241, 0.2))',
-              border: '2px solid #00E5FF', display: 'flex', flexDirection: 'column',
+              background: 'var(--accent-subtle)',
+              border: '2px solid var(--accent)', display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center'
             }}>
-              <span style={{ fontSize: 22, fontWeight: 900, color: '#00E5FF' }}>
+              <span style={{ fontSize: 22, fontWeight: 900, color: 'var(--accent)' }}>
                 {scoreData.identity_hygiene_score}
               </span>
               <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>/ 100</span>
@@ -213,7 +213,7 @@ export default function Compliance() {
                 const st = c.status.toLowerCase()
                 return (
                   <tr key={c.id}>
-                    <td className="mono" style={{ fontWeight: 700, color: '#00E5FF' }}>
+                    <td className="mono" style={{ fontWeight: 700, color: 'var(--accent)' }}>
                       {c.id}
                     </td>
                     <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>

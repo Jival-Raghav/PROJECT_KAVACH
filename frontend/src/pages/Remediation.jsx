@@ -172,7 +172,7 @@ export default function Remediation() {
                 ) : (
                   filteredProposals.map(prop => (
                     <tr key={prop.proposal_id}>
-                      <td className="mono" style={{ fontWeight: 600, color: '#00E5FF' }}>
+                      <td className="mono" style={{ fontWeight: 600, color: 'var(--accent)' }}>
                         {prop.proposal_id}
                       </td>
                       <td>
@@ -272,7 +272,7 @@ export default function Remediation() {
                   </td>
                   <td style={{ fontWeight: 600 }}>{log.actor}</td>
                   <td>
-                    <span className="mono" style={{ fontSize: 11, color: '#00E5FF' }}>{log.action}</span>
+                    <span className="mono" style={{ fontSize: 11, color: 'var(--accent)' }}>{log.action}</span>
                   </td>
                   <td className="mono">{log.proposal_id}</td>
                   <td>{log.target_account}</td>

@@ -183,24 +183,24 @@ export default function ResolutionView({ runId = 'default' }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 8,
-            background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(99, 102, 241, 0.2))',
-            border: '1px solid rgba(0, 229, 255, 0.4)',
+            background: 'var(--accent-subtle)',
+            border: '1px solid var(--accent-border)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <GitBranch size={20} color="#00E5FF" />
+            <GitBranch size={20} color="var(--accent)" />
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
               Identity Resolution Engine
               <span style={{
                 fontSize: 11, padding: '2px 8px', borderRadius: 999,
-                background: 'rgba(0, 229, 255, 0.1)', color: '#00E5FF', border: '1px solid rgba(0, 229, 255, 0.3)',
+                background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-border)',
                 fontWeight: 600,
               }}>
                 Feature 1b · Constrained Union-Find
               </span>
             </div>
-            <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
               Deterministic &amp; fuzzy graph reconciliation · Zero cross-employee merges · Credential sprawl detector
             </div>
           </div>
@@ -211,22 +211,21 @@ export default function ResolutionView({ runId = 'default' }) {
             onClick={() => setMergeModalOpen(true)}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              background: '#1E293B', color: '#E2E8F0', border: '1px solid #334155',
+              background: 'var(--surface-mid)', color: 'var(--text-primary)', border: '1px solid var(--border)',
               borderRadius: 6, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}
           >
-            <LinkIcon size={14} color="#00E5FF" />
+            <LinkIcon size={14} color="var(--accent)" />
             Manual Merge
           </button>
 
           <button
             onClick={handleTriggerRun}
             disabled={running}
+            className="btn-primary"
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              background: 'linear-gradient(135deg, #00E5FF, #6366F1)', color: '#090D16', border: 'none',
               borderRadius: 6, padding: '7px 16px', fontSize: 12, fontWeight: 700, cursor: running ? 'not-allowed' : 'pointer',
-              boxShadow: '0 0 12px rgba(0, 229, 255, 0.3)',
             }}
           >
             {running ? <Loader2 size={15} className="spin" /> : <RefreshCw size={15} />}
@@ -396,14 +395,14 @@ export default function ResolutionView({ runId = 'default' }) {
                 fontWeight: 600,
                 cursor: 'pointer',
                 border: '1px solid',
-                borderColor: activeSubTab === tab.id ? '#00E5FF' : 'transparent',
-                background: activeSubTab === tab.id ? 'rgba(0, 229, 255, 0.12)' : 'transparent',
-                color: activeSubTab === tab.id ? '#00E5FF' : (tab.alert ? '#EF4444' : '#94A3B8'),
+                borderColor: activeSubTab === tab.id ? 'var(--accent)' : 'transparent',
+                background: activeSubTab === tab.id ? 'var(--accent-subtle)' : 'transparent',
+                color: activeSubTab === tab.id ? 'var(--accent)' : (tab.alert ? 'var(--c-critical)' : 'var(--text-secondary)'),
                 display: 'flex', alignItems: 'center', gap: 6,
               }}
             >
               {tab.label}
-              {tab.alert && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#EF4444' }} />}
+              {tab.alert && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--c-critical)' }} />}
             </button>
           ))}
         </div>
