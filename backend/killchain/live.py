@@ -82,6 +82,8 @@ def new_state(path: Path) -> dict:
             "bytes_total": size, "ingest_done": False, "generation": 0, "cycle_seconds": None,
             "last_cycle_at": None, "started_at": datetime.now(timezone.utc).isoformat(),
             "finished_at": None, "error": None, "owner_pid": None, "heartbeat_at": None,
+            # Chosen once per run, before reading starts, and reused on resume.
+            "parser": None, "schema_path": None,
             # Counters as of the last written part: what a resume restarts from.
             "checkpoint": {"lines_read": 0, "lines_parsed": 0, "lines_skipped": 0}}
 
@@ -97,11 +99,15 @@ def _write_part(batch: dict[str, list], events_dir: Path, part: int) -> None:
 def stream_to_parts(path: Path, run_dir: Path, state: dict, *, batch_size: int = 200_000,
                     stop: threading.Event | None = None,
                     on_part: Callable[[dict], None] | None = None,
-                    lock: threading.Lock | None = None) -> dict:
+                    lock: threading.Lock | None = None,
+                    parse: Callable[[str, int], dict | None] = parse_line,
+                    label: str = "FortiGate") -> dict:
     """Append Parquet parts from `path`, checkpointing `state` after every part.
 
     `lock`, when given, is held around every mutation and save of `state` (never around a
     Parquet write), so another thread sharing `state` can mutate and save it safely.
+    `parse` reads one line (the FortiGate parser, or one built from a learned schema);
+    `label` names that format in the error raised when nothing parses.
     """
     run_dir = Path(run_dir)
     guard = lock if lock is not None else contextlib.nullcontext()
@@ -171,13 +177,13 @@ def stream_to_parts(path: Path, run_dir: Path, state: dict, *, batch_size: int =
             rec = None
             if raw.endswith(b"\n"):  # a final line without newline is a truncated write
                 try:
-                    rec = parse_line(raw.decode("utf-8"), read)
+                    rec = parse(raw.decode("utf-8"), read)
                 except UnicodeDecodeError:
                     rec = None
             if rec is None:
                 skipped += 1
                 if parsed == 0 and read >= NO_PARSE_LIMIT:
-                    raise ValueError(f"No FortiGate log lines found in the first "
+                    raise ValueError(f"No {label} log lines found in the first "
                                      f"{NO_PARSE_LIMIT:,} lines of {path}")
             else:
                 parsed += 1
@@ -227,9 +233,15 @@ class LiveJob:
     def __init__(self, run_dir: Path, path: Path, rules_dir: Path, *,
                  assets_path: Path | None = None, batch_size: int = 200_000,
                  poll_seconds: float = 0.5,
-                 on_cycle: Callable[[dict], None] | None = None) -> None:
+                 on_cycle: Callable[[dict], None] | None = None,
+                 schema_path: Path | None = None,
+                 llm: Callable[[list[dict]], str] | None = None) -> None:
         self.run_dir = Path(run_dir)
         self.path = Path(path).resolve()
+        self.schema_path = Path(schema_path).resolve() if schema_path else None
+        self.llm = llm  # only used if a new log format has to be learned
+        self._parse: Callable[[str, int], dict | None] = parse_line
+        self._label = "FortiGate"
         self.rules_dir = Path(rules_dir)
         self.assets_path = assets_path
         self.batch_size = batch_size
@@ -299,6 +311,7 @@ class LiveJob:
         reader = threading.Thread(target=self._read, name="kc-live-reader", daemon=True)
         covered = 0
         try:
+            self._choose_parser()
             reader.start()
             while True:
                 # Sample the reader before listing parts: if it was already finished, the
@@ -334,11 +347,34 @@ class LiveJob:
             save_state(self.run_dir, self.state)
             return dict(self.state)
 
+    def _choose_parser(self) -> None:
+        """Pick the parser once per run (the batch pipeline's rule) and reuse it on resume.
+
+        FortiGate logs use the standard parser. Anything else uses an approved or saved
+        schema, or one learned now through the LLM; a learned one is reported as unreviewed.
+        """
+        from killchain.onboard import choose_parser, load_schema, make_parser
+
+        with self._lock:
+            parser, schema = self.state.get("parser"), self.state.get("schema_path")
+        if parser is None:
+            if self.schema_path is not None:
+                schema = str(self.schema_path)
+            else:
+                chosen = choose_parser(self.path, llm=self.llm)
+                schema = str(chosen) if chosen else None
+            parser = "schema" if schema else "fortigate"
+            self._update(parser=parser, schema_path=schema)
+        if parser == "schema":
+            self._parse = make_parser(load_schema(Path(schema)))
+            self._label = f"{Path(schema).stem} (learned format)"
+
     def _read(self) -> None:
         self._reader_t0 = time.perf_counter()
         try:
             stream_to_parts(self.path, self.run_dir, self.state, batch_size=self.batch_size,
-                            stop=self._stop, lock=self._lock)
+                            stop=self._stop, lock=self._lock, parse=self._parse,
+                            label=self._label)
         except BaseException as exc:  # surfaced by the job thread
             self._reader_exc = exc
         finally:
@@ -362,6 +398,7 @@ class LiveJob:
         with self._lock:
             ingest = {k: self.state[k] for k in _INGEST_KEYS}
             generation = self.state["generation"] + 1
+            source_schema = self.state.get("schema_path")
         total = ingest["bytes_total"]
         pct = ingest["bytes_read"] / total if total else 1.0
         elapsed = self._reader_elapsed()
@@ -372,7 +409,8 @@ class LiveJob:
         meta = analyse_run(self.run_dir, self.rules_dir, assets_path=self.assets_path,
                            parts=parts, registry_path=self.run_dir / REGISTRY_FILE,
                            seconds={"ingest": elapsed},
-                           meta_extra={"log_path": str(self.path), "ingest": ingest})
+                           meta_extra={"log_path": str(self.path), "ingest": ingest},
+                           source_schema=source_schema)
         cur = load_run(self.run_dir)
         # The generation survives a resume, so it doubles as the cycle number.
         entry = diff_cycle(prev, cur, meta.get("renumber") or {}, cycle=generation,

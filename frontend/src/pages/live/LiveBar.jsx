@@ -42,6 +42,13 @@ export default function LiveBar() {
       <span className="live-text">
         {pct}% · {(live.lines_parsed ?? 0).toLocaleString()} lines · update {live.generation ?? 0} · last update {time}
       </span>
+      {live.parser && (
+        <span className="chip" title={live.schema_path || 'Standard FortiGate key=value parser'}>
+          {live.parser === 'schema'
+            ? `Parser: learned format (${live.schema_path.split(/[\\/]/).pop().replace(/\.ya?ml$/, '')})`
+            : 'Parser: FortiGate'}
+        </span>
+      )}
       {processing && pct < 25 && (
         <span className="live-early kc-muted">
           <Radio size={12} /> Early results: history-based findings may still change

@@ -28,6 +28,7 @@ _jobs_lock = threading.Lock()
 class StartBody(BaseModel):
     path: str = Field(max_length=4096)
     run_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_-]{1,64}$")
+    schema_path: str | None = Field(default=None, max_length=4096)  # default: chosen automatically
 
 
 def _runs_dir() -> Path:
@@ -66,6 +67,9 @@ def start_live(body: StartBody) -> dict:
         raise HTTPException(400, f"File is not readable: {body.path}")
     if is_zip(path):
         raise HTTPException(400, f"Zip archives are not supported: {body.path}")
+    schema = Path(body.schema_path).expanduser() if body.schema_path else None
+    if schema is not None and not schema.is_file():
+        raise HTTPException(400, f"Schema not found: {body.schema_path}")
     run_dir = _run_dir(run_id)
     if (run_dir / "run_meta.json").exists() and not (run_dir / "live_state.json").exists():
         raise HTTPException(400, f"Run {run_id} is a batch run and cannot be used for live mode")
@@ -80,7 +84,7 @@ def start_live(body: StartBody) -> dict:
         s = get_settings()
         try:
             job = LiveJob(run_dir, path, Path(s.KILLCHAIN_RULES_DIR),
-                          assets_path=Path(s.KILLCHAIN_ASSETS_PATH))
+                          assets_path=Path(s.KILLCHAIN_ASSETS_PATH), schema_path=schema)
         except ValueError as e:
             raise HTTPException(400, str(e)) from e
         _jobs[run_id] = job

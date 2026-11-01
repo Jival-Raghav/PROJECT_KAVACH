@@ -86,11 +86,14 @@ def cmd_live(a: argparse.Namespace) -> None:
         raise SystemExit(f"Run {a.run_id} is a batch run and cannot be used for live mode")
     if state is not None and owner_alive(state):
         raise SystemExit(f"Run {a.run_id} is being processed by another process")
+    schema = Path(a.schema).expanduser() if a.schema else None
+    if schema is not None and not schema.is_file():
+        raise SystemExit(f"Schema not found: {a.schema}")
     s = get_settings()
     try:
         job = LiveJob(run_dir, path, Path(s.KILLCHAIN_RULES_DIR),
                       assets_path=Path(s.KILLCHAIN_ASSETS_PATH), batch_size=a.batch_size,
-                      on_cycle=show)
+                      on_cycle=show, schema_path=schema)
     except ValueError as e:
         raise SystemExit(str(e)) from e
     job.start()
@@ -249,6 +252,8 @@ def main(argv: list[str] | None = None) -> None:
     lv.add_argument("--path", required=True)
     lv.add_argument("--run-id", default="live")
     lv.add_argument("--batch-size", type=int, default=200_000)
+    lv.add_argument("--schema", help="schema for a log that is not FortiGate (default: chosen "
+                                     "automatically, like `run`)")
     lv.set_defaults(fn=cmd_live)
     a = p.parse_args(argv)
     a.fn(a)

@@ -293,8 +293,9 @@ def test_junk_file_ends_in_error(client, tmp_path):
     assert c.post("/api/live/start", json={"path": str(junk), "run_id": "j1"}).status_code == 200
     assert _wait_status(c, "j1", "error", timeout=60) == "error"
     st = c.get("/api/live/status?run_id=j1").json()
-    assert st["error"] == ("No FortiGate log lines found in the first 100,000 lines of "
-                           f"{junk.resolve()}")
+    # Rejected up front by the parser chooser, as the batch pipeline would; the reader's own
+    # 100,000-line guard is tested in test_kc_live_stream.
+    assert st["error"] == "Could not recognise this log as key=value, JSON or CSV."
     assert st["generation"] == 0
 
 
@@ -329,8 +330,8 @@ def test_cli_live_junk_file_exits_with_error(tmp_path, monkeypatch):
     with pytest.raises(SystemExit) as ei:
         main(["live", "--path", str(junk), "--run-id", "j2"])
     assert ei.value.code != 0
-    assert str(ei.value) == ("[live] error: No FortiGate log lines found in the first "
-                             f"100,000 lines of {junk.resolve()}")
+    assert str(ei.value) == ("[live] error: Could not recognise this log as key=value, "
+                             "JSON or CSV.")
 
 
 def test_cli_live_refuses_run_owned_elsewhere(tmp_path, monkeypatch):
