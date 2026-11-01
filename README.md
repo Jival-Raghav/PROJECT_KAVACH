@@ -84,15 +84,21 @@ incidents appear while the file is still being read.
   (default batch 200,000 lines). Ctrl-C stops cleanly; the same `--run-id` resumes.
 - **API:** `POST /api/live/start`, `GET /api/live/status`, `GET /api/live/changes`,
   `POST /api/live/stop`, `GET /api/runs`.
-- **Inputs:** a raw FortiGate `key=value` log or a `.gz` of one. A raw file resumes from its byte
+- **Inputs:** a raw FortiGate `key=value` log or a `.gz` of one. Not accepted: a `.zip` or a folder
+  (folders are rejected by the API). A raw file resumes from its byte
   checkpoint. A `.gz` is decompressed again from the start and lines already written are skipped.
-- **Stable numbers:** an incident keeps its number across updates (`incident_registry.json`). Incidents
-  that merge or disappear are recorded in the change feed (`changes.jsonl`), not renumbered.
+- **What updates and when:** after each new part is analysed (an "update"), every view refreshes on its
+  own within about 2 seconds: the incident list, an open incident's timeline, attack path, blast radius,
+  review and report, plus anomalies, actors, accounts, response plan and control findings. The change
+  feed lists what that update changed.
+- **Stable numbers:** an incident keeps its number across updates (`incident_registry.json`). A merged
+  incident redirects to its surviving number and a withdrawn one shows a notice; both are recorded in the
+  change feed (`changes.jsonl`), nothing is renumbered.
 - **Limits:** results under 25% of the file are early and can change. Every update re-analyses
   everything read so far, so updates slow down as the file grows. The run name `firex` is refused.
 
 **Rehearsal on `firex-10G.log` (4.8 GB, one MacBook run):** first update after 21 s, finished in
-217 s (3.6 min) over 9 updates, peak memory 3.04 GB (`maximum resident set size`). The final 20
+217 s (3.6 min, `/usr/bin/time` wall clock) over 9 updates, peak memory 3.04 GB (`maximum resident set size`). The final 20
 incidents have the same titles as the batch run. Updates took about 20 to 40 s each once the file was
 more than a quarter read. This is one run, not a benchmark.
 
