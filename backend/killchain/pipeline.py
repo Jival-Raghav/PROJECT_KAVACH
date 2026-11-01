@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -9,6 +10,7 @@ from pathlib import Path
 
 from killchain.accounts import audit_accounts
 from killchain.actors import build_actors, link_incidents
+from killchain.atomic import write_json_atomic
 from killchain.anomaly import incident_entities, score_entities, split_scores
 from config import get_settings
 from killchain.compliance import incident_controls, load_controls
@@ -62,13 +64,31 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
         ingest = ingest_log(Path(log_path), run_dir).model_dump()
         seconds["ingest"] = round(time.perf_counter() - t, 2)
 
+    log = str(log_path) if not skip_ingest else old.get("log_path", str(log_path))
+    return analyse_run(run_dir, rules_dir, assets_path=assets_path, progress=progress,
+                       seconds=seconds, meta_extra={"log_path": log, "ingest": ingest})
+
+
+def analyse_run(run_dir: Path, rules_dir: Path, *, assets_path: Path | None = None,
+                progress: Callable[[str], None] | None = None,
+                parts: list[Path] | None = None, seconds: dict[str, float] | None = None,
+                meta_extra: dict | None = None) -> dict:
+    """Everything after ingest: detect → correlate → enrich → anomaly → actors → persist."""
+    run_dir = Path(run_dir)
+    say = progress or (lambda _s: None)
+    seconds = dict(seconds or {})
+    meta_extra = meta_extra or {}
+    ingest = meta_extra.get("ingest")
+
     say("detect")
     t = time.perf_counter()
-    con = open_events(run_dir)
+    con = open_events(run_dir, parts=parts)
     rules = load_rules(Path(rules_dir))
     detections = run_rules(con, rules)
-    out_path = sql_str(str(run_dir / "detection_events.parquet"))
-    con.execute(f"COPY detection_events TO {out_path} (FORMAT parquet)")
+    out_path = run_dir / "detection_events.parquet"
+    tmp_path = run_dir / ".detection_events.parquet.tmp"
+    con.execute(f"COPY detection_events TO {sql_str(str(tmp_path))} (FORMAT parquet)")
+    os.replace(tmp_path, out_path)
     seconds["detect"] = round(time.perf_counter() - t, 2)
 
     say("correlate")
@@ -102,17 +122,16 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
         data["review"] = build_review(data)
         data["response"] = build_actions(data)
         data["compliance"] = incident_controls(data, controls)
-    (run_dir / "anomalies.json").write_text(json.dumps(leads, indent=1), encoding="utf-8")
-    (run_dir / "actors.json").write_text(json.dumps(actors, indent=1), encoding="utf-8")
-    (run_dir / "accounts.json").write_text(
-        json.dumps(audit_accounts(con, actors), indent=1), encoding="utf-8")
-    (run_dir / "incidents.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
+    write_json_atomic(run_dir / "anomalies.json", leads)
+    write_json_atomic(run_dir / "actors.json", actors)
+    write_json_atomic(run_dir / "accounts.json", audit_accounts(con, actors))
+    write_json_atomic(run_dir / "incidents.json", out)
 
     meta = {
         "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
-        "log_path": str(log_path) if not skip_ingest else old.get("log_path", str(log_path)),
+        "log_path": meta_extra.get("log_path", ""),
         "ingest": ingest,
-        "clock_stalls": load_clock_stalls(run_dir),
+        "clock_stalls": load_clock_stalls(run_dir, parts),
         "seconds": seconds,
         "total_seconds": round(sum(seconds.values()), 2),
         "peak_rss_mb": round(max(peak_rss_mb(), float((ingest or {}).get("peak_rss_mb", 0))), 1),
@@ -122,7 +141,7 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
         "anomaly_lead_count": len(leads),
         "raw_alerts_merged": sum(i.raw_alert_count for i in incidents),
     }
-    meta_path.write_text(json.dumps(meta, indent=1), encoding="utf-8")
+    write_json_atomic(run_dir / "run_meta.json", meta)
     _CACHE.pop(str(run_dir), None)
     say("done")
     return meta
