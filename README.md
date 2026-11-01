@@ -84,9 +84,14 @@ incidents appear while the file is still being read.
   (default batch 200,000 lines). Ctrl-C stops cleanly; the same `--run-id` resumes.
 - **API:** `POST /api/live/start`, `GET /api/live/status`, `GET /api/live/changes`,
   `POST /api/live/stop`, `GET /api/runs`.
-- **Inputs:** a raw FortiGate `key=value` log or a `.gz` of one. Not accepted: a `.zip` or a folder
-  (folders are rejected by the API). A raw file resumes from its byte
+- **Inputs:** a raw FortiGate `key=value` log or a `.gz` of one. Not accepted: a `.zip` (rejected with
+  "Zip archives are not supported") or a folder. A file with no FortiGate line in its first 100,000
+  lines ends with an error. A raw file resumes from its byte
   checkpoint. A `.gz` is decompressed again from the start and lines already written are skipped.
+- **CLI and UI together:** a run started with `cli live` shows as processing in the UI (the job records
+  its process id and a heartbeat in `live_state.json`); it shows as interrupted only once that process
+  is gone or its heartbeat is over 60 s old. A run being processed elsewhere cannot be started again,
+  and batch runs cannot be reused for live mode.
 - **What updates and when:** after each new part is analysed (an "update"), every view refreshes on its
   own within about 2 seconds: the incident list, an open incident's timeline, attack path, blast radius,
   review and report, plus anomalies, actors, accounts, response plan and control findings. The change

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Radio } from 'lucide-react'
 import { startLive, stopLive } from '../../api'
 import { useRun } from '../../run'
@@ -8,6 +9,7 @@ const BADGE = {
 
 export default function LiveBar() {
   const { runId, live, refreshLive } = useRun()
+  const [error, setError] = useState('')
   if (!live) return null
 
   const processing = live.status === 'processing'
@@ -15,10 +17,19 @@ export default function LiveBar() {
   const pct = live.status === 'complete' ? 100
     : total > 0 ? Math.min(100, Math.floor((live.bytes_read / total) * 100)) : 0
   const time = live.last_cycle_at ? new Date(live.last_cycle_at).toLocaleTimeString() : '-'
-  const resumable = live.status === 'stopped' || live.status === 'interrupted'
+  const resumable = ['stopped', 'interrupted', 'error'].includes(live.status) && !!live.path
 
-  const stop = () => stopLive(runId).catch(() => {}).then(refreshLive)
-  const resume = () => startLive(live.path, runId).catch(() => {}).then(refreshLive)
+  const act = call => {
+    setError('')
+    return call()
+      .catch(err => setError(typeof err.detail === 'string' ? err.detail : err.message))
+      .then(refreshLive)
+  }
+  const stop = () => act(() => stopLive(runId))
+  const resume = () => {
+    if (!live.path) { setError('This run has no log path to resume from'); return }
+    act(() => startLive(live.path, runId))
+  }
 
   return (
     <div className="live-bar">
@@ -37,6 +48,7 @@ export default function LiveBar() {
         </span>
       )}
       {live.status === 'error' && live.error && <span className="live-err">{live.error}</span>}
+      {error && <span className="live-err" role="alert">{error}</span>}
       <span className="live-spacer" />
       {processing && <button className="btn-ghost" onClick={stop}>Stop</button>}
       {resumable && <button className="btn-ghost" onClick={resume}>Resume</button>}

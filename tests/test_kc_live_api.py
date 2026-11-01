@@ -129,7 +129,8 @@ def test_cli_live_runs_to_completion(tmp_path, monkeypatch, capsys):
     log = write_log(tmp_path / "f.log", _lines())
     main(["live", "--path", str(log), "--run-id", "c1", "--batch-size", "40"])
     assert read_state(tmp_path / "kc" / "runs" / "c1")["status"] == "complete"
-    assert "[live] gen " in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "[live] gen " in out and "[live] complete: " in out
 
 
 @pytest.mark.parametrize("run_id,path,msg", [
@@ -173,3 +174,175 @@ def test_cli_live_ctrl_c_stops_cleanly(tmp_path, monkeypatch, capsys):
     assert ei.value.code != 0
     assert "resume with the same --run-id" in capsys.readouterr().out
     assert read_state(tmp_path / "kc" / "runs" / "k1")["status"] in ("stopped", "complete")
+
+
+def _junk(path, n=100_001):
+    path.write_text("not a fortigate line\n" * n, encoding="utf-8")
+    return path
+
+
+def _zip(tmp_path):
+    import zipfile
+
+    log = write_log(tmp_path / "f.log", _lines())
+    z = tmp_path / "f.zip"
+    with zipfile.ZipFile(z, "w") as zf:
+        zf.write(log, "f.log")
+    return z
+
+
+def _owned_state(runs, run_id, log, pid, beat):
+    from killchain.live import new_state, save_state
+
+    st = new_state(log)
+    st.update(owner_pid=pid, heartbeat_at=beat)
+    save_state(runs / run_id, st)
+
+
+def _dead_pid():
+    import subprocess
+    import sys
+
+    p = subprocess.Popen([sys.executable, "-c", "pass"])
+    p.wait()
+    return p.pid
+
+
+def test_run_owned_by_another_live_process_is_processing_and_not_restartable(client, tmp_path):
+    import os
+    from datetime import UTC, datetime
+
+    c, runs = client
+    log = write_log(tmp_path / "f.log", _lines())
+    _owned_state(runs, "o1", log, os.getpid(), datetime.now(UTC).isoformat())
+    assert c.get("/api/live/status?run_id=o1").json()["status"] == "processing"
+    assert {x["run_id"]: x["status"] for x in c.get("/api/runs").json()}["o1"] == "processing"
+    r = c.post("/api/live/start", json={"path": str(log), "run_id": "o1"})
+    assert r.status_code == 409
+    assert r.json()["detail"] == "Run o1 is being processed by another process"
+
+
+@pytest.mark.parametrize("owner", ["dead_pid", "stale_heartbeat"])
+def test_run_with_gone_owner_is_interrupted(client, tmp_path, owner):
+    import os
+    from datetime import UTC, datetime, timedelta
+
+    c, runs = client
+    log = write_log(tmp_path / "f.log", _lines())
+    now = datetime.now(UTC)
+    if owner == "dead_pid":
+        _owned_state(runs, "g1", log, _dead_pid(), now.isoformat())
+    else:
+        _owned_state(runs, "g1", log, os.getpid(), (now - timedelta(seconds=61)).isoformat())
+    assert c.get("/api/live/status?run_id=g1").json()["status"] == "interrupted"
+    assert {x["run_id"]: x["status"] for x in c.get("/api/runs").json()}["g1"] == "interrupted"
+
+
+def test_start_writes_owned_state_before_returning(client, tmp_path, monkeypatch):
+    import os
+
+    from killchain.live import LiveJob, read_state
+
+    c, runs = client
+    gate = threading.Event()
+    monkeypatch.setattr(LiveJob, "run", lambda self: gate.wait(10) or {})
+    log = write_log(tmp_path / "f.log", _lines())
+    try:
+        assert c.post("/api/live/start", json={"path": str(log), "run_id": "s1"}).status_code == 200
+        st = read_state(runs / "s1")
+        assert st["status"] == "processing" and st["owner_pid"] == os.getpid()
+        assert st["heartbeat_at"]
+        listed = {x["run_id"]: x for x in c.get("/api/runs").json()}
+        assert listed["s1"]["kind"] == "live" and listed["s1"]["status"] == "processing"
+    finally:
+        gate.set()
+
+
+def test_batch_rerun_refuses_live_run(client):
+    c, runs = client
+    (runs / "lv").mkdir(parents=True)
+    (runs / "lv" / "live_state.json").write_text(
+        json.dumps({"path": "/x", "status": "stopped"}), encoding="utf-8")
+    r = c.post("/api/killchain/run?run_id=lv")
+    assert r.status_code == 409 and r.json()["detail"] == "Run lv is a live run"
+
+
+def test_start_rejects_zip(client, tmp_path):
+    c, runs = client
+    z = _zip(tmp_path)
+    r = c.post("/api/live/start", json={"path": str(z), "run_id": "z1"})
+    assert r.status_code == 400
+    assert r.json()["detail"] == f"Zip archives are not supported: {z}"
+    assert not (runs / "z1").exists()
+
+
+def test_start_refuses_batch_run(client, tmp_path):
+    c, runs = client
+    (runs / "b1").mkdir(parents=True)
+    (runs / "b1" / "run_meta.json").write_text("{}", encoding="utf-8")
+    log = write_log(tmp_path / "f.log", _lines())
+    r = c.post("/api/live/start", json={"path": str(log), "run_id": "b1"})
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Run b1 is a batch run and cannot be used for live mode"
+    assert sorted(p.name for p in (runs / "b1").iterdir()) == ["run_meta.json"]
+
+
+def test_junk_file_ends_in_error(client, tmp_path):
+    c, _ = client
+    junk = _junk(tmp_path / "junk.log")
+    assert c.post("/api/live/start", json={"path": str(junk), "run_id": "j1"}).status_code == 200
+    assert _wait_status(c, "j1", "error", timeout=60) == "error"
+    st = c.get("/api/live/status?run_id=j1").json()
+    assert st["error"] == ("No FortiGate log lines found in the first 100,000 lines of "
+                           f"{junk.resolve()}")
+    assert st["generation"] == 0
+
+
+def test_cli_live_rejects_zip_and_batch_run(tmp_path, monkeypatch):
+    from config import get_settings
+    from killchain.cli import main
+
+    monkeypatch.setattr(get_settings(), "KILLCHAIN_DATA_DIR", str(tmp_path / "kc"))
+    z = _zip(tmp_path)
+    with pytest.raises(SystemExit) as ei:
+        main(["live", "--path", str(z), "--run-id", "z1"])
+    assert str(ei.value) == f"Zip archives are not supported: {z}"
+    assert not (tmp_path / "kc").exists()
+
+    b = tmp_path / "kc" / "runs" / "b1"
+    b.mkdir(parents=True)
+    (b / "run_meta.json").write_text("{}", encoding="utf-8")
+    log = write_log(tmp_path / "f.log", _lines())
+    with pytest.raises(SystemExit) as ei:
+        main(["live", "--path", str(log), "--run-id", "b1"])
+    assert str(ei.value) == "Run b1 is a batch run and cannot be used for live mode"
+    assert sorted(p.name for p in b.iterdir()) == ["run_meta.json"]
+
+
+def test_cli_live_junk_file_exits_with_error(tmp_path, monkeypatch):
+    from config import get_settings
+    from killchain.cli import main
+
+    monkeypatch.setattr(get_settings(), "KILLCHAIN_DATA_DIR", str(tmp_path / "kc"))
+    monkeypatch.setattr(get_settings(), "KILLCHAIN_RULES_DIR", str(RULES))
+    junk = _junk(tmp_path / "junk.log")
+    with pytest.raises(SystemExit) as ei:
+        main(["live", "--path", str(junk), "--run-id", "j2"])
+    assert ei.value.code != 0
+    assert str(ei.value) == ("[live] error: No FortiGate log lines found in the first "
+                             f"100,000 lines of {junk.resolve()}")
+
+
+def test_cli_live_refuses_run_owned_elsewhere(tmp_path, monkeypatch):
+    import os
+    from datetime import UTC, datetime
+
+    from config import get_settings
+    from killchain.cli import main
+
+    monkeypatch.setattr(get_settings(), "KILLCHAIN_DATA_DIR", str(tmp_path / "kc"))
+    log = write_log(tmp_path / "f.log", _lines())
+    _owned_state(tmp_path / "kc" / "runs", "o2", log, os.getpid(), datetime.now(UTC).isoformat())
+    with pytest.raises(SystemExit) as ei:
+        main(["live", "--path", str(log), "--run-id", "o2"])
+    assert str(ei.value) == "Run o2 is being processed by another process"

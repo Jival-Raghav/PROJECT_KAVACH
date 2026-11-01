@@ -12,14 +12,15 @@ from pydantic import BaseModel, Field
 
 from config import get_settings
 from killchain.changes import read_changes
-from killchain.live import LiveJob, read_state
+from killchain.live import LiveJob, is_zip, owner_alive, read_state
 from killchain.pipeline import load_meta
 
 router = APIRouter(prefix="/api", tags=["Live"])
 
 RunId = Annotated[str, Query(pattern=r"^[A-Za-z0-9_-]{1,64}$")]
 
-# Live jobs of this process, keyed by run_id. Ownership is never persisted to disk.
+# Live jobs of this process, keyed by run_id. Other processes (`cli live`) are recognised
+# by the owner_pid / heartbeat_at they write into live_state.json.
 _jobs: dict[str, LiveJob] = {}
 _jobs_lock = threading.Lock()
 
@@ -42,6 +43,17 @@ def _alive(run_id: str) -> bool:
     return job is not None and job.is_alive()
 
 
+def _status(run_id: str, state: dict) -> str | None:
+    """The file's status, or "interrupted" when nothing alive is processing the run."""
+    status = state.get("status")
+    if status != "processing":
+        return status
+    with _jobs_lock:
+        if _alive(run_id):
+            return status
+    return status if owner_alive(state) else "interrupted"
+
+
 @router.post("/live/start")
 def start_live(body: StartBody) -> dict:
     run_id = body.run_id or datetime.now(UTC).strftime("live-%Y%m%d-%H%M%S")
@@ -52,13 +64,19 @@ def start_live(body: StartBody) -> dict:
         raise HTTPException(400, f"File not found: {body.path}")
     if not os.access(path, os.R_OK):
         raise HTTPException(400, f"File is not readable: {body.path}")
+    if is_zip(path):
+        raise HTTPException(400, f"Zip archives are not supported: {body.path}")
+    run_dir = _run_dir(run_id)
+    if (run_dir / "run_meta.json").exists() and not (run_dir / "live_state.json").exists():
+        raise HTTPException(400, f"Run {run_id} is a batch run and cannot be used for live mode")
     with _jobs_lock:
         if any(j.is_alive() for j in _jobs.values()):
             raise HTTPException(409, "A live job is already running")
-        run_dir = _run_dir(run_id)
         state = read_state(run_dir)
         if state is not None and state.get("status") == "complete":
             raise HTTPException(409, f"Run {run_id} is already complete")
+        if state is not None and owner_alive(state):
+            raise HTTPException(409, f"Run {run_id} is being processed by another process")
         s = get_settings()
         try:
             job = LiveJob(run_dir, path, Path(s.KILLCHAIN_RULES_DIR),
@@ -75,11 +93,7 @@ def live_status(run_id: RunId) -> dict:
     state = read_state(_run_dir(run_id))
     if state is None:
         raise HTTPException(404, f"No live run {run_id}")
-    with _jobs_lock:
-        alive = _alive(run_id)
-    if state.get("status") == "processing" and not alive:
-        state = {**state, "status": "interrupted"}
-    return state
+    return {**state, "status": _status(run_id, state)}
 
 
 @router.get("/live/changes")
@@ -110,11 +124,7 @@ def list_runs() -> list[dict]:
         if live_f.exists():
             state = read_state(d) or {}
             kind, f = "live", live_f
-            status, path = state.get("status"), state.get("path")
-            if status == "processing":
-                with _jobs_lock:
-                    if not _alive(d.name):
-                        status = "interrupted"
+            status, path = _status(d.name, state), state.get("path")
         elif meta_f.exists():
             kind, f, status = "batch", meta_f, "complete"
             path = load_meta(d).get("log_path")

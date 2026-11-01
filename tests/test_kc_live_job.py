@@ -142,3 +142,31 @@ def test_start_runs_in_background_and_reader_error_is_recorded(tmp_path, monkeyp
     assert read_state(run)["status"] == "error"
     with pytest.raises(OSError, match="disk gone"):
         LiveJob(run, log, RULES, batch_size=40, poll_seconds=POLL).run()
+
+
+def test_cycle_numbers_follow_generation_across_resume(tmp_path, gate):
+    log = _log(tmp_path)
+    run = tmp_path / "run"
+    job = None
+
+    def on_cycle(_entry):
+        job.stop()
+        gate.set()
+
+    job = LiveJob(run, log, RULES, batch_size=40, poll_seconds=POLL, on_cycle=on_cycle)
+    job.run()
+    LiveJob(run, log, RULES, batch_size=40, poll_seconds=POLL).run()
+    changes = read_changes(run)
+    assert [e["cycle"] for e in changes] == [e["generation"] for e in changes]
+    assert [e["generation"] for e in changes] == list(range(1, len(changes) + 1))
+
+
+def test_run_records_owner_and_heartbeat(tmp_path, monkeypatch):
+    import os
+
+    monkeypatch.setattr(live, "HEARTBEAT_SECONDS", 0.01)
+    log = write_log(tmp_path / "small.log", [fg_line(at(i)) for i in range(5)])
+    run = tmp_path / "run"
+    st = LiveJob(run, log, RULES, batch_size=40, poll_seconds=POLL).run()
+    assert st["owner_pid"] == os.getpid() and st["heartbeat_at"]
+    assert set(new_state(log)) == set(read_state(run))

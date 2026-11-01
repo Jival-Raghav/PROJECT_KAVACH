@@ -71,13 +71,17 @@ def read_changes(run_dir: Path, since_generation: int = 0) -> list[dict]:
     path = Path(run_dir) / CHANGES_FILE
     if not path.exists():
         return []
-    out = []
+    # A crash between appending an entry and saving its generation repeats that generation
+    # on resume; keep the last entry per generation.
+    by_gen: dict[int, dict] = {}
     for line in path.read_text(encoding="utf-8").splitlines():
         if line.strip():
             try:
                 e = json.loads(line)
             except json.JSONDecodeError:  # torn line: the job may be appending right now
                 continue
-            if e.get("generation", 0) > since_generation:
-                out.append(e)
-    return out
+            gen = e.get("generation", 0)
+            if gen > since_generation:
+                by_gen.pop(gen, None)
+                by_gen[gen] = e
+    return sorted(by_gen.values(), key=lambda e: e.get("generation", 0))

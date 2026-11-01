@@ -21,6 +21,42 @@ from killchain.pipeline import analyse_run, load_run
 from killchain.store import list_parts, write_clock_stalls
 
 STATE_FILE = "live_state.json"
+ZIP_MAGIC = b"PK\x03\x04"
+NO_PARSE_LIMIT = 100_000  # lines read with nothing parsed before giving up on a file
+PROGRESS_EVERY = 50_000  # save read counters at least this often, even between parts
+HEARTBEAT_SECONDS = 5.0  # how often a live job refreshes heartbeat_at
+STALE_SECONDS = 60.0  # a heartbeat older than this means the owner is gone
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def is_zip(path: Path) -> bool:
+    with open(path, "rb") as fh:
+        return fh.read(4) == ZIP_MAGIC
+
+
+def owner_alive(state: dict) -> bool:
+    """True when `state` is processing and its owner process is alive with a fresh heartbeat."""
+    if state.get("status") != "processing":
+        return False
+    pid, beat = state.get("owner_pid"), state.get("heartbeat_at")
+    if not pid or not beat:
+        return False
+    try:
+        os.kill(int(pid), 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:  # alive, owned by another user
+        pass
+    except (OSError, ValueError):
+        return False
+    try:
+        age = (datetime.now(timezone.utc) - datetime.fromisoformat(beat)).total_seconds()
+    except (TypeError, ValueError):
+        return False
+    return age <= STALE_SECONDS
 
 
 def read_state(run_dir: Path) -> dict | None:
@@ -45,7 +81,9 @@ def new_state(path: Path) -> dict:
             "lines_parsed": 0, "lines_skipped": 0, "next_offset": 0, "bytes_read": 0,
             "bytes_total": size, "ingest_done": False, "generation": 0, "cycle_seconds": None,
             "last_cycle_at": None, "started_at": datetime.now(timezone.utc).isoformat(),
-            "finished_at": None, "error": None}
+            "finished_at": None, "error": None, "owner_pid": None, "heartbeat_at": None,
+            # Counters as of the last written part: what a resume restarts from.
+            "checkpoint": {"lines_read": 0, "lines_parsed": 0, "lines_skipped": 0}}
 
 
 def _write_part(batch: dict[str, list], events_dir: Path, part: int) -> None:
@@ -73,11 +111,17 @@ def stream_to_parts(path: Path, run_dir: Path, state: dict, *, batch_size: int =
         return state
     names = [n for n, _ in FIELDS]
     gz = state["gz"]
+    # Resume from the last written part. lines_* may run ahead of it (progress saves), so
+    # they are only shown, never resumed from; older states have no checkpoint and agree.
+    ck = state.get("checkpoint") or {k: state[k] for k in
+                                     ("lines_read", "lines_parsed", "lines_skipped")}
     raw_file = open(path, "rb")
     try:
         if gz:
             fh = gzip.GzipFile(fileobj=raw_file)
-            for _ in range(state["lines_read"]):
+            for _ in range(ck["lines_read"]):
+                if stop is not None and stop.is_set():
+                    return state
                 if not fh.readline():
                     break
             offset = 0
@@ -85,9 +129,14 @@ def stream_to_parts(path: Path, run_dir: Path, state: dict, *, batch_size: int =
             raw_file.seek(state["next_offset"])
             fh = raw_file
             offset = state["next_offset"]
-        read, parsed, skipped = state["lines_read"], state["lines_parsed"], state["lines_skipped"]
+        read, parsed, skipped = ck["lines_read"], ck["lines_parsed"], ck["lines_skipped"]
         batch: dict[str, list] = {n: [] for n in names}
         pending = 0
+        last_save = read
+
+        def counters() -> None:  # caller holds guard
+            state.update(lines_read=read, lines_parsed=parsed, lines_skipped=skipped,
+                         bytes_read=raw_file.tell() if gz else offset, heartbeat_at=_now())
 
         def checkpoint() -> None:
             nonlocal batch, pending
@@ -99,13 +148,20 @@ def stream_to_parts(path: Path, run_dir: Path, state: dict, *, batch_size: int =
             with guard:
                 if wrote:
                     state["parts"] += 1
-                state.update(lines_read=read, lines_parsed=parsed, lines_skipped=skipped)
+                counters()
+                state["checkpoint"] = {"lines_read": read, "lines_parsed": parsed,
+                                       "lines_skipped": skipped}
                 if not gz:
                     state["next_offset"] = offset
-                state["bytes_read"] = raw_file.tell() if gz else offset
                 save_state(run_dir, state)
             if on_part:
                 on_part(state)
+
+        def progress() -> None:
+            """Save the read counters only; parts, next_offset and checkpoint stay put."""
+            with guard:
+                counters()
+                save_state(run_dir, state)
 
         for raw in fh:
             if stop is not None and stop.is_set():
@@ -120,15 +176,23 @@ def stream_to_parts(path: Path, run_dir: Path, state: dict, *, batch_size: int =
                     rec = None
             if rec is None:
                 skipped += 1
-                continue
-            parsed += 1
-            for n in names:
-                batch[n].append(rec[n])
-            pending += 1
-            if pending >= batch_size:
-                checkpoint()
-                if stop is not None and stop.is_set():
-                    return state
+                if parsed == 0 and read >= NO_PARSE_LIMIT:
+                    raise ValueError(f"No FortiGate log lines found in the first "
+                                     f"{NO_PARSE_LIMIT:,} lines of {path}")
+            else:
+                parsed += 1
+                for n in names:
+                    batch[n].append(rec[n])
+                pending += 1
+                if pending >= batch_size:
+                    checkpoint()
+                    last_save = read
+                    if stop is not None and stop.is_set():
+                        return state
+                    continue
+            if read - last_save >= PROGRESS_EVERY:
+                progress()
+                last_save = read
         if stop is not None and stop.is_set():
             return state
         if pending:
@@ -137,7 +201,9 @@ def stream_to_parts(path: Path, run_dir: Path, state: dict, *, batch_size: int =
             if pending:
                 state["parts"] += 1
             state.update(lines_read=read, lines_parsed=parsed, lines_skipped=skipped,
-                         ingest_done=True, bytes_read=state["bytes_total"])
+                         ingest_done=True, bytes_read=state["bytes_total"], heartbeat_at=_now(),
+                         checkpoint={"lines_read": read, "lines_parsed": parsed,
+                                     "lines_skipped": skipped})
             if not gz:
                 state["next_offset"] = offset
             save_state(run_dir, state)
@@ -149,10 +215,6 @@ def stream_to_parts(path: Path, run_dir: Path, state: dict, *, batch_size: int =
 REGISTRY_FILE = "incident_registry.json"
 _INGEST_KEYS = ("lines_read", "lines_parsed", "lines_skipped", "parts", "bytes_read",
                 "bytes_total")
-
-
-def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 class LiveJob:
@@ -183,11 +245,15 @@ class LiveJob:
         self._reader_exc: BaseException | None = None
         self._reader_t0: float | None = None
         self._reader_t1: float | None = None
-        self._cycles = 0
 
     # -- control ---------------------------------------------------------------------------
     def start(self) -> None:
-        """Run the job in a daemon thread; errors are only recorded in `state`."""
+        """Run the job in a daemon thread; errors are only recorded in `state`.
+
+        The processing state is on disk before this returns, so a caller listing runs
+        right after sees the new run as live and owned.
+        """
+        self._claim()
         self._thread = threading.Thread(target=self._run_quietly, name="kc-live-job",
                                         daemon=True)
         self._thread.start()
@@ -203,6 +269,14 @@ class LiveJob:
         if self._thread is not None:
             self._thread.join(timeout)
 
+    def _claim(self) -> None:
+        self._update(status="processing", error=None, finished_at=None,
+                     owner_pid=os.getpid(), heartbeat_at=_now())
+
+    def _beat(self, done: threading.Event) -> None:
+        while not done.wait(HEARTBEAT_SECONDS):
+            self._update(heartbeat_at=_now())
+
     def _run_quietly(self) -> None:
         with contextlib.suppress(BaseException):  # already recorded as status="error"
             self.run()
@@ -210,7 +284,18 @@ class LiveJob:
     # -- job -------------------------------------------------------------------------------
     def run(self) -> dict:
         """Block until the reader has finished and every part is analysed (or stop/error)."""
-        self._update(status="processing", error=None, finished_at=None)
+        self._claim()
+        done = threading.Event()
+        beat = threading.Thread(target=self._beat, args=(done,), name="kc-live-beat",
+                                daemon=True)
+        beat.start()
+        try:
+            return self._run()
+        finally:
+            done.set()
+            beat.join()
+
+    def _run(self) -> dict:
         reader = threading.Thread(target=self._read, name="kc-live-reader", daemon=True)
         covered = 0
         try:
@@ -289,12 +374,12 @@ class LiveJob:
                            seconds={"ingest": elapsed},
                            meta_extra={"log_path": str(self.path), "ingest": ingest})
         cur = load_run(self.run_dir)
-        self._cycles += 1
-        entry = diff_cycle(prev, cur, meta.get("renumber") or {}, cycle=self._cycles,
+        # The generation survives a resume, so it doubles as the cycle number.
+        entry = diff_cycle(prev, cur, meta.get("renumber") or {}, cycle=generation,
                            generation=generation, pct=pct)
         append_change(self.run_dir, entry)
         self._update(generation=generation, cycle_seconds=round(time.perf_counter() - t, 2),
-                     last_cycle_at=_now())
+                     last_cycle_at=_now(), heartbeat_at=_now())
         if self.on_cycle is not None:
             self.on_cycle(entry)
         return len(parts)

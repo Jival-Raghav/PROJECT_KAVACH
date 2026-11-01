@@ -48,7 +48,7 @@ def cmd_run(a: argparse.Namespace) -> None:
 
 
 def cmd_live(a: argparse.Namespace) -> None:
-    from killchain.live import LiveJob
+    from killchain.live import LiveJob, is_zip, owner_alive, read_state
     from killchain.pipeline import load_run
 
     def show(e: dict) -> None:
@@ -66,7 +66,14 @@ def cmd_live(a: argparse.Namespace) -> None:
         raise SystemExit(f"File not found: {a.path}")
     if not os.access(path, os.R_OK):
         raise SystemExit(f"File is not readable: {a.path}")
+    if is_zip(path):
+        raise SystemExit(f"Zip archives are not supported: {a.path}")
     run_dir = _run_dir(a.run_id)
+    state = read_state(run_dir)
+    if state is None and (run_dir / "run_meta.json").exists():
+        raise SystemExit(f"Run {a.run_id} is a batch run and cannot be used for live mode")
+    if state is not None and owner_alive(state):
+        raise SystemExit(f"Run {a.run_id} is being processed by another process")
     s = get_settings()
     try:
         job = LiveJob(run_dir, path, Path(s.KILLCHAIN_RULES_DIR),
@@ -83,6 +90,13 @@ def cmd_live(a: argparse.Namespace) -> None:
         job.join()
         print("[live] stopped; resume with the same --run-id", flush=True)
         raise SystemExit(130) from None
+    status = job.state["status"]
+    if status == "error":
+        raise SystemExit(f"[live] error: {job.state['error']}")
+    if status == "complete":
+        print(f"[live] complete: {len(load_run(run_dir))} incidents", flush=True)
+    else:
+        print("[live] stopped; resume with the same --run-id", flush=True)
 
 
 def render_benchmark(m, meta: dict) -> str:

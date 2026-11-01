@@ -184,6 +184,8 @@ def get_status(run_id: RunId = "firex") -> dict:
 
 @router.post("/killchain/run")
 def start_run(run_id: RunId = "firex", skip_ingest: bool = True) -> dict:
+    if (_run_dir(run_id) / "live_state.json").exists():
+        raise HTTPException(status_code=409, detail=f"Run {run_id} is a live run")
     with _lock:
         if _state["status"] == "running":
             raise HTTPException(status_code=409, detail="A kill-chain run is already in progress")

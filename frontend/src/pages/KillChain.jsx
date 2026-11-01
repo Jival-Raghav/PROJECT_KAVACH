@@ -119,7 +119,13 @@ export default function KillChain() {
       {error && <div className="kc-error"><AlertTriangle size={14} /> {error}</div>}
       {status?.status === 'error' && <div className="kc-error"><AlertTriangle size={14} /> {status.error}</div>}
 
-      {incidents.length === 0 ? (
+      {incidents.length === 0 && isLive ? (
+        <div className="card kc-empty">
+          {live?.status === 'processing' && !live?.generation
+            ? <><Loader2 size={13} className="spin-slow" /> Waiting for the first update…</>
+            : 'No incidents in this live run.'}
+        </div>
+      ) : incidents.length === 0 ? (
         <div className="card kc-empty">
           No incidents yet. Run <code>python -m killchain.cli run</code> in <code>backend/</code>,
           or press <b>Re-run detection</b>.
