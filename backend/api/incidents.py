@@ -17,6 +17,7 @@ from killchain.pathgraph import TimelineStep
 from killchain.pipeline import load_accounts, load_actors, load_anomalies, load_meta, load_run, run_killchain
 from killchain.reach import ReachResult
 from killchain.report import render_report
+from killchain.registry import load_registry, resolve
 from killchain.review import build_review
 from killchain.rules import load_rules
 
@@ -38,6 +39,9 @@ def _run_dir(run_id: str) -> Path:
 def _incident(incident_id: int, run_id: str) -> dict:
     inc = load_run(_run_dir(run_id)).get(incident_id)
     if inc is None:
+        moved = resolve(load_registry(_run_dir(run_id) / "incident_registry.json"), incident_id)
+        if isinstance(moved, dict):
+            raise HTTPException(status_code=404, detail=moved)
         raise HTTPException(status_code=404, detail=f"Incident {incident_id} not found")
     return inc
 

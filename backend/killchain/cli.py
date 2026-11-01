@@ -45,6 +45,23 @@ def cmd_run(a: argparse.Namespace) -> None:
     print(json.dumps(meta, indent=1))
 
 
+def cmd_live(a: argparse.Namespace) -> None:
+    from killchain.live import LiveJob
+    from killchain.pipeline import load_run
+
+    def show(e: dict) -> None:
+        n = len(load_run(run_dir))
+        heads = "; ".join(e.get("headlines", [])[:3])
+        print(f"[live] gen {e['generation']} · {e['pct']:.0%} · {n} incidents · {heads}",
+              flush=True)
+
+    run_dir = _run_dir(a.run_id)
+    s = get_settings()
+    LiveJob(run_dir, Path(a.path), Path(s.KILLCHAIN_RULES_DIR),
+            assets_path=Path(s.KILLCHAIN_ASSETS_PATH), batch_size=a.batch_size,
+            on_cycle=show).run()
+
+
 def render_benchmark(m, meta: dict) -> str:
     ingest = meta.get("ingest") or {}
     parsed = ingest.get("lines_parsed", 0)
@@ -136,6 +153,11 @@ def main(argv: list[str] | None = None) -> None:
     b.add_argument("--gt")
     b.add_argument("--out")
     b.set_defaults(fn=cmd_bench)
+    lv = sub.add_parser("live", help="stream a log and re-analyse as it is read")
+    lv.add_argument("--path", required=True)
+    lv.add_argument("--run-id", default="live")
+    lv.add_argument("--batch-size", type=int, default=200_000)
+    lv.set_defaults(fn=cmd_live)
     a = p.parse_args(argv)
     a.fn(a)
 

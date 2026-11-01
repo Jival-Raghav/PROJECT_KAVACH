@@ -13,6 +13,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.incidents import router as incidents_router
+from api.live import router as live_router
 
 app = FastAPI(title="Kavach: Kill Chain & Attack Path Analysis")
 app.add_middleware(
@@ -22,6 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(incidents_router)
+app.include_router(live_router)
 
 
 @app.get("/api/health")

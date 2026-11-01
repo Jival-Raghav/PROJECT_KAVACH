@@ -73,3 +73,9 @@ def test_read_changes_filters_by_generation(tmp_path):
 
 def test_read_changes_missing_file_is_empty(tmp_path):
     assert read_changes(tmp_path) == []
+
+
+def test_read_changes_skips_torn_last_line(tmp_path):
+    (tmp_path / "changes.jsonl").write_text(
+        '{"generation": 1}\n{"generation": 2}\n{"generation": 3, "hea', encoding="utf-8")
+    assert [c["generation"] for c in read_changes(tmp_path)] == [1, 2]

@@ -74,7 +74,10 @@ def read_changes(run_dir: Path, since_generation: int = 0) -> list[dict]:
     out = []
     for line in path.read_text(encoding="utf-8").splitlines():
         if line.strip():
-            e = json.loads(line)
+            try:
+                e = json.loads(line)
+            except json.JSONDecodeError:  # torn line: the job may be appending right now
+                continue
             if e.get("generation", 0) > since_generation:
                 out.append(e)
     return out
