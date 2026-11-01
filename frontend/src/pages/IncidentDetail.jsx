@@ -30,7 +30,7 @@ export default function IncidentDetail({ incidentId, onBack, onNavigate }) {
   const [tab, setTab] = useState('overview')
   const [error, setError] = useState('')
   const [withdrawn, setWithdrawn] = useState(false)
-  const firstGen = useRef(true)
+  const seenGen = useRef(generation)
 
   // A merged incident hands over to the one it was merged into; a withdrawn one gets a notice.
   const handleGone = e => {
@@ -43,22 +43,28 @@ export default function IncidentDetail({ incidentId, onBack, onNavigate }) {
     setInc(null)
     setTab('overview')
     setWithdrawn(false)
+    let stale = false
     getIncident(incidentId)
-      .then(d => { setInc(d); setReport(d.report); setReview(d.review) })
-      .catch(e => { if (!handleGone(e)) setError(String(e)) })
+      .then(d => { if (stale) return; setInc(d); setReport(d.report); setReview(d.review) })
+      .catch(e => { if (!stale && !handleGone(e)) setError(String(e)) })
+    return () => { stale = true }
   }, [incidentId])
 
   // New live data: refetch quietly, keep the tab, and keep any LLM-written report or review.
   useEffect(() => {
-    if (firstGen.current) { firstGen.current = false; return }
+    if (seenGen.current === generation) return
+    seenGen.current = generation
+    let stale = false
     getIncident(incidentId)
       .then(d => {
+        if (stale) return
         setInc(d)
         setReport(r => (r && r.generated_by !== 'template' ? r : d.report))
         setReview(r => (r && r.generated_by !== 'template' ? r : d.review))
       })
-      .catch(e => { handleGone(e) })
-  }, [generation])
+      .catch(e => { if (!stale) handleGone(e) })
+    return () => { stale = true }
+  }, [generation, incidentId])
 
   if (withdrawn) {
     return (
