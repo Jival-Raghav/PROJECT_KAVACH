@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Clock, FileText, Layers, LayoutDashboard, Loader2, Radiation, Route, Scale } from 'lucide-react'
 import { getIncident } from '../api'
+import { useRun } from '../run'
 import { SeverityBadge } from './KillChain'
 import AttackPathTab from './incident/AttackPathTab'
 import BlastRadiusTab from './incident/BlastRadiusTab'
@@ -21,20 +22,54 @@ const TABS = [
   { id: 'other', label: 'Other Info', icon: Layers, blurb: 'What to do, controls, unusual behaviour and actors' },
 ]
 
-export default function IncidentDetail({ incidentId, onBack }) {
+export default function IncidentDetail({ incidentId, onBack, onNavigate }) {
+  const { generation } = useRun()
   const [inc, setInc] = useState(null)
   const [report, setReport] = useState(null)
   const [review, setReview] = useState(null)
   const [tab, setTab] = useState('overview')
   const [error, setError] = useState('')
+  const [withdrawn, setWithdrawn] = useState(false)
+  const firstGen = useRef(true)
+
+  // A merged incident hands over to the one it was merged into; a withdrawn one gets a notice.
+  const handleGone = e => {
+    if (e?.detail?.merged_into != null) { onNavigate?.(e.detail.merged_into); return true }
+    if (e?.detail?.withdrawn) { setWithdrawn(true); return true }
+    return false
+  }
 
   useEffect(() => {
     setInc(null)
     setTab('overview')
+    setWithdrawn(false)
     getIncident(incidentId)
       .then(d => { setInc(d); setReport(d.report); setReview(d.review) })
-      .catch(e => setError(String(e)))
+      .catch(e => { if (!handleGone(e)) setError(String(e)) })
   }, [incidentId])
+
+  // New live data: refetch quietly, keep the tab, and keep any LLM-written report or review.
+  useEffect(() => {
+    if (firstGen.current) { firstGen.current = false; return }
+    getIncident(incidentId)
+      .then(d => {
+        setInc(d)
+        setReport(r => (r && r.generated_by !== 'template' ? r : d.report))
+        setReview(r => (r && r.generated_by !== 'template' ? r : d.review))
+      })
+      .catch(e => { handleGone(e) })
+  }, [generation])
+
+  if (withdrawn) {
+    return (
+      <div className="kc-page">
+        <header className="kc-inc-head">
+          <button className="btn-ghost" onClick={onBack}><ArrowLeft size={13} /> All incidents</button>
+        </header>
+        <div className="card kc-note">This incident was withdrawn after more data arrived.</div>
+      </div>
+    )
+  }
 
   if (error) return <div className="kc-error">{error}</div>
   if (!inc) return <div className="kc-empty"><Loader2 size={16} className="spin-slow" /> Loading incident…</div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Fingerprint, Globe2, Key, Link2, Siren, User, X } from 'lucide-react'
 import { getActors } from '../api'
+import { useRun } from '../run'
 
 export function ActorTable({ actors }) {
   return (
@@ -113,10 +114,11 @@ function ActorModal({ a, onClose }) {
 
 export default function Actors() {
   const [actors, setActors] = useState([])
+  const { generation } = useRun()
   const [error, setError] = useState('')
   const [open, setOpen] = useState(null)
 
-  useEffect(() => { getActors().then(setActors).catch(e => setError(String(e))) }, [])
+  useEffect(() => { getActors().then(setActors).catch(e => setError(String(e))) }, [generation])
 
   return (
     <div className="kc-page">

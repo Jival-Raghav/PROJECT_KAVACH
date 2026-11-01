@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { getIncidents, getKillchainRules, getKillchainStatus, runKillchain } from '../api'
 import IncidentDetail from './IncidentDetail'
+import { useRun } from '../run'
 
 export const STAGES = [
   'Reconnaissance', 'Weaponization', 'Delivery', 'Exploitation',
@@ -36,6 +37,8 @@ function Kpi({ label, value }) {
 }
 
 export default function KillChain() {
+  const { runs, runId, generation } = useRun()
+  const isBatch = (runs.find(r => r.run_id === runId)?.kind ?? 'batch') === 'batch'
   const [incidents, setIncidents] = useState([])
   const [status, setStatus] = useState(null)
   const [selected, setSelected] = useState(null)
@@ -44,7 +47,7 @@ export default function KillChain() {
   const load = useCallback(() => {
     getIncidents().then(setIncidents).catch(e => setError(String(e)))
     getKillchainStatus().then(setStatus).catch(() => {})
-  }, [])
+  }, [generation])
 
   useEffect(load, [load])
 
@@ -61,7 +64,7 @@ export default function KillChain() {
     .catch(e => setError(String(e)))
 
   if (selected != null) {
-    return <IncidentDetail incidentId={selected} onBack={() => setSelected(null)} />
+    return <IncidentDetail incidentId={selected} onBack={() => setSelected(null)} onNavigate={setSelected} />
   }
 
   const meta = status?.run_meta || {}
@@ -81,14 +84,16 @@ export default function KillChain() {
         </div>
         <div className="kc-actions">
           <button className="btn-ghost" onClick={load}><RefreshCw size={13} /> Refresh</button>
-          <button className="btn-primary" onClick={start} disabled={running}>
-            {running ? <Loader2 size={13} className="spin-slow" /> : <Play size={13} />}
-            {running ? `Running: ${status?.stage || ''}` : 'Re-run detection'}
-          </button>
+          {isBatch && (
+            <button className="btn-primary" onClick={start} disabled={running}>
+              {running ? <Loader2 size={13} className="spin-slow" /> : <Play size={13} />}
+              {running ? `Running: ${status?.stage || ''}` : 'Re-run detection'}
+            </button>
+          )}
         </div>
       </div>
 
-      {meta.ingest && (
+      {isBatch && meta.ingest && (
         <div className="card kc-note">
           <b>What we found in the log:</b> {meta.ingest.lines_read.toLocaleString()} lines read.{' '}
           {meta.ingest.lines_skipped.toLocaleString()} were unreadable and skipped.{' '}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Radar, Search, TrendingDown, TrendingUp } from 'lucide-react'
 import { getAnomalies } from '../api'
+import { useRun } from '../run'
 
 const PAGE_SIZE = 40
 const KINDS = [
@@ -25,6 +26,7 @@ function Reason({ text }) {
 
 export default function Anomalies() {
   const [data, setData] = useState({ total: 0, all_total: 0, items: [] })
+  const { generation } = useRun()
   const [offset, setOffset] = useState(0)
   const [kind, setKind] = useState('')
   const [q, setQ] = useState('')
@@ -34,7 +36,7 @@ export default function Anomalies() {
   useEffect(() => {
     getAnomalies({ limit: PAGE_SIZE, offset, kind, q, notable_only: !showQuiet })
       .then(setData).catch(e => setError(String(e)))
-  }, [offset, kind, q, showQuiet])
+  }, [offset, kind, q, showQuiet, generation])
 
   useEffect(() => { setOffset(0) }, [kind, q, showQuiet])
 

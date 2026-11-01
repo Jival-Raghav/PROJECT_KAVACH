@@ -4,6 +4,7 @@ import {
   Stethoscope, Terminal, TriangleAlert, UserX, Wrench,
 } from 'lucide-react'
 import { getResponseActions } from '../api'
+import { useRun } from '../run'
 
 // Kinds the firewall itself can carry out; the rest are legwork for a person.
 const FIREWALL_CHANGE = new Set(['block_ip', 'isolate_host', 'disable_account', 'restore_logging'])
@@ -122,11 +123,12 @@ function KindGroup({ kind, items }) {
 
 export default function ResponsePlan() {
   const [actions, setActions] = useState([])
+  const { generation } = useRun()
   const [error, setError] = useState('')
   const [kind, setKind] = useState('')
   const [q, setQ] = useState('')
 
-  useEffect(() => { getResponseActions().then(setActions).catch(e => setError(String(e))) }, [])
+  useEffect(() => { getResponseActions().then(setActions).catch(e => setError(String(e))) }, [generation])
 
   const kinds = useMemo(() => {
     const seen = new Map()

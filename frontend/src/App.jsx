@@ -8,6 +8,8 @@ import Actors from './pages/Actors'
 import Accounts from './pages/Accounts'
 import ResponsePlan from './pages/ResponsePlan'
 import ControlFindings from './pages/ControlFindings'
+import { RunProvider, useRun } from './run'
+import RunSelector from './pages/live/RunSelector'
 
 // In the order an analyst works: find the attack, understand who, then respond.
 const NAV_GROUPS = [
@@ -28,6 +30,11 @@ const NAV_GROUPS = [
 const NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items)
 
 export default function App() {
+  return <RunProvider><AppShell /></RunProvider>
+}
+
+function AppShell() {
+  const { runId } = useRun()
   const [theme, setTheme] = useState(() => localStorage.getItem('kavach-theme-v2') || 'light')
   const [activeTab, setActiveTab] = useState('incidents')
 
@@ -48,6 +55,7 @@ export default function App() {
           <span className="brand-sub">Firewall kill-chain analysis</span>
         </div>
         <div className="topbar-right">
+          <RunSelector />
           <button
             className="theme-toggle"
             onClick={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}
@@ -88,7 +96,7 @@ export default function App() {
             </div>
           </div>
           <div className="content-area">
-            <main className="left-panel"><Page /></main>
+            <main className="left-panel"><Page key={runId} /></main>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BookCheck, ChevronRight, ClipboardList, ShieldAlert, ShieldCheck, ShieldX, Siren } from 'lucide-react'
 import { getCompliance } from '../api'
+import { useRun } from '../run'
 
 export const CONTROL_STATUS = { gap: 'Gap', attempted: 'Attempted, blocked', no_failure_seen: 'No failure seen' }
 
@@ -89,11 +90,12 @@ function ControlCard({ c }) {
 
 export default function ControlFindings() {
   const [data, setData] = useState(null)
+  const { generation } = useRun()
   const [status, setStatus] = useState('')
   const [framework, setFramework] = useState('')
   const [error, setError] = useState('')
 
-  useEffect(() => { getCompliance().then(setData).catch(e => setError(String(e))) }, [])
+  useEffect(() => { getCompliance().then(setData).catch(e => setError(String(e))) }, [generation])
 
   const shown = useMemo(() => (data?.controls || []).filter(c =>
     (!status || c.status === status)

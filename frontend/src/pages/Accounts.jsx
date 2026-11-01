@@ -3,6 +3,7 @@ import {
   Bot, KeyRound, Search, ServerCog, ShieldAlert, ShieldCheck, Siren, Settings2, Users, User,
 } from 'lucide-react'
 import { getAccounts, getLlmSafety } from '../api'
+import { useRun } from '../run'
 
 const TYPES = [
   { id: '', label: 'All' },
@@ -108,6 +109,7 @@ function AccountCard({ r }) {
 
 export default function Accounts() {
   const [rows, setRows] = useState([])
+  const { generation } = useRun()
   const [safety, setSafety] = useState(null)
   const [type, setType] = useState('')
   const [q, setQ] = useState('')
@@ -117,7 +119,7 @@ export default function Accounts() {
   useEffect(() => {
     getAccounts().then(setRows).catch(e => setError(String(e)))
     getLlmSafety().then(setSafety).catch(() => {})
-  }, [])
+  }, [generation])
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase()
