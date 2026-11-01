@@ -1,0 +1,590 @@
+{
+ "metrics": {
+  "detection_rate": 1.0,
+  "label_accuracy": 1.0,
+  "label_accuracy_lenient": 1.0,
+  "paths_rebuilt": 20,
+  "paths_total": 20,
+  "paths_multistep_rebuilt": 4,
+  "paths_multistep_total": 4,
+  "merged_incidents": 0,
+  "incident_purity": 1.0,
+  "false_alarm_rate": 0.0,
+  "incidents": 20,
+  "false_alarms": 0,
+  "steps_total": 28,
+  "steps_found": 28,
+  "processing_seconds": 66.72,
+  "peak_memory_mb": 3174.1,
+  "cold_open_ms": 5.4,
+  "p95_open_ms": 0.018,
+  "per_step": [
+   {
+    "step": "GT-01-1",
+    "scenario": "GT-01",
+    "found": true,
+    "techniques_found": [
+     "T1190"
+    ],
+    "expected": [
+     "T1190"
+    ],
+    "label_ok": true,
+    "events": 60
+   },
+   {
+    "step": "GT-02-1",
+    "scenario": "GT-02",
+    "found": true,
+    "techniques_found": [
+     "T1071"
+    ],
+    "expected": [
+     "T1071"
+    ],
+    "label_ok": true,
+    "events": 60
+   },
+   {
+    "step": "GT-03-1",
+    "scenario": "GT-03",
+    "found": true,
+    "techniques_found": [
+     "T1105"
+    ],
+    "expected": [
+     "T1105",
+     "T1204.002",
+     "T1036.007"
+    ],
+    "label_ok": true,
+    "events": 12
+   },
+   {
+    "step": "GT-04-1",
+    "scenario": "GT-04",
+    "found": true,
+    "techniques_found": [
+     "T1078"
+    ],
+    "expected": [
+     "T1078"
+    ],
+    "label_ok": true,
+    "events": 1
+   },
+   {
+    "step": "GT-05-1",
+    "scenario": "GT-05",
+    "found": true,
+    "techniques_found": [
+     "T1071.004"
+    ],
+    "expected": [
+     "T1071.004",
+     "T1048.003"
+    ],
+    "label_ok": true,
+    "events": 1500
+   },
+   {
+    "step": "GT-06-1",
+    "scenario": "GT-06",
+    "found": true,
+    "techniques_found": [
+     "T1190"
+    ],
+    "expected": [
+     "T1190"
+    ],
+    "label_ok": true,
+    "events": 220
+   },
+   {
+    "step": "GT-07-1",
+    "scenario": "GT-07",
+    "found": true,
+    "techniques_found": [
+     "T1204.002"
+    ],
+    "expected": [
+     "T1204.002",
+     "T1105"
+    ],
+    "label_ok": true,
+    "events": 3
+   },
+   {
+    "step": "GT-07-2",
+    "scenario": "GT-07",
+    "found": true,
+    "techniques_found": [
+     "T1071.001"
+    ],
+    "expected": [
+     "T1071.001",
+     "T1071"
+    ],
+    "label_ok": true,
+    "events": 400
+   },
+   {
+    "step": "GT-07-3",
+    "scenario": "GT-07",
+    "found": true,
+    "techniques_found": [
+     "T1041"
+    ],
+    "expected": [
+     "T1041",
+     "T1030",
+     "T1048"
+    ],
+    "label_ok": true,
+    "events": 400
+   },
+   {
+    "step": "GT-08-1",
+    "scenario": "GT-08",
+    "found": true,
+    "techniques_found": [
+     "T1041"
+    ],
+    "expected": [
+     "T1041",
+     "T1030",
+     "T1048"
+    ],
+    "label_ok": true,
+    "events": 2000
+   },
+   {
+    "step": "GT-09-1",
+    "scenario": "GT-09",
+    "found": true,
+    "techniques_found": [
+     "T1190"
+    ],
+    "expected": [
+     "T1190",
+     "T1059"
+    ],
+    "label_ok": true,
+    "events": 55
+   },
+   {
+    "step": "GT-10-1",
+    "scenario": "GT-10",
+    "found": true,
+    "techniques_found": [
+     "T1505.003"
+    ],
+    "expected": [
+     "T1505.003"
+    ],
+    "label_ok": true,
+    "events": 120
+   },
+   {
+    "step": "GT-11-1",
+    "scenario": "GT-11",
+    "found": true,
+    "techniques_found": [
+     "T1021.002"
+    ],
+    "expected": [
+     "T1021.002"
+    ],
+    "label_ok": true,
+    "events": 2400
+   },
+   {
+    "step": "GT-12-1",
+    "scenario": "GT-12",
+    "found": true,
+    "techniques_found": [
+     "T1595"
+    ],
+    "expected": [
+     "T1595",
+     "T1595.001",
+     "T1046"
+    ],
+    "label_ok": true,
+    "events": 1024
+   },
+   {
+    "step": "GT-13-1",
+    "scenario": "GT-13",
+    "found": true,
+    "techniques_found": [
+     "T1078"
+    ],
+    "expected": [
+     "T1078"
+    ],
+    "label_ok": true,
+    "events": 3
+   },
+   {
+    "step": "GT-14-1",
+    "scenario": "GT-14",
+    "found": true,
+    "techniques_found": [
+     "T1133"
+    ],
+    "expected": [
+     "T1133",
+     "T1078"
+    ],
+    "label_ok": true,
+    "events": 2
+   },
+   {
+    "step": "GT-15-1",
+    "scenario": "GT-15",
+    "found": true,
+    "techniques_found": [
+     "T1190"
+    ],
+    "expected": [
+     "T1190",
+     "T1083"
+    ],
+    "label_ok": true,
+    "events": 80
+   },
+   {
+    "step": "GT-16-1",
+    "scenario": "GT-16",
+    "found": true,
+    "techniques_found": [
+     "T1595"
+    ],
+    "expected": [
+     "T1595",
+     "T1595.001",
+     "T1046"
+    ],
+    "label_ok": true,
+    "events": 240
+   },
+   {
+    "step": "GT-16-2",
+    "scenario": "GT-16",
+    "found": true,
+    "techniques_found": [
+     "T1190"
+    ],
+    "expected": [
+     "T1190"
+    ],
+    "label_ok": true,
+    "events": 60
+   },
+   {
+    "step": "GT-16-3",
+    "scenario": "GT-16",
+    "found": true,
+    "techniques_found": [
+     "T1505.003"
+    ],
+    "expected": [
+     "T1505.003"
+    ],
+    "label_ok": true,
+    "events": 40
+   },
+   {
+    "step": "GT-16-4",
+    "scenario": "GT-16",
+    "found": true,
+    "techniques_found": [
+     "T1041"
+    ],
+    "expected": [
+     "T1041",
+     "T1030",
+     "T1048"
+    ],
+    "label_ok": true,
+    "events": 600
+   },
+   {
+    "step": "GT-17-1",
+    "scenario": "GT-17",
+    "found": true,
+    "techniques_found": [
+     "T1136.001"
+    ],
+    "expected": [
+     "T1136.001",
+     "T1098"
+    ],
+    "label_ok": true,
+    "events": 1
+   },
+   {
+    "step": "GT-17-2",
+    "scenario": "GT-17",
+    "found": true,
+    "techniques_found": [
+     "T1078"
+    ],
+    "expected": [
+     "T1078"
+    ],
+    "label_ok": true,
+    "events": 1
+   },
+   {
+    "step": "GT-17-3",
+    "scenario": "GT-17",
+    "found": true,
+    "techniques_found": [
+     "T1070"
+    ],
+    "expected": [
+     "T1070"
+    ],
+    "label_ok": true,
+    "events": 1
+   },
+   {
+    "step": "GT-18-1",
+    "scenario": "GT-18",
+    "found": true,
+    "techniques_found": [
+     "T1562.001"
+    ],
+    "expected": [
+     "T1562.001"
+    ],
+    "label_ok": true,
+    "events": 2
+   },
+   {
+    "step": "GT-18-2",
+    "scenario": "GT-18",
+    "found": true,
+    "techniques_found": [
+     "T1562.004"
+    ],
+    "expected": [
+     "T1562.004"
+    ],
+    "label_ok": true,
+    "events": 1
+   },
+   {
+    "step": "GT-19-1",
+    "scenario": "GT-19",
+    "found": true,
+    "techniques_found": [
+     "T1021.001",
+     "T1021.002"
+    ],
+    "expected": [
+     "T1021.002",
+     "T1021.001",
+     "T1021"
+    ],
+    "label_ok": true,
+    "events": 180
+   },
+   {
+    "step": "GT-20-1",
+    "scenario": "GT-20",
+    "found": true,
+    "techniques_found": [
+     "T1071.001"
+    ],
+    "expected": [
+     "T1071.001",
+     "T1071"
+    ],
+    "label_ok": true,
+    "events": 1612
+   }
+  ],
+  "per_scenario": [
+   {
+    "scenario": "GT-01",
+    "name": "XSS probing of the DMZ web portal",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 1
+   },
+   {
+    "scenario": "GT-02",
+    "name": "Mirai botnet C2 fan-in from the IoT segment",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 3
+   },
+   {
+    "scenario": "GT-03",
+    "name": "Malware download burst (invoice_2026.pdf.exe)",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 5
+   },
+   {
+    "scenario": "GT-04",
+    "name": "Firewall admin login from an unusual country (parul.sinha)",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 7
+   },
+   {
+    "scenario": "GT-05",
+    "name": "DNS tunnelling to doqotobitum.com",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 6
+   },
+   {
+    "scenario": "GT-06",
+    "name": "SQL injection against the DMZ web server",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 9
+   },
+   {
+    "scenario": "GT-07",
+    "name": "Nemucod dropper gets through, beacons to its C2, then exfiltrates",
+    "steps": 3,
+    "rebuilt": true,
+    "incident_id": 10
+   },
+   {
+    "scenario": "GT-08",
+    "name": "Low-and-slow exfiltration to one external host",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 11
+   },
+   {
+    "scenario": "GT-09",
+    "name": "Command injection against the DMZ web server",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 12
+   },
+   {
+    "scenario": "GT-10",
+    "name": "Webshell access on the DMZ web server",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 13
+   },
+   {
+    "scenario": "GT-11",
+    "name": "SMB fan-out from a LAN host to DMZ servers",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 14
+   },
+   {
+    "scenario": "GT-12",
+    "name": "External port scan of the DMZ",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 15
+   },
+   {
+    "scenario": "GT-13",
+    "name": "Firewall admin login from Russia (Deepika.Khan)",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 17
+   },
+   {
+    "scenario": "GT-14",
+    "name": "VPN impossible travel (keerat.ghughal)",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 16
+   },
+   {
+    "scenario": "GT-15",
+    "name": "Path traversal against the DMZ web server",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 18
+   },
+   {
+    "scenario": "GT-16",
+    "name": "Scan, SQL injection, webshell and exfiltration by one attacker",
+    "steps": 4,
+    "rebuilt": true,
+    "incident_id": 19
+   },
+   {
+    "scenario": "GT-17",
+    "name": "Rogue firewall admin svc_backup30 created, used, deleted",
+    "steps": 3,
+    "rebuilt": true,
+    "incident_id": 20
+   },
+   {
+    "scenario": "GT-18",
+    "name": "Logging and firewall policy tampering (Tejas.Roy)",
+    "steps": 2,
+    "rebuilt": true,
+    "incident_id": 2
+   },
+   {
+    "scenario": "GT-19",
+    "name": "SMB/RDP lateral sweep from a LAN host across DMZ servers",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 8
+   },
+   {
+    "scenario": "GT-20",
+    "name": "Five-day HTTPS beacon from a LAN host (every 300 s)",
+    "steps": 1,
+    "rebuilt": true,
+    "incident_id": 4
+   }
+  ]
+ },
+ "run_meta": {
+  "generated_at": "2026-10-31T20:26:02+00:00",
+  "log_path": "C:\\Users\\jival\\Desktop\\jival\\mitigata\\firex-10G.log",
+  "ingest": {
+   "lines_read": 15848040,
+   "lines_parsed": 9125382,
+   "lines_skipped": 6722658,
+   "lines_stalled": 5277135,
+   "parts": 54,
+   "seconds": 48.43,
+   "peak_rss_mb": 3174.1,
+   "workers": 6
+  },
+  "clock_stalls": [
+   {
+    "ts_us": 1793350105999999,
+    "lines": 5277135,
+    "first_line": 3848248,
+    "last_line": 9125382
+   }
+  ],
+  "seconds": {
+   "ingest": 48.44,
+   "detect": 8.24,
+   "correlate": 0.0,
+   "enrich": 0.47,
+   "anomaly": 9.38,
+   "actors": 0.19
+  },
+  "total_seconds": 66.72,
+  "peak_rss_mb": 3174.1,
+  "rule_count": 21,
+  "detection_count": 29,
+  "incident_count": 20,
+  "anomaly_lead_count": 3724,
+  "raw_alerts_merged": 11078
+ }
+}

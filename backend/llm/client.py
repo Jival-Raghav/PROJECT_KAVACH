@@ -424,6 +424,13 @@ def get_da_client() -> LLMClient:
     return _build_client(cfg.DA_PROVIDER)
 
 
+def get_mapper_client() -> LLMClient:
+    """Returns the client that maps unknown log formats, configured via MAPPER_PROVIDER."""
+    cfg = get_settings()
+    logger.info("Initialising Mapper client: %s", cfg.MAPPER_PROVIDER)
+    return _build_client(cfg.MAPPER_PROVIDER)
+
+
 def get_adjudicator_client() -> LLMClient:
     """Returns the client for Pass 3 (Adjudicator), configured via ADJUDICATOR_PROVIDER."""
     cfg = get_settings()

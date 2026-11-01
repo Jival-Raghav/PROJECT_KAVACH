@@ -13,3 +13,11 @@ run-backend:
 
 run-frontend:
 	cd frontend && npm.cmd run dev
+
+# ── Kill chain (macOS / Linux) ──
+.PHONY: killchain bench-killchain
+killchain:
+	cd backend && ../.venv/bin/python -m killchain.cli run
+
+bench-killchain:
+	cd backend && ../.venv/bin/python -m killchain.cli run --skip-ingest && ../.venv/bin/python -m killchain.cli bench

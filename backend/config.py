@@ -66,36 +66,35 @@ class Settings:
     HF_TOKEN: str = os.getenv("HF_TOKEN", "")
     HF_MODEL_ID: str = os.getenv("HF_MODEL_ID", "mistralai/Mistral-7B-Instruct-v0.2")
 
-    # ── Guardrails & Concurrency ──────────────────────────────────────────────
-    LLM_TOP_K: int = int(os.getenv("LLM_TOP_K", "25"))
+    # ── Guardrails ────────────────────────────────────────────────────────────
     LLM_REPLAY_ONLY: bool = os.getenv("LLM_REPLAY_ONLY", "0").lower() in ("1", "true", "yes")
-    RANDOM_SEED: int = int(os.getenv("RANDOM_SEED", "42"))
 
-    # ── ML / Pipeline ─────────────────────────────────────────────────────────
-    ISOLATION_FOREST_CONTAMINATION: float = float(
-        os.getenv("IF_CONTAMINATION", "0.35")
+    # ── Kill chain & attack path (hackathon PRD) ──────────────────────────────
+    KILLCHAIN_LOG_PATH: str = os.getenv(
+        "KILLCHAIN_LOG_PATH", str(root_dir / "REAL_10G_DATA" / "firex-10G.log")
     )
-    IF_SELF_CALIBRATE: bool = os.getenv("IF_SELF_CALIBRATE", "1").lower() in ("1", "true", "yes")
-    KMEANS_K: int = int(os.getenv("KMEANS_K", "5"))
-    STALE_DAYS_THRESHOLD: int = int(os.getenv("STALE_DAYS_THRESHOLD", "30"))
-    VERY_STALE_DAYS_THRESHOLD: int = int(os.getenv("VERY_STALE_DAYS_THRESHOLD", "90"))
-    DORMANT_DAYS: int = int(os.getenv("DORMANT_DAYS", "90"))
-    UNUSED_ENTITLEMENT_DAYS: int = int(os.getenv("UNUSED_ENTITLEMENT_DAYS", "90"))
-    WHATIF_REPLAY_DAYS: int = int(os.getenv("WHATIF_REPLAY_DAYS", "60"))
-    WEIGHT_ML: float = float(os.getenv("WEIGHT_ML", "0.60"))
-    WEIGHT_HEURISTICS: float = float(os.getenv("WEIGHT_HEURISTICS", "0.40"))
-    PEER_ZSCORE_THRESHOLD: float = float(os.getenv("PEER_ZSCORE_THRESHOLD", "2.0"))
-    SOD_CONFIG_PATH: str = os.getenv(
-        "SOD_CONFIG_PATH", str(root_dir / "config" / "sod.yaml")
+    KILLCHAIN_DATA_DIR: str = os.getenv("KILLCHAIN_DATA_DIR", str(base_dir / "data" / "killchain"))
+    KILLCHAIN_RUN_ID: str = os.getenv("KILLCHAIN_RUN_ID", "firex")
+    KILLCHAIN_DUCKDB_MEMORY: str = os.getenv("KILLCHAIN_DUCKDB_MEMORY", "7GB")
+    KILLCHAIN_INGEST_WORKERS: int = int(os.getenv("KILLCHAIN_INGEST_WORKERS", "6"))
+    KILLCHAIN_RULES_DIR: str = os.getenv(
+        "KILLCHAIN_RULES_DIR", str(root_dir / "config" / "detection_rules")
     )
-
-
-    # ── Paths ─────────────────────────────────────────────────────────────────
-    DATA_DIR: str = os.path.join(os.path.dirname(__file__), "data")
-    DB_PATH: str = os.getenv(
-        "DB_PATH", os.path.join(os.path.dirname(__file__), "data", "kavach.db")
+    KILLCHAIN_MITRE_PATH: str = os.getenv(
+        "KILLCHAIN_MITRE_PATH", str(root_dir / "config" / "mitre_techniques.yaml")
     )
-    CACHE_DIR: str = os.path.join(os.path.dirname(__file__), "data", "cache")
+    KILLCHAIN_ASSETS_PATH: str = os.getenv(
+        "KILLCHAIN_ASSETS_PATH", str(root_dir / "config" / "assets.yaml")
+    )
+    KILLCHAIN_CONCEPTS_PATH: str = os.getenv(
+        "KILLCHAIN_CONCEPTS_PATH", str(root_dir / "config" / "log_concepts.yaml")
+    )
+    KILLCHAIN_CONTROLS_PATH: str = os.getenv(
+        "KILLCHAIN_CONTROLS_PATH", str(root_dir / "config" / "firewall_controls.yaml")
+    )
+    KILLCHAIN_GT_PATH: str = os.getenv(
+        "KILLCHAIN_GT_PATH", str(root_dir / "data" / "ground_truth" / "firex_planted.yaml")
+    )
 
 
 @functools.lru_cache(maxsize=1)

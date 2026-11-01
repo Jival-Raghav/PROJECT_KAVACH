@@ -1,0 +1,41 @@
+# MITRE ATT&CK techniques used by Kavach kill-chain detections.
+# tactic = ATT&CK tactic slug; stage = Lockheed Martin Cyber Kill Chain stage.
+stage_order:
+  - Reconnaissance
+  - Weaponization
+  - Delivery
+  - Exploitation
+  - Installation
+  - Command and Control
+  - Actions on Objectives
+
+techniques:
+  T1595:     {name: Active Scanning, tactic: reconnaissance, stage: Reconnaissance}
+  T1595.001: {name: "Active Scanning: Scanning IP Blocks", tactic: reconnaissance, stage: Reconnaissance}
+  T1046:     {name: Network Service Discovery, tactic: discovery, stage: Reconnaissance}
+  T1190:     {name: Exploit Public-Facing Application, tactic: initial-access, stage: Exploitation}
+  T1059:     {name: Command and Scripting Interpreter, tactic: execution, stage: Exploitation}
+  T1083:     {name: File and Directory Discovery, tactic: discovery, stage: Exploitation}
+  T1505.003: {name: "Server Software Component: Web Shell", tactic: persistence, stage: Installation}
+  T1105:     {name: Ingress Tool Transfer, tactic: command-and-control, stage: Delivery}
+  T1204.002: {name: "User Execution: Malicious File", tactic: execution, stage: Exploitation}
+  T1036.007: {name: "Masquerading: Double File Extension", tactic: defense-evasion, stage: Delivery}
+  T1071:     {name: Application Layer Protocol, tactic: command-and-control, stage: Command and Control}
+  T1071.001: {name: "Application Layer Protocol: Web Protocols", tactic: command-and-control, stage: Command and Control}
+  T1071.004: {name: "Application Layer Protocol: DNS", tactic: command-and-control, stage: Command and Control}
+  T1048:     {name: Exfiltration Over Alternative Protocol, tactic: exfiltration, stage: Actions on Objectives}
+  T1048.003: {name: "Exfiltration Over Unencrypted Non-C2 Protocol", tactic: exfiltration, stage: Actions on Objectives}
+  T1041:     {name: Exfiltration Over C2 Channel, tactic: exfiltration, stage: Actions on Objectives}
+  T1030:     {name: Data Transfer Size Limits, tactic: exfiltration, stage: Actions on Objectives}
+  T1021:     {name: Remote Services, tactic: lateral-movement, stage: Actions on Objectives}
+  T1021.001: {name: "Remote Services: Remote Desktop Protocol", tactic: lateral-movement, stage: Actions on Objectives}
+  T1021.002: {name: "Remote Services: SMB/Windows Admin Shares", tactic: lateral-movement, stage: Actions on Objectives}
+  T1021.004: {name: "Remote Services: SSH", tactic: lateral-movement, stage: Actions on Objectives}
+  T1078:     {name: Valid Accounts, tactic: initial-access, stage: Exploitation}
+  T1133:     {name: External Remote Services, tactic: initial-access, stage: Exploitation}
+  T1110:     {name: Brute Force, tactic: credential-access, stage: Actions on Objectives}
+  T1136.001: {name: "Create Account: Local Account", tactic: persistence, stage: Installation}
+  T1098:     {name: Account Manipulation, tactic: persistence, stage: Installation}
+  T1070:     {name: Indicator Removal, tactic: defense-evasion, stage: Actions on Objectives}
+  T1562.001: {name: "Impair Defenses: Disable or Modify Tools", tactic: defense-evasion, stage: Installation}
+  T1562.004: {name: "Impair Defenses: Disable or Modify System Firewall", tactic: defense-evasion, stage: Installation}

@@ -1,0 +1,55 @@
+format: json
+columns: null
+timestamp:
+  field: time
+  kind: iso
+fields:
+  src: srcip
+  dst: dstip
+  sport: srcport
+  dport: dstport
+  ipproto: proto
+  verdict: action
+  zone_in: srcintfrole
+  zone_out: dstintfrole
+  category: type
+  module: subtype
+  event: logdesc
+  account: user
+  signature: attack
+  uri: url
+  host: hostname
+  malware: virus
+  message: msg
+  geo: srccountry
+  bytes_out: sentbyte
+  bytes_in: rcvdbyte
+  app_proto: service
+values:
+  action:
+    allow: accept
+    drop: deny
+    blocked: dropped
+    permit: passthrough
+    blocked-file: blocked
+    alert-only: detected
+  srcintfrole:
+    outside: wan
+    inside: lan
+    dmz: dmz
+  dstintfrole:
+    outside: wan
+    inside: lan
+    dmz: dmz
+  type:
+    flow: traffic
+    threat: utm
+    system: event
+review:
+  unmapped_log_fields:
+  - device
+  how_mapped: {}
+  warnings: []
+  rejected: []
+  columns_not_found: []
+approved: true
