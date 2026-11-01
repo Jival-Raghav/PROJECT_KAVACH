@@ -36,8 +36,6 @@ ourselves; see [Honest limits](#honest-limits). Full scorecard:
 | Parsed, under one frozen timestamp | 5,277,135 | Counted, kept out of detection, baselines and the reach graph |
 | Analysed | 3,848,247 | |
 
-![Incident investigation view](docs/images/killchain-incident-20.jpg)
-
 ### Results on every log we ran
 
 All runs used 6 workers and a 7 GB database cap, on one laptop: 14 cores, 15.5 GB RAM, SSD.
