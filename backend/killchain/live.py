@@ -84,6 +84,8 @@ def new_state(path: Path) -> dict:
             "finished_at": None, "error": None, "owner_pid": None, "heartbeat_at": None,
             # Chosen once per run, before reading starts, and reused on resume.
             "parser": None, "schema_path": None,
+            # What the job is doing before parts exist: choosing_parser, learning_format, reading.
+            "stage": None, "stage_detail": None,
             # Counters as of the last written part: what a resume restarts from.
             "checkpoint": {"lines_read": 0, "lines_parsed": 0, "lines_skipped": 0}}
 
@@ -235,11 +237,13 @@ class LiveJob:
                  poll_seconds: float = 0.5,
                  on_cycle: Callable[[dict], None] | None = None,
                  schema_path: Path | None = None,
-                 llm: Callable[[list[dict]], str] | None = None) -> None:
+                 llm: Callable[[list[dict]], str] | None = None,
+                 on_stage: Callable[[str], None] | None = None) -> None:
         self.run_dir = Path(run_dir)
         self.path = Path(path).resolve()
         self.schema_path = Path(schema_path).resolve() if schema_path else None
         self.llm = llm  # only used if a new log format has to be learned
+        self.on_stage = on_stage
         self._parse: Callable[[str, int], dict | None] = parse_line
         self._label = "FortiGate"
         self.rules_dir = Path(rules_dir)
@@ -361,13 +365,28 @@ class LiveJob:
             if self.schema_path is not None:
                 schema = str(self.schema_path)
             else:
-                chosen = choose_parser(self.path, llm=self.llm)
+                self._stage("choosing_parser", "Checking the log format")
+                learning = False
+
+                def progress(msg: str) -> None:
+                    nonlocal learning
+                    learning = learning or msg.startswith("New log format")
+                    self._stage("learning_format" if learning else "choosing_parser", msg)
+
+                chosen = choose_parser(self.path, progress=progress, llm=self.llm)
                 schema = str(chosen) if chosen else None
             parser = "schema" if schema else "fortigate"
             self._update(parser=parser, schema_path=schema)
+        self._stage("reading", "FortiGate parser" if parser == "fortigate"
+                    else f"Learned format {Path(schema).stem}")
         if parser == "schema":
             self._parse = make_parser(load_schema(Path(schema)))
             self._label = f"{Path(schema).stem} (learned format)"
+
+    def _stage(self, stage: str, detail: str) -> None:
+        self._update(stage=stage, stage_detail=detail[:300])
+        if self.on_stage is not None:
+            self.on_stage(detail)
 
     def _read(self) -> None:
         self._reader_t0 = time.perf_counter()

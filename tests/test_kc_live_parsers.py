@@ -99,6 +99,31 @@ def test_live_learns_a_new_format_once_and_reports_it_unreviewed(kc):
     assert parsed == len(vendor_kv_lines())
 
 
+def test_learning_is_shown_as_a_stage_before_reading(kc):
+    log = write_log(kc / "vendor.log", vendor_kv_lines())
+    seen: list[str] = []
+    run_dir = kc / "kc/runs/live-stages"
+
+    def note(_msg):
+        seen.append(read_state(run_dir)["stage"])
+
+    job = LiveJob(run_dir, log, RULES, batch_size=40, poll_seconds=0.01, llm=_llm(GOOD, VALS),
+                  on_stage=note)
+    state = job.run()
+    assert seen[0] == "choosing_parser" and "learning_format" in seen
+    assert seen.index("learning_format") < len(seen) - 1 and seen[-1] == "reading"
+    assert state["stage"] == "reading" and state["stage_detail"].startswith("Learned format")
+
+
+def test_fortigate_never_shows_a_learning_stage(kc):
+    seen: list[str] = []
+    run_dir = kc / "kc/runs/live-fg-stages"
+    job = LiveJob(run_dir, _fortigate_log(kc), RULES, batch_size=40, poll_seconds=0.01,
+                  llm=_no_llm, on_stage=lambda _m: seen.append(read_state(run_dir)["stage"]))
+    job.run()
+    assert "learning_format" not in seen and seen[-1] == "reading"
+
+
 def test_resume_reuses_the_chosen_parser_without_relearning(kc):
     log = write_log(kc / "vendor.log", vendor_kv_lines())
     run_dir = kc / "kc/runs/live-resume"

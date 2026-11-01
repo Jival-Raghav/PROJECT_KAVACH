@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Radio } from 'lucide-react'
+import { Loader2, Radio } from 'lucide-react'
 import { startLive, stopLive } from '../../api'
 import { useRun } from '../../run'
 
@@ -49,7 +49,15 @@ export default function LiveBar() {
             : 'Parser: FortiGate'}
         </span>
       )}
-      {processing && pct < 25 && (
+      {processing && (live.stage === 'learning_format' || live.stage === 'choosing_parser') && (
+        <span className="live-early" role="status">
+          <Loader2 size={12} className="spin-slow" />
+          {live.stage === 'learning_format'
+            ? <>Learning the log format with the LLM (takes a few minutes): {live.stage_detail}</>
+            : <>Checking the log format…</>}
+        </span>
+      )}
+      {processing && live.stage !== 'learning_format' && live.stage !== 'choosing_parser' && pct < 25 && (
         <span className="live-early kc-muted">
           <Radio size={12} /> Early results: history-based findings may still change
         </span>

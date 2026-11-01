@@ -93,7 +93,8 @@ def cmd_live(a: argparse.Namespace) -> None:
     try:
         job = LiveJob(run_dir, path, Path(s.KILLCHAIN_RULES_DIR),
                       assets_path=Path(s.KILLCHAIN_ASSETS_PATH), batch_size=a.batch_size,
-                      on_cycle=show, schema_path=schema)
+                      on_cycle=show, schema_path=schema,
+                      on_stage=lambda m: print(f"[live] {m}", flush=True))
     except ValueError as e:
         raise SystemExit(str(e)) from e
     job.start()
