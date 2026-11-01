@@ -20,6 +20,7 @@ from killchain.ingest import ingest_log, peak_rss_mb
 from killchain.models import Incident
 from killchain.pathgraph import build_path, build_timeline, format_ts
 from killchain.reach import build_network_graph, load_assets, next_reach
+from killchain.registry import load_registry, renumber, save_registry
 from killchain.report import render_report
 from killchain.review import build_review
 from killchain.rules import load_rules, run_rules
@@ -72,7 +73,8 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
 def analyse_run(run_dir: Path, rules_dir: Path, *, assets_path: Path | None = None,
                 progress: Callable[[str], None] | None = None,
                 parts: list[Path] | None = None, seconds: dict[str, float] | None = None,
-                meta_extra: dict | None = None) -> dict:
+                meta_extra: dict | None = None,
+                registry_path: Path | None = None) -> dict:
     """Everything after ingest: detect → correlate → enrich → anomaly → actors → persist."""
     run_dir = Path(run_dir)
     say = progress or (lambda _s: None)
@@ -94,6 +96,11 @@ def analyse_run(run_dir: Path, rules_dir: Path, *, assets_path: Path | None = No
     say("correlate")
     t = time.perf_counter()
     incidents = rank(correlate(detections))
+    renumbered = None
+    if registry_path is not None:
+        reg = load_registry(registry_path)
+        renumbered = renumber(incidents, reg)
+        save_registry(registry_path, reg)
     seconds["correlate"] = round(time.perf_counter() - t, 2)
 
     say("enrich")
@@ -141,6 +148,8 @@ def analyse_run(run_dir: Path, rules_dir: Path, *, assets_path: Path | None = No
         "anomaly_lead_count": len(leads),
         "raw_alerts_merged": sum(i.raw_alert_count for i in incidents),
     }
+    if renumbered is not None:
+        meta["renumber"] = renumbered
     write_json_atomic(run_dir / "run_meta.json", meta)
     _CACHE.pop(str(run_dir), None)
     say("done")
