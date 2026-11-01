@@ -83,6 +83,9 @@ export default function KillChain() {
       <div className="kc-toolbar">
         <div className="kc-kpis">
           <Kpi label="Events analysed" value={analysed.toLocaleString()} />
+          {meta.attack_events != null && (
+            <Kpi label="Attack events caught" value={meta.attack_events.toLocaleString()} />
+          )}
           <Kpi label="Raw alerts merged" value={(meta.raw_alerts_merged ?? 0).toLocaleString()} />
           <Kpi label="Incidents" value={incidents.length} />
           <Kpi label="Critical" value={critical} />
@@ -104,7 +107,10 @@ export default function KillChain() {
       {isBatch && meta.ingest && (
         <div className="card kc-note">
           <b>What we found in {meta.log_path?.split(/[\\/]/).pop() || 'the log'}:</b> {meta.ingest.lines_read.toLocaleString()} lines read.{' '}
-          {meta.ingest.lines_skipped.toLocaleString()} were unreadable and skipped.{' '}
+          {meta.ingest.lines_skipped.toLocaleString()}{' '}
+          {meta.source_schema?.endsWith('mixed-sources.yaml')
+            ? 'came from sources Kavach does not read (such as Windows Sysmon, DNS and database logs) and were skipped. Kavach read Palo Alto, Suricata, Cisco ASA, SSH, web, Linux audit, Kubernetes, AWS CloudTrail and macOS lines.'
+            : 'were unreadable and skipped.'}{' '}
           {stalled.toLocaleString()} share one frozen timestamp, so they are counted but kept out of
           detection. The remaining {analysed.toLocaleString()} events produced {incidents.length} incidents.
         </div>

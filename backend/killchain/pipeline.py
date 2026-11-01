@@ -157,6 +157,9 @@ def analyse_run(run_dir: Path, rules_dir: Path, *, assets_path: Path | None = No
         "incident_count": len(incidents),
         "anomaly_lead_count": len(leads),
         "raw_alerts_merged": sum(i.raw_alert_count for i in incidents),
+        # Distinct log lines behind any detection: each attack event counted once, even if two rules hit it.
+        "attack_events": con.execute(
+            "SELECT count(DISTINCT line_no) FROM detection_events").fetchone()[0],
     }
     if renumbered is not None:
         meta["renumber"] = renumbered

@@ -39,3 +39,7 @@ techniques:
   T1070:     {name: Indicator Removal, tactic: defense-evasion, stage: Actions on Objectives}
   T1562.001: {name: "Impair Defenses: Disable or Modify Tools", tactic: defense-evasion, stage: Installation}
   T1562.004: {name: "Impair Defenses: Disable or Modify System Firewall", tactic: defense-evasion, stage: Installation}
+  T1059.004: {name: "Command and Scripting Interpreter: Unix Shell", tactic: execution, stage: Exploitation}
+  T1610:     {name: Deploy Container, tactic: execution, stage: Installation}
+  T1562.008: {name: "Impair Defenses: Disable or Modify Cloud Logs", tactic: defense-evasion, stage: Actions on Objectives}
+  T1078.004: {name: "Valid Accounts: Cloud Accounts", tactic: initial-access, stage: Exploitation}

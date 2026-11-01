@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
-  Bot, ClipboardCheck, Crosshair, FileCode2, Fingerprint, ListChecks, Moon, Radar, Shield, Sun,
+  Bot, ClipboardCheck, Crosshair, FileCode2, Fingerprint, ListChecks, Moon, PlayCircle, Radar, Shield, Sun,
 } from 'lucide-react'
 import KillChain, { KillChainRules } from './pages/KillChain'
 import Anomalies from './pages/Anomalies'
@@ -56,6 +56,15 @@ function AppShell() {
           <span className="brand-sub">Firewall kill-chain analysis</span>
         </div>
         <div className="topbar-right">
+          <a
+            className="btn-ghost demo-link"
+            href="https://drive.google.com/file/d/1GfeoTYjAO9I07pSrY4oQCMZ1rlvyFGef/view?usp=drive_link"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Watch the demo video"
+          >
+            <PlayCircle size={14} /> Watch demo
+          </a>
           <RunSelector />
           <button
             className="theme-toggle"

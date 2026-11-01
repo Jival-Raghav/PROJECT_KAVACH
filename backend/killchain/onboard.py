@@ -662,6 +662,10 @@ def make_parser(schema: dict) -> Callable[[str, int], dict | None]:
     """A parse function with the same contract as parse.parse_line, driven by a stored schema."""
     from killchain.parse import _INT_COLS
 
+    if schema["format"] == "mixed":  # several sources in one file: the built-in multi-source parser
+        from killchain.mixed import parse_line as mixed_parse
+
+        return mixed_parse
     fmt, columns = schema["format"], schema.get("columns")
     fields = schema["fields"]
     values = schema.get("values") or {}
@@ -774,6 +778,11 @@ def choose_parser(log_path: Path, progress: Callable[[str], None] = lambda _s: N
     cfg = get_settings()
     saved_dir = Path(cfg.KILLCHAIN_DATA_DIR) / "schemas"
     root = Path(cfg.KILLCHAIN_CONCEPTS_PATH).parent / "log_sources"
+    from killchain.mixed import looks_mixed
+
+    if looks_mixed(lines):
+        progress("Mixed log sources: using the built-in multi-source parser")
+        return root / "mixed-sources.yaml"
     saved = find_saved_schema(lines, [root, saved_dir])
     if saved:
         progress(f"Known log format: using {saved.name}")

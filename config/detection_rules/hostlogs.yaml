@@ -1,0 +1,96 @@
+# Host, cloud and Kubernetes rules, for logs read by the mixed-source parser (backend/killchain/mixed.py).
+# Behaviour only, no IOCs. FortiGate logs never carry these subtypes, so these rules stay silent on them.
+rules:
+  - id: KC-HL-SSH-001
+    title: SSH brute force from one source
+    technique: T1110
+    severity: high
+    kind: threshold
+    where: "subtype='ssh' AND action='failed'"
+    group_by: [srcip]
+    window_minutes: 30
+    min_count: 20
+    entities: {src_ip: srcip, user: user}
+
+  - id: KC-HL-SSH-002
+    title: SSH login succeeded after a brute force
+    technique: T1078
+    severity: critical
+    kind: sequence
+    where: "subtype='ssh' AND action='failed'"
+    then_where: "subtype='ssh' AND action='success'"
+    join_on: srcip
+    then_within_minutes: 60
+    min_count: 10
+    entities: {src_ip: srcip, user: user}
+
+  - id: KC-HL-WEB-001
+    title: Path traversal attempts against a web server
+    technique: T1190
+    severity: high
+    kind: threshold
+    where: "subtype='http' AND url LIKE '%../%'"
+    group_by: [srcip]
+    window_minutes: 60
+    min_count: 3
+    entities: {src_ip: srcip}
+
+  - id: KC-HL-EXEC-001
+    title: Reverse shell command executed on a host
+    technique: T1059.004
+    severity: critical
+    kind: match
+    where: "subtype='exec' AND (msg LIKE '%/dev/tcp/%' OR msg LIKE '%bash -i%')"
+    group_by: [dstip]
+    window_minutes: 60
+    entities: {dst_ip: dstip}
+
+  - id: KC-HL-K8S-001
+    title: Privileged pod created in Kubernetes
+    technique: T1610
+    severity: critical
+    kind: match
+    where: "subtype='k8s' AND method='create' AND msg LIKE '%privileged=true%'"
+    group_by: [user]
+    window_minutes: 120
+    entities: {src_ip: srcip, user: user}
+
+  - id: KC-HL-CLOUD-001
+    title: Cloud audit logging stopped
+    technique: T1562.008
+    severity: critical
+    kind: match
+    where: "subtype='cloudtrail' AND logdesc IN ('StopLogging','DeleteTrail')"
+    group_by: [user]
+    window_minutes: 120
+    entities: {src_ip: srcip, user: user}
+
+  - id: KC-HL-CLOUD-002
+    title: Cloud root account console login
+    technique: T1078.004
+    severity: critical
+    kind: match
+    where: "subtype='cloudtrail' AND logdesc='ConsoleLogin' AND ui='Root'"
+    group_by: [srcip]
+    window_minutes: 120
+    entities: {src_ip: srcip, user: user}
+
+  - id: KC-HL-VPN-001
+    title: Remote-access VPN session from an outside address
+    technique: T1133
+    severity: high
+    kind: match
+    where: "subtype='vpn' AND logdesc='VPN session started'"
+    group_by: [user, srcip]
+    window_minutes: 120
+    entities: {src_ip: srcip, user: user}
+
+  - id: KC-HL-END-001
+    title: Unsigned app run after the user overrode Gatekeeper
+    technique: T1204.002
+    severity: high
+    kind: match
+    where: "subtype='endpoint' AND logdesc='Gatekeeper block overridden'"
+    group_by: [hostname]
+    window_minutes: 120
+    entities: {user: user}

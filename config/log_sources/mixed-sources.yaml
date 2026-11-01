@@ -1,0 +1,7 @@
+# Built-in parser for logs that mix several sources line by line (see backend/killchain/mixed.py).
+source: mixed-sources
+approved: true
+format: mixed
+columns: null
+timestamp: {field: "-", kind: mixed}
+fields: {}
