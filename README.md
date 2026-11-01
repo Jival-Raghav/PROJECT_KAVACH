@@ -6,7 +6,8 @@ Kavach reads a raw FortiGate firewall log, finds the attacks hidden in it, label
 IPs and time**, and shows each one as a **timeline, an attack-path graph, what the attacker can reach
 next, a Prosecutor vs Devil's Advocate review, and a response plan**.
 
-Kavach accepts FortiGate `key=value` logs only.
+Kavach is built and measured on FortiGate `key=value` logs. Other key=value, JSON or CSV logs go through an experimental
+second parser, chosen automatically; see [Other log formats](#other-log-formats-experimental).
 
 **▶ [Watch the demo video](https://drive.google.com/file/d/1GfeoTYjAO9I07pSrY4oQCMZ1rlvyFGef/view?usp=drive_link)**
 
@@ -37,29 +38,274 @@ ourselves; see [Honest limits](#honest-limits). Full scorecard:
 
 ![Incident investigation view](docs/images/killchain-incident-20.jpg)
 
-## Quick start
+### Results on every log we ran
 
-Requires Python 3.10+ and Node.js 18+. The log can live at `REAL_10G_DATA/firex-10G.log`, or anywhere
-if you set `KILLCHAIN_LOG_PATH` in `.env`.
+All runs used 6 workers and a 7 GB database cap, on one laptop: 14 cores, 15.5 GB RAM, SSD.
 
-**macOS / Linux**
+| Log | Type | File size | Lines read | Frozen clock | Unreadable | Analysed | Time | Peak RAM | Incidents |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `firex-10G.log` | Supplied | 6.5 GB | 15.8M | 5.3M | 6.7M | 3.85M | **1.1 min** | **3.1 GB** | 20 |
+| `firex-50G.log` | Supplied | 32.7 GB | 62.0M | 43.7M | 0 | 18.3M | **7.3 min** | **4.8 GB** | 20 |
+| Synthetic log | Made by us | 30 GB | 56.8M | 0 | 0 | 56.8M | **13.3–19.3 min** | **7.2 GB** | 65 |
+
+- **Why the synthetic log takes longest:** every line is analysed. It repeats real traffic from `firex-50G.log` with
+  shifted times and changed IPs and usernames, so it measures speed and memory, not accuracy. The time range is two runs of
+  the same file; the slower one ran while other work was using the laptop.
+- **`firex-50G.log` is 32.7 GB despite its name,** and 70% of its lines sit under one frozen timestamp. They are read but
+  not analysed, which is why it finishes before the smaller synthetic file.
+- **Where the time goes on `firex-50G.log`:** reading 307 s, detection 72 s, anomaly scoring 56 s, the rest 5 s.
+- **One core vs six workers on `firex-10G.log`:** 4.5 min and 1.76 GB became 1.1 min and 3.1 GB. All 9,125,382 parsed rows
+  matched between the two.
+
+### Accuracy on `firex-50G.log`
+
+No official answer key was supplied for either log, so **these accuracy numbers come from benchmarks we built, not one given
+to us**. We analysed the logs and chose the `crscore` tag, which we assumed marks planted attacks, and hunted for the attacks
+it doesn't cover. For `firex-50G.log`, a separate LLM analysed the file blind to our rules and wrote a second answer key.
+
+| Benchmark | Detection | Correct labels | Paths rebuilt | False alarms by that key |
+|---|---:|---:|---:|---:|
+| `crscore` lines only | 550 of 550 lines | not measured | not measured | not measured |
+| Blind answer key | **95.8%** (23 of 24) | 91.3% | 16 of 18 | 10.5% (2 of 19) |
+| Blind answer key, after adding `KC-ID-005` | 100% (24 of 24) | 91.7% | 17 of 18 | 10.0% (2 of 20) |
+
+**The blind result is 95.8%.** The 100% came after we added a rule for the one missed step, so it isn't blind. The rules were
+written on a different file, but the attacks look like they came from the same generator. The 2 "false alarms" are a
+periodic connection and an SMB and RDP spread that the blind key doesn't mention; our review suggests they are real attacks,
+but that review is ours.
+
+### Second parser results
+
+The second parser reads formats other than FortiGate. We tested it by rewriting `firex-10G.log` with other field and value
+names, which gives a known correct answer, and by forcing `firex-50G.log` through it.
+
+| Test | Fields right | Values right | Incidents matching the normal parser |
+|---|---:|---:|---:|
+| `firex-50G.log`, unchanged names | 40 of 40 | not scored | **20 of 20** (8.3 min, plus 7.6 min to learn the format once) |
+| Rewritten, vendor-style names | 40 of 40 | 27 of 27 | **20 of 20** |
+| Rewritten, readable names, before the login fix | 40 of 40 | 26 of 26 | 18 of 20 |
+| Rewritten, obscure names, before the login fix | 37–40 of 40 | 17–23 of 26 | 10–12 of 20 |
+
+We wrote these test names ourselves, and no real log from a second vendor has been tested. The vendor-style 20 of 20 is one
+run. `firex-10G.log` itself has not finished through the second parser: readable scraps in its junk tail look like about 236
+extra fields, and that run hit the Groq daily token limit.
+
+## Screenshots
+
+### Attack incidents
+Every incident ranked by risk, with its kill-chain stages, tactics and how many raw alerts it merged.
+
+![Attack incidents board](docs/images/kavach-incidents.jpg)
+
+### Timeline
+Each step of an attack in order, with its ATT&CK technique, outcome and evidence.
+
+![Incident timeline](docs/images/kavach-timeline.jpg)
+
+### Attack path
+Everything that took part in an incident and how it connects. This is an SMB spread from one host to 50 others.
+
+![3D attack path graph](docs/images/kavach-attack-path.jpg)
+
+### Blast radius (What if?)
+What the attacker could reach next. Here, firewall admin control reaches 6 network segments. Reach is marked as observed in
+the log, or possible but not observed.
+
+![3D blast radius graph](docs/images/kavach-blast-radius.jpg)
+
+### Devil's Advocate
+Both sides argue from numbered evidence. The verdict comes from a fixed rule, not the LLM.
+
+![Devil's Advocate verdict](docs/images/kavach-devils-advocate.jpg)
+
+### Response plan
+Proposed actions grouped by kind, each explained. Kavach never changes the firewall.
+
+![Response plan](docs/images/kavach-response-plan.jpg)
+
+### Anomalies
+Unusual entities outside any incident, each with the reason it stands out. These are leads, not confirmed attacks.
+
+![Anomaly leads](docs/images/kavach-anomalies.jpg)
+
+### Actors
+One actor across IPs and accounts, linked only by proven activity.
+
+![Actor profiles](docs/images/kavach-actors.jpg)
+
+### Live mode
+Incidents appear while the file is still being read, with a change feed of what each update added. This run used another
+vendor's format, so the parser badge says "learned format".
+
+![Live mode with change feed](docs/images/kavach-live-mode.png)
+
+## How to run Kavach, step by step
+
+These steps work on a new laptop, from nothing to the running site. We followed them on a fresh clone on Windows using a
+sample of the log. Commands are shown for **Windows (PowerShell)** and **macOS / Linux**; use one set.
+
+### What you need
+
+| Need | Details |
+|---|---|
+| **Python** | 3.10 or newer. Check with `python --version` |
+| **Node.js** | 18 or newer. Check with `node --version` |
+| **Git** | Check with `git --version` |
+| **RAM** | 8 GB for `firex-10G.log`. **16 GB** recommended for larger logs |
+| **Free disk** | About 3 GB, plus the log itself. More for larger logs |
+| **The log file** | `firex-10G.log` or `firex-50G.log`. These are **not in this repo**; they come from the hackathon organisers |
+
+A Groq API key is optional. FortiGate logs and every page work without one.
+
+### Step 1: Get the code
+
+**First time:**
 
 ```bash
-./run.sh --killchain   # sets up everything, builds the incidents (about 2 min), starts API and UI
+git clone https://github.com/Jival-Raghav/PROJECT_KAVACH.git
+cd PROJECT_KAVACH
+git switch main
 ```
+
+**Already have it:**
+
+```bash
+cd PROJECT_KAVACH
+git switch main
+git pull origin main
+```
+
+### Step 2: Create a Python environment
 
 **Windows (PowerShell)**
 
 ```powershell
-python -m venv .venv; .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env      # then set KILLCHAIN_LOG_PATH if the log is elsewhere
-cd backend; python -m killchain.cli run; cd ..
-uvicorn backend.main:app --port 8000      # in one terminal
-cd frontend; npm install; npm run dev     # in another
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
-Open http://localhost:5173. API docs are at http://localhost:8000/docs.
+**macOS / Linux**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Your prompt should now start with `(.venv)`.
+
+### Step 3: Install the Python packages
+
+```bash
+pip install -r requirements.txt
+```
+
+### Step 4: Create your settings file
+
+**Windows (PowerShell)**
+
+```powershell
+Copy-Item .env.example .env
+```
+
+**macOS / Linux**
+
+```bash
+cp .env.example .env
+```
+
+### Step 5: Tell Kavach where the log is
+
+Open `.env` in a text editor and add this line, using the full path to your log. Use forward slashes, even on Windows:
+
+```env
+KILLCHAIN_LOG_PATH=C:/path/to/firex-10G.log
+```
+
+Or skip this step by putting the file at `REAL_10G_DATA/firex-10G.log` inside the project folder.
+
+### Step 6: Analyse the log
+
+```bash
+cd backend
+python -m killchain.cli run
+cd ..
+```
+
+Kavach picks the parser by itself; you should see `FortiGate log: using the standard parser`. Reading `firex-10G.log` takes
+about 1–2 minutes and ends by printing a summary with `"incident_count": 20`. This only needs doing once per log, because
+results are saved.
+
+### Step 7: Start the API (Terminal 1)
+
+Run this from the project folder, with `(.venv)` active, and leave the terminal open:
+
+```bash
+python -m uvicorn backend.main:app --port 8000
+```
+
+### Step 8: Start the website (Terminal 2)
+
+Open a **second terminal** in the project folder, then:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+`npm install` is only needed the first time. Leave this terminal open too.
+
+### Step 9: Open Kavach
+
+Open **http://localhost:5173** in your browser. You should see the incident board. Click any incident for its timeline,
+attack path, blast radius, Devil's Advocate review and report. API docs are at http://localhost:8000/docs.
+
+**To stop:** press `Ctrl+C` in both terminals.
+
+**To start again later:** activate the environment as in Step 2, then repeat Steps 7–9. You don't need Step 6 again.
+
+### Optional: analyse another log
+
+Give each log its own run name, then pick it from the selector in the top bar of the site:
+
+```bash
+cd backend
+python -m killchain.cli run --log C:/path/to/firex-50G.log --run-id firex_50g
+cd ..
+```
+
+Refresh the site if the new run isn't listed. To watch incidents appear as a file is read, press **New live run** on the
+Attack Incidents page; see [Live mode](#live-mode-b-5).
+
+### Optional: turn on the LLM
+
+Needed only for **Run live review**, **Rewrite with AI**, and learning a log format Kavach hasn't seen. Add your key to `.env`,
+then restart the API:
+
+```env
+GROQ_API_KEY=your_key
+LLM_REPLAY_ONLY=0
+```
+
+These features send real log details to Groq. See [Honest limits](#honest-limits).
+
+### If something goes wrong
+
+| Problem | Fix |
+|---|---|
+| **`python` is not found** | On macOS or Linux use `python3`. On Windows, reinstall Python with "Add to PATH" ticked |
+| **PowerShell says running scripts is disabled** | Run `Set-ExecutionPolicy -Scope Process RemoteSigned`, then repeat the activate command |
+| **`ImportError: DLL load failed... Application Control policy has blocked this file`** | Windows Smart App Control is checking newly downloaded files. Run the same command again; this cleared it on our laptop |
+| **`Log not found`** | Check the path in `.env` from Step 5, and use forward slashes |
+| **`This is not a FortiGate log`, or a message about learning a new format** | The file isn't a FortiGate log. Check the path. To learn a new format, turn on the LLM |
+| **`Could not recognise this log`** | Kavach reads only key=value, JSON and CSV logs |
+| **The site shows no incidents** | Step 6 hasn't finished, or the API in Terminal 1 isn't running. Then press **Refresh** |
+| **Port 8000 or 5173 is in use** | Close whatever is using it. The site expects exactly these two ports |
+| **The run is very slow, or stops on low memory** | Close other apps, or lower the limits in `.env`: `KILLCHAIN_DUCKDB_MEMORY=4GB` and `KILLCHAIN_INGEST_WORKERS=2` |
+| **Groq reports a rate limit** | You've hit your plan's token limit. Wait, or use a saved schema. FortiGate logs don't use the LLM |
+
+**macOS / Linux shortcut:** `./run.sh --killchain` sets up everything, builds the incidents and starts the API and site. We
+didn't test this script on the current code.
 
 **Docker:** `docker compose up --build` (API on :8000, UI on :5173, log at `REAL_10G_DATA/`). The
 Docker path has not been tested on the current code.
@@ -86,10 +332,13 @@ incidents appear while the file is still being read.
   (default batch 200,000 lines). Ctrl-C stops cleanly; the same `--run-id` resumes.
 - **API:** `POST /api/live/start`, `GET /api/live/status`, `GET /api/live/changes`,
   `POST /api/live/stop`, `GET /api/runs`.
-- **Inputs:** a raw FortiGate `key=value` log or a `.gz` of one. Not accepted: a `.zip` (rejected with
-  "Zip archives are not supported") or a folder. A file with no FortiGate line in its first 100,000
-  lines ends with an error. A raw file resumes from its byte
-  checkpoint. A `.gz` is decompressed again from the start and lines already written are skipped.
+- **Inputs:** a raw, uncompressed log file. FortiGate logs use the standard parser; other key=value, JSON or CSV
+  logs use a saved schema or learn one, as in [Other log formats](#other-log-formats-experimental), and the live bar
+  shows which parser is in use. Not accepted: a `.zip` (rejected with "Zip archives are not supported") or a folder.
+  A file with no readable line in its first 100,000 lines ends with an error. A raw file resumes from its byte
+  checkpoint.
+- **`.gz` files don't work yet:** the reader can stream them, but the automatic parser check reads the file without
+  decompressing it, so it stops with an error. Decompress the file first.
 - **CLI and UI together:** a run started with `cli live` shows as processing in the UI (the job records
   its process id and a heartbeat in `live_state.json`); it shows as interrupted only once that process
   is gone or its heartbeat is over 60 s old. A run being processed elsewhere cannot be started again,
@@ -170,7 +419,8 @@ LLM_REPLAY_ONLY=0
 ```
 
 Press **Run live review** on an incident. Successful answers are saved and replayed if the LLM later
-fails. The live path has been tested with simulated responses, not against real Groq.
+fails. This review path has been tested with simulated responses. Real Groq calls have been used for learning log
+formats, but a full run of the live review against real Groq has not been measured.
 
 ## Other log formats (experimental)
 
