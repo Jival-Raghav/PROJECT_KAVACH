@@ -16,8 +16,8 @@ Kavach accepts FortiGate `key=value` logs only.
 | Correct ATT&CK labels | **100%** (28/28) | > 60% / > 85% | 🟢 Great |
 | Attack paths rebuilt in order | **20 / 20** (4 / 4 multi-step chains) | half / all | 🟢 Great |
 | False alarms | **0%** (0 of 20 incidents) | < 30% / < 10% | 🟢 Great |
-| Processing time (whole file) | **4.5 min** | < 3 h / < 1 h | 🟢 Great |
-| Peak memory | **1.76 GB** | < 16 GB / < 8 GB | 🟢 Great |
+| Processing time (whole file) | **1.1 min** | < 3 h / < 1 h | 🟢 Great |
+| Peak memory | **3.10 GB** | < 16 GB / < 8 GB | 🟢 Great |
 | Open one incident | **0.02 ms** in-process lookup; about 0.2 s measured once over HTTP | < 2 s / < 500 ms | 🟢 Great |
 
 11,078 raw alerts were merged into 20 incidents. These results depend on a ground truth we built
@@ -43,7 +43,7 @@ if you set `KILLCHAIN_LOG_PATH` in `.env`.
 **macOS / Linux**
 
 ```bash
-./run.sh --killchain   # sets up everything, builds the incidents (about 5 min), starts API and UI
+./run.sh --killchain   # sets up everything, builds the incidents (about 2 min), starts API and UI
 ```
 
 **Windows (PowerShell)**
@@ -113,7 +113,7 @@ more than a quarter read. This is one run, not a benchmark.
 flowchart LR
     L[FortiGate log] --> I[Streaming ingest<br/>200k-line Parquet parts]
     I --> S[Frozen-clock filter]
-    S --> R[20 YAML rules on DuckDB]
+    S --> R[21 YAML rules on DuckDB]
     R --> C[Incidents<br/>ATT&CK, kill-chain stage, risk score]
     C --> V[Timeline, graph, next reach]
     C --> E[Prosecutor vs Devil's Advocate]
@@ -129,7 +129,7 @@ flowchart LR
 | PRD | Feature | Where |
 |---|---|---|
 | FR-1 | Streams the log in 200k-line batches into Parquet; never loads the file | `backend/killchain/ingest.py` |
-| FR-2 | 20 behavioural rules: bursts, fan-out, periodicity, rarity, sequences | `config/detection_rules/fortigate.yaml` |
+| FR-2 | 21 behavioural rules: bursts, fan-out, periodicity, rarity, sequences | `config/detection_rules/fortigate.yaml` |
 | FR-3 | Every detection gets an ATT&CK technique, tactic and kill-chain stage | `config/mitre_techniques.yaml` |
 | FR-4 | Links detections by attacker IP, user or domain, same host, and pivot host plus time | `backend/killchain/correlate.py` |
 | FR-5 | Timeline and host/user/attacker graph | `GET /api/incidents/{id}/path` |
@@ -170,6 +170,26 @@ LLM_REPLAY_ONLY=0
 Press **Run live review** on an incident. Successful answers are saved and replayed if the LLM later
 fails. The live path has been tested with simulated responses, not against real Groq.
 
+## Other log formats (experimental)
+
+Kavach chooses the parser for any input file. FortiGate logs use the normal parser, with no LLM. Other key=value, JSON or
+CSV logs reuse a saved schema if the format is known. Otherwise common words match the obvious names, an LLM handles the
+rest, code checks every answer against the data, and the schema is saved so the format is only learned once. Parsing
+itself never calls an LLM. The log is translated into the same columns, so rules and analysis run unchanged.
+
+Results from an automatically learned schema are marked as not reviewed until a person checks and approves it:
+
+```bash
+cd backend
+python -m killchain.cli run --log LOG --run-id NAME   # learns the format if needed; sends statistics and sample records to the LLM
+python -m killchain.cli approve-schema data/killchain/schemas/LOG.yaml
+```
+
+Tested by rewriting `firex-10G.log` with different names (`scripts/bench_schema_onboarding.py`), before a later fix for
+login values: two readable name sets found all 20 attacks, with 40 of 40 fields and 26 of 26 values right, but 2 incidents
+had the wrong outcome and risk. A set of deliberately obscure names found 14 of 20. **No real log from another vendor has
+been tested**, and rule thresholds were tuned on FortiGate. Review every schema before trusting its results.
+
 ## Add a detection rule (B-4)
 
 ```yaml
@@ -200,11 +220,17 @@ Then press **Re-run detection** in the UI, or run `python -m killchain.cli run -
   They looked like planted activity without `crscore`, so 5 steps were added. The 0% false-alarm rate
   is measured against the widened set.
 - **Detection is generous.** A step counts as found if a detection overlaps at least one of its lines.
-- **This file is not a PRD tier.** Nothing has been run at 15, 30 or 50 GB, and timings include reading
-  the filler sections.
+- **Scale results are limited.** With 6 workers and a 7 GB database cap, on a 14-core laptop with an SSD:
+  `firex-50G.log` (32.7 GB, 18.3M of 62M lines analysed) took 7.3 min and about 5 GB, and a 30 GB synthetic log with
+  all 56.8M lines analysed took 13.3 min and 7.17 GB. The synthetic log repeats real traffic, so it measures speed and
+  memory only. Nothing has been run on 50 GB of fully valid logs. Set `KILLCHAIN_DUCKDB_MEMORY` and
+  `KILLCHAIN_INGEST_WORKERS` for other machines.
+- **`firex-50G.log` was also scored against a separate answer key** from a blind analysis by another LLM, not official
+  labels. Blind result: 95.8% detection (23 of 24 steps), 91.3% labels, 16 of 18 paths, 10.5% false alarms by that key.
+  `KC-ID-005` was then added for the one missed step, so its later 100% detection is post-fix, not blind.
 - **Timestamps:** every line says `+0530`, but `eventtime` matches the wall clock read as UTC. We display
   it as the firewall's local clock.
-- **LLM privacy:** live reviews and report rewrites send real IPs, usernames and log details to the
+- **LLM privacy:** live reviews, report rewrites and log onboarding send real IPs, usernames and log details to the
   configured provider, without pseudonymization, and only when an analyst asks. Use a local provider or
   `LLM_REPLAY_ONLY=true` if this data must not leave your network.
 - **Prompt injection:** log text is sanitized and scanned first. In [our test](reports/log_injection.md)

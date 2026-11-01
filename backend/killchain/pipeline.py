@@ -48,7 +48,8 @@ def _incident_json(inc: Incident, con_graph, assets) -> dict:
 
 def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: bool = False,
                   assets_path: Path | None = None,
-                  progress: Callable[[str], None] | None = None) -> dict:
+                  progress: Callable[[str], None] | None = None,
+                  schema_path: Path | None = None) -> dict:
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     say = progress or (lambda _s: None)
@@ -61,20 +62,29 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
         ingest = old.get("ingest")
         seconds["ingest"] = float(old.get("seconds", {}).get("ingest", 0.0))
     else:
+        if schema_path is None:
+            from killchain.onboard import choose_parser
+
+            schema_path = choose_parser(Path(log_path), progress=say)
         say("ingest")
-        ingest = ingest_log(Path(log_path), run_dir).model_dump()
+        ingest = ingest_log(Path(log_path), run_dir,
+                            workers=get_settings().KILLCHAIN_INGEST_WORKERS,
+                            schema_path=schema_path).model_dump()
         seconds["ingest"] = round(time.perf_counter() - t, 2)
 
     log = str(log_path) if not skip_ingest else old.get("log_path", str(log_path))
+    source_schema = str(schema_path) if schema_path else old.get("source_schema")
     return analyse_run(run_dir, rules_dir, assets_path=assets_path, progress=progress,
-                       seconds=seconds, meta_extra={"log_path": log, "ingest": ingest})
+                       seconds=seconds, meta_extra={"log_path": log, "ingest": ingest},
+                       source_schema=source_schema)
 
 
 def analyse_run(run_dir: Path, rules_dir: Path, *, assets_path: Path | None = None,
                 progress: Callable[[str], None] | None = None,
                 parts: list[Path] | None = None, seconds: dict[str, float] | None = None,
                 meta_extra: dict | None = None,
-                registry_path: Path | None = None) -> dict:
+                registry_path: Path | None = None,
+                source_schema: str | None = None) -> dict:
     """Everything after ingest: detect → correlate → enrich → anomaly → actors → persist."""
     run_dir = Path(run_dir)
     say = progress or (lambda _s: None)
@@ -150,6 +160,14 @@ def analyse_run(run_dir: Path, rules_dir: Path, *, assets_path: Path | None = No
     }
     if renumbered is not None:
         meta["renumber"] = renumbered
+    if source_schema:  # only logs read through a learned schema report what they can support
+        from killchain.onboard import load_schema, rule_coverage
+
+        meta["source_schema"] = source_schema
+        meta["schema_reviewed"] = load_schema(Path(source_schema))["approved"] is True
+        schema_con = open_events(run_dir, parts=parts)
+        meta["rule_coverage"] = rule_coverage(schema_con, rules)
+        schema_con.close()
     write_json_atomic(run_dir / "run_meta.json", meta)
     _CACHE.pop(str(run_dir), None)
     say("done")

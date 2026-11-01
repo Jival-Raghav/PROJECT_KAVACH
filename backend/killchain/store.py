@@ -6,6 +6,7 @@ from pathlib import Path
 
 import duckdb
 
+from config import get_settings
 from killchain.atomic import write_json_atomic
 
 # A firewall does not write this many lines in one microsecond: the clock has stopped.
@@ -20,7 +21,7 @@ def sql_str(value: str) -> str:
 
 def _connect() -> duckdb.DuckDBPyConnection:
     con = duckdb.connect()
-    con.execute("SET memory_limit='4GB'")
+    con.execute(f"SET memory_limit={sql_str(get_settings().KILLCHAIN_DUCKDB_MEMORY)}")
     con.execute("SET TimeZone='UTC'")
     return con
 

@@ -74,6 +74,9 @@ class Settings:
         "KILLCHAIN_LOG_PATH", str(root_dir / "REAL_10G_DATA" / "firex-10G.log")
     )
     KILLCHAIN_DATA_DIR: str = os.getenv("KILLCHAIN_DATA_DIR", str(base_dir / "data" / "killchain"))
+    KILLCHAIN_RUN_ID: str = os.getenv("KILLCHAIN_RUN_ID", "firex")
+    KILLCHAIN_DUCKDB_MEMORY: str = os.getenv("KILLCHAIN_DUCKDB_MEMORY", "7GB")
+    KILLCHAIN_INGEST_WORKERS: int = int(os.getenv("KILLCHAIN_INGEST_WORKERS", "6"))
     KILLCHAIN_RULES_DIR: str = os.getenv(
         "KILLCHAIN_RULES_DIR", str(root_dir / "config" / "detection_rules")
     )
@@ -82,6 +85,9 @@ class Settings:
     )
     KILLCHAIN_ASSETS_PATH: str = os.getenv(
         "KILLCHAIN_ASSETS_PATH", str(root_dir / "config" / "assets.yaml")
+    )
+    KILLCHAIN_CONCEPTS_PATH: str = os.getenv(
+        "KILLCHAIN_CONCEPTS_PATH", str(root_dir / "config" / "log_concepts.yaml")
     )
     KILLCHAIN_CONTROLS_PATH: str = os.getenv(
         "KILLCHAIN_CONTROLS_PATH", str(root_dir / "config" / "firewall_controls.yaml")

@@ -103,10 +103,17 @@ export default function KillChain() {
 
       {isBatch && meta.ingest && (
         <div className="card kc-note">
-          <b>What we found in the log:</b> {meta.ingest.lines_read.toLocaleString()} lines read.{' '}
+          <b>What we found in {meta.log_path?.split(/[\\/]/).pop() || 'the log'}:</b> {meta.ingest.lines_read.toLocaleString()} lines read.{' '}
           {meta.ingest.lines_skipped.toLocaleString()} were unreadable and skipped.{' '}
           {stalled.toLocaleString()} share one frozen timestamp, so they are counted but kept out of
           detection. The remaining {analysed.toLocaleString()} events produced {incidents.length} incidents.
+        </div>
+      )}
+
+      {meta.schema_reviewed === false && (
+        <div className="kc-error">
+          <AlertTriangle size={14} /> This log is not FortiGate. Kavach learned its format automatically and nobody has
+          reviewed that yet, so outcomes and risk scores may be wrong. Approve the schema after checking it.
         </div>
       )}
 

@@ -18,7 +18,8 @@ class IngestStats(BaseModel):
     lines_stalled: int = 0  # parsed, but under a frozen clock: kept out of detection
     parts: int
     seconds: float
-    peak_rss_mb: float
+    peak_rss_mb: float  # with workers: main process plus each worker's own peak, an upper bound
+    workers: int = 1
 
 
 class Detection(BaseModel):
