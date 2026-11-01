@@ -130,3 +130,46 @@ def test_cli_live_runs_to_completion(tmp_path, monkeypatch, capsys):
     main(["live", "--path", str(log), "--run-id", "c1", "--batch-size", "40"])
     assert read_state(tmp_path / "kc" / "runs" / "c1")["status"] == "complete"
     assert "[live] gen " in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("run_id,path,msg", [
+    ("firex", "LOG", "The firex run cannot be used for live mode"),
+    ("../x", "LOG", "Invalid run id"),
+    ("ok1", "MISSING", "File not found"),
+])
+def test_cli_live_validates_before_touching_disk(tmp_path, monkeypatch, run_id, path, msg):
+    from config import get_settings
+    from killchain.cli import main
+
+    monkeypatch.setattr(get_settings(), "KILLCHAIN_DATA_DIR", str(tmp_path / "kc"))
+    log = write_log(tmp_path / "f.log", _lines())
+    p = str(log) if path == "LOG" else str(tmp_path / "nope.log")
+    with pytest.raises(SystemExit) as ei:
+        main(["live", "--path", p, "--run-id", run_id])
+    assert msg in str(ei.value)
+    assert not (tmp_path / "kc").exists() and not (tmp_path / "x").exists()
+
+
+def test_cli_live_ctrl_c_stops_cleanly(tmp_path, monkeypatch, capsys):
+    from config import get_settings
+    from killchain.cli import main
+    from killchain.live import LiveJob, read_state
+
+    monkeypatch.setattr(get_settings(), "KILLCHAIN_DATA_DIR", str(tmp_path / "kc"))
+    monkeypatch.setattr(get_settings(), "KILLCHAIN_RULES_DIR", str(RULES))
+    log = write_log(tmp_path / "f.log", _lines())
+    real_join = LiveJob.join
+    calls = {"n": 0}
+
+    def join(self, timeout=None):
+        if timeout is not None and calls["n"] == 0:
+            calls["n"] += 1
+            raise KeyboardInterrupt
+        return real_join(self, timeout)
+
+    monkeypatch.setattr(LiveJob, "join", join)
+    with pytest.raises(SystemExit) as ei:
+        main(["live", "--path", str(log), "--run-id", "k1", "--batch-size", "40"])
+    assert ei.value.code != 0
+    assert "resume with the same --run-id" in capsys.readouterr().out
+    assert read_state(tmp_path / "kc" / "runs" / "k1")["status"] in ("stopped", "complete")

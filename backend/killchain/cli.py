@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
 import sys
 from pathlib import Path
 
@@ -55,11 +57,32 @@ def cmd_live(a: argparse.Namespace) -> None:
         print(f"[live] gen {e['generation']} · {e['pct']:.0%} · {n} incidents · {heads}",
               flush=True)
 
+    if a.run_id == "firex":
+        raise SystemExit("The firex run cannot be used for live mode")
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", a.run_id):
+        raise SystemExit(f"Invalid run id: {a.run_id}")
+    path = Path(a.path).expanduser()
+    if not path.is_file():
+        raise SystemExit(f"File not found: {a.path}")
+    if not os.access(path, os.R_OK):
+        raise SystemExit(f"File is not readable: {a.path}")
     run_dir = _run_dir(a.run_id)
     s = get_settings()
-    LiveJob(run_dir, Path(a.path), Path(s.KILLCHAIN_RULES_DIR),
-            assets_path=Path(s.KILLCHAIN_ASSETS_PATH), batch_size=a.batch_size,
-            on_cycle=show).run()
+    try:
+        job = LiveJob(run_dir, path, Path(s.KILLCHAIN_RULES_DIR),
+                      assets_path=Path(s.KILLCHAIN_ASSETS_PATH), batch_size=a.batch_size,
+                      on_cycle=show)
+    except ValueError as e:
+        raise SystemExit(str(e)) from e
+    job.start()
+    try:
+        while job.is_alive():
+            job.join(0.2)
+    except KeyboardInterrupt:
+        job.stop()
+        job.join()
+        print("[live] stopped; resume with the same --run-id", flush=True)
+        raise SystemExit(130) from None
 
 
 def render_benchmark(m, meta: dict) -> str:
