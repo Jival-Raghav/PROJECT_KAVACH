@@ -71,6 +71,31 @@ python -m killchain.cli run --skip-ingest  # re-run everything after ingest
 python -m killchain.cli bench              # score against the ground truth, write reports/
 ```
 
+## Live mode (B-5)
+
+Live mode streams a log file into Parquet parts and re-runs the full analysis after each new part, so
+incidents appear while the file is still being read.
+
+- **From the UI:** on Attack Incidents press **New live run**, enter the path of a file on the machine
+  running the API, and start. A live bar shows progress, the update number and Stop / Resume. A change
+  feed lists what each update added, merged or withdrew. The run selector in the top bar switches between
+  runs; the batch run `firex` is never touched.
+- **From the CLI:** `cd backend && python -m killchain.cli live --path FILE [--run-id ID] [--batch-size N]`
+  (default batch 200,000 lines). Ctrl-C stops cleanly; the same `--run-id` resumes.
+- **API:** `POST /api/live/start`, `GET /api/live/status`, `GET /api/live/changes`,
+  `POST /api/live/stop`, `GET /api/runs`.
+- **Inputs:** a raw FortiGate `key=value` log or a `.gz` of one. A raw file resumes from its byte
+  checkpoint. A `.gz` is decompressed again from the start and lines already written are skipped.
+- **Stable numbers:** an incident keeps its number across updates (`incident_registry.json`). Incidents
+  that merge or disappear are recorded in the change feed (`changes.jsonl`), not renumbered.
+- **Limits:** results under 25% of the file are early and can change. Every update re-analyses
+  everything read so far, so updates slow down as the file grows. The run name `firex` is refused.
+
+**Rehearsal on `firex-10G.log` (4.8 GB, one MacBook run):** first update after 21 s, finished in
+217 s (3.6 min) over 9 updates, peak memory 3.04 GB (`maximum resident set size`). The final 20
+incidents have the same titles as the batch run. Updates took about 20 to 40 s each once the file was
+more than a quarter read. This is one run, not a benchmark.
+
 ## Pipeline
 
 ```mermaid
@@ -103,7 +128,7 @@ flowchart LR
 | B-2 | Plain-English report with optional LLM rewrite | `GET /api/incidents/{id}/report?llm=true` |
 | B-3 | Raw alerts merged per incident | `raw_alert_count` on every incident |
 | B-4 | A new rule means editing YAML, not code | `config/detection_rules/` |
-| B-5 | Live mode | Not built |
+| B-5 | Live mode: streams a file and re-analyses after each part | `backend/killchain/live.py`, `POST /api/live/start` |
 
 ## Beyond the PRD
 
