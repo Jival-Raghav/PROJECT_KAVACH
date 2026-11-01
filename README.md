@@ -8,6 +8,8 @@ next, a Prosecutor vs Devil's Advocate review, and a response plan**.
 
 Kavach accepts FortiGate `key=value` logs only.
 
+**▶ [Watch the demo video](https://drive.google.com/file/d/1GfeoTYjAO9I07pSrY4oQCMZ1rlvyFGef/view?usp=drive_link)**
+
 ## Results on `firex-10G.log`
 
 | What we measure | Result | PRD Good / Great | |
