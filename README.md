@@ -134,6 +134,24 @@ LLM_REPLAY_ONLY=0
 Press **Run live review** on an incident. Successful answers are saved and replayed if the LLM later
 fails. The live path has been tested with simulated responses, not against real Groq.
 
+## Other log formats (experimental)
+
+FortiGate logs use the normal parser. Other key=value, JSON or CSV logs can be translated into the same columns, so
+rules and analysis run unchanged. Common words match the obvious names, an LLM handles the rest, code checks every answer
+against the data, and a person approves the stored schema. Parsing itself never calls an LLM.
+
+```bash
+cd backend
+python -m killchain.cli onboard --log LOG --schema ../config/log_sources/NAME.yaml  # sends statistics and sample records to the LLM
+python -m killchain.cli approve-schema ../config/log_sources/NAME.yaml              # after reviewing it
+python -m killchain.cli run --log LOG --schema ../config/log_sources/NAME.yaml --run-id NAME
+```
+
+Tested by rewriting `firex-10G.log` with different names (`scripts/bench_schema_onboarding.py`), before a later fix for
+login values: two readable name sets found all 20 attacks, with 40 of 40 fields and 26 of 26 values right, but 2 incidents
+had the wrong outcome and risk. A set of deliberately obscure names found 14 of 20. **No real log from another vendor has
+been tested**, and rule thresholds were tuned on FortiGate. Review every schema before trusting its results.
+
 ## Add a detection rule (B-4)
 
 ```yaml
@@ -174,7 +192,7 @@ Then press **Re-run detection** in the UI, or run `python -m killchain.cli run -
   `KC-ID-005` was then added for the one missed step, so its later 100% detection is post-fix, not blind.
 - **Timestamps:** every line says `+0530`, but `eventtime` matches the wall clock read as UTC. We display
   it as the firewall's local clock.
-- **LLM privacy:** live reviews and report rewrites send real IPs, usernames and log details to the
+- **LLM privacy:** live reviews, report rewrites and log onboarding send real IPs, usernames and log details to the
   configured provider, without pseudonymization, and only when an analyst asks. Use a local provider or
   `LLM_REPLAY_ONLY=true` if this data must not leave your network.
 - **Prompt injection:** log text is sanitized and scanned first. In [our test](reports/log_injection.md)

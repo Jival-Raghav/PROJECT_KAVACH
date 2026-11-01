@@ -1,0 +1,118 @@
+# What Kavach's rules and analysis need from a log, written so an LLM can find it in an unknown format.
+#
+# `check` is verified by code against the log, so a wrong LLM answer can be rejected:
+#   ip | port | int | text
+# `aliases` are common names matched without an LLM.
+# `values` are the exact values the rules and analysis compare against. Other values pass through unchanged.
+
+fields:
+  logid:       {check: text, meaning: "Numeric or coded identifier of the log message type", aliases: [log_id, msgid, msg_id, eventid, event_id]}
+  type:        {check: text, meaning: "Broad log class, such as network traffic, system event or security alert", aliases: [log_type, logtype, category]}
+  subtype:     {check: text, meaning: "Narrower log class, such as intrusion, antivirus, DNS, URL filtering or VPN", aliases: [log_subtype, sub_type]}
+  level:       {check: text, meaning: "Log priority or level, such as notice, warning or alert", aliases: [loglevel, log_level, pri]}
+  action:      {check: text, meaning: "What the firewall did with this traffic or event, such as allow or deny", aliases: [act, fw_action]}
+  srcip:       {check: ip, meaning: "IP address that started the connection or event", aliases: [src, src_ip, source, source_ip, sourceip, source_address, saddr, client_ip]}
+  srcport:     {check: port, meaning: "Port on the source side, usually a high number", aliases: [sport, src_port, source_port, spt]}
+  srcintf:     {check: text, meaning: "Firewall interface where the traffic came in", aliases: [src_interface, inbound_interface, in_interface]}
+  srcintfrole: {check: text, meaning: "Network zone or role of the source side, such as internet, internal or DMZ", aliases: [src_zone, source_zone, from_zone]}
+  dstip:       {check: ip, meaning: "IP address the connection or event was sent to", aliases: [dst, dst_ip, dest, dest_ip, destination, destination_ip, destinationip, destination_address, daddr, server_ip]}
+  dstport:     {check: port, meaning: "Port on the destination side, usually identifying the service", aliases: [dport, dst_port, dest_port, destination_port, dpt]}
+  dstintf:     {check: text, meaning: "Firewall interface where the traffic went out", aliases: [dst_interface, outbound_interface, out_interface]}
+  dstintfrole: {check: text, meaning: "Network zone or role of the destination side, such as internet, internal or DMZ", aliases: [dst_zone, dest_zone, destination_zone, to_zone]}
+  proto:       {check: int, meaning: "IP protocol number", aliases: [protocol, ip_proto, ip_protocol]}
+  service:     {check: text, meaning: "Network service name, such as HTTPS or DNS", aliases: [svc, service_name]}
+  policyid:    {check: int, meaning: "Number of the firewall rule that matched", aliases: [policy_id, rule_id, ruleid]}
+  sessionid:   {check: int, meaning: "Identifier of the network session", aliases: [session_id, sessid]}
+  srccountry:  {check: text, meaning: "Country of the source IP", aliases: [src_country, source_country, sourcecountry]}
+  dstcountry:  {check: text, meaning: "Country of the destination IP", aliases: [dst_country, dest_country, destination_country, destinationcountry]}
+  sentbyte:    {check: int, meaning: "Bytes sent by the source", aliases: [bytes_sent, sent_bytes, bytesout]}
+  rcvdbyte:    {check: int, meaning: "Bytes received by the source", aliases: [bytes_received, rcvd_bytes, recv_bytes, bytesin]}
+  duration:    {check: int, meaning: "Session length in seconds", aliases: [session_duration, elapsed, elapsed_time]}
+  app:         {check: text, meaning: "Detected application name", aliases: [application, app_name]}
+  appcat:      {check: text, meaning: "Application category", aliases: [app_category, application_category]}
+  apprisk:     {check: text, meaning: "Application risk rating", aliases: [app_risk, application_risk]}
+  logdesc:     {check: text, meaning: "Short fixed description naming the event, such as an administrator login or settings change", aliases: [log_description, event_name, eventname, event_description]}
+  msg:         {check: text, meaning: "Free-text message describing the event", aliases: [message, description, details]}
+  user:        {check: text, meaning: "Account or user name", aliases: [username, user_name, account, src_user]}
+  ui:          {check: text, meaning: "Management channel used, often including the admin's IP", aliases: [admin_interface, management_channel]}
+  method:      {check: text, meaning: "Login method, such as HTTPS or SSH", aliases: [auth_method, login_method]}
+  status:      {check: text, meaning: "Outcome of a login or operation, such as success or failed", aliases: [outcome, result_status, auth_status]}
+  reason:      {check: text, meaning: "Why the login or operation had that outcome", aliases: [failure_reason, fail_reason]}
+  hostname:    {check: text, meaning: "Host or domain name, for web and DNS events", aliases: [host, domain, fqdn, qname, query_name]}
+  url:         {check: text, meaning: "Requested URL path", aliases: [uri, request_url, request_uri, url_path]}
+  catdesc:     {check: text, meaning: "Web category description", aliases: [url_category, web_category]}
+  attack:      {check: text, meaning: "Name of the intrusion signature that matched", aliases: [signature, threat, threat_name, signature_name, attack_name]}
+  attackid:    {check: int, meaning: "Numeric identifier of the intrusion signature", aliases: [signature_id, threat_id, attack_id, sid]}
+  severity:    {check: text, meaning: "Severity of a security alert", aliases: [threat_severity, alert_severity, sev]}
+  virus:       {check: text, meaning: "Name of the malware detected", aliases: [malware, malware_name, virus_name]}
+  crscore:     {check: int, meaning: "Client reputation or correlation score given to the event", aliases: [reputation_score, risk_score]}
+
+values:
+  type:
+    traffic: "Network traffic or session record"
+    event: "System, management or VPN event"
+    utm: "Security inspection alert: intrusion, antivirus, DNS, URL filter or application control"
+  subtype:
+    ips: "Intrusion prevention alert"
+    virus: "Antivirus or malware alert"
+    dns: "DNS query record"
+    webfilter: "URL or web filtering record"
+    vpn: "Remote-access VPN event"
+    system: "Firewall system or administrator event"
+  action:
+    accept: "Network traffic was allowed by the firewall"
+    deny: "Network traffic was denied by a firewall rule"
+    blocked: "A security check stopped this item, such as antivirus"
+    dropped: "An intrusion prevention check dropped the traffic"
+    detected: "A security check noticed something but let it continue"
+    ssl-login: "A user logged in to the SSL VPN"
+    tunnel-up: "A VPN tunnel was established"
+    login: "A login attempt to the firewall, whether it succeeded or failed. The firewall did not block traffic"
+  srcintfrole: &zones
+    wan: "Internet or untrusted side"
+    lan: "Internal or trusted side"
+    dmz: "DMZ or perimeter server zone"
+  dstintfrole: *zones
+  logdesc:
+    "Admin login successful": "An administrator successfully logged in to manage the firewall"
+    "Admin login failed": "An administrator login to the firewall failed"
+    "Attribute configured": "A firewall setting or policy was changed"
+    "Object attribute configured": "A firewall configuration object, such as an admin account, was added, changed or deleted"
+
+# Common words, matched without an LLM. A field name is split into words, then side + kind names a column.
+words:
+  sides:
+    source: [src, source, origin, client, initiator, from, ingress, inbound, entry, rx, attacker, local]
+    destination: [dst, dest, destination, target, server, responder, to, egress, outbound, exit, tx, victim, remote]
+  kinds:
+    address: {source: srcip, destination: dstip, words: [ip, addr, address, ipaddr, ipaddress, host]}
+    port: {source: srcport, destination: dstport, words: [port, socket]}
+    interface: {source: srcintf, destination: dstintf, words: [interface, intf, iface, if, nic, link]}
+    zone: {source: srcintfrole, destination: dstintfrole, words: [zone, role, side, trust, exposure]}
+    country: {source: srccountry, destination: dstcountry, words: [country, geo, region, nation, location]}
+  bytes:
+    sentbyte: [sent, out, outbound, tx, up, upload, orig]
+    rcvdbyte: [received, rcvd, recv, in, inbound, rx, down, download, resp]
+    units: [byte, bytes, octet, octets, volume, payload]
+  # Only unambiguous words. `block` and `drop` are left to the LLM: vendors use them for different things.
+  values:
+    action:
+      accept: [allow, allowed, permit, permitted, accepted, forward, forwarded, passed]
+      deny: [denied, reject, rejected, refuse, refused]
+      detected: [alert, alerted, detect, flagged]
+    srcintfrole: &zone_words
+      wan: [untrust, untrusted, outside, external, internet, public]
+      lan: [trust, trusted, inside, internal, private]
+      dmz: [perimeter, demilitarized]
+    dstintfrole: *zone_words
+    type:
+      traffic: [flow, netflow, session, sessions, conversation, firewall]
+      utm: [threat, security, inspection]
+      event: [system, platform, appliance, audit]
+    subtype:
+      ips: [ids, idsips, intrusion, intrusionprevention, threatprevention]
+      virus: [antivirus, av, antimalware, malware]
+      dns: [dnsquery, nslookup, dnsfilter]
+      webfilter: [urlfilter, urlfiltering, webfiltering, webcontrol, urlcontrol]
+      vpn: [sslvpn, remoteaccess, vpnclient]
+      system: [management, admin, administration]

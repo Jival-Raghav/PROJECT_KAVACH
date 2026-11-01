@@ -64,8 +64,13 @@ def _flush(batch: dict[str, list], path: Path) -> None:
 
 
 def _ingest_range(log_path: Path, start: int, end: int, first_line: int, events_dir: Path,
-                  tag: int, batch_size: int) -> dict:
+                  tag: int, batch_size: int, schema_path: Path | None = None) -> dict:
     """Parse the lines in bytes [start, end) into Parquet parts. `first_line` numbers the first one."""
+    parse = parse_line
+    if schema_path is not None:  # a log format learned by onboarding; FortiGate logs never come here
+        from killchain.onboard import load_schema, make_parser
+
+        parse = make_parser(load_schema(schema_path))
     names = [name for name, _ in FIELDS]
     batch: dict[str, list] = {n: [] for n in names}
     read = parsed = skipped = parts = pending = 0
@@ -80,7 +85,7 @@ def _ingest_range(log_path: Path, start: int, end: int, first_line: int, events_
             rec = None
             if raw.endswith(b"\n"):  # a final line without newline is a truncated write
                 try:
-                    rec = parse_line(raw.decode("utf-8"), first_line + read - 1)
+                    rec = parse(raw.decode("utf-8"), first_line + read - 1)
                 except UnicodeDecodeError:
                     rec = None
             if rec is None:
@@ -129,20 +134,20 @@ def _count_newlines(log_path: Path, start: int, end: int) -> int:
 
 
 def _ingest_parallel(log_path: Path, events_dir: Path, ranges: list[tuple[int, int]],
-                     workers: int, batch_size: int) -> list[dict]:
+                     workers: int, batch_size: int, schema_path: Path | None = None) -> list[dict]:
     # spawn everywhere: forking a process that has loaded DuckDB or Arrow threads is unsafe.
     with mp.get_context("spawn").Pool(workers) as pool:
         counts = pool.starmap(_count_newlines, [(log_path, s, e) for s, e in ranges], chunksize=1)
         first_lines = [1 + sum(counts[:i]) for i in range(len(ranges))]
         # Many small ranges, handed out as workers free up, so a slow region cannot idle the others.
         return pool.starmap(_ingest_range,
-                            [(log_path, s, e, first, events_dir, tag, batch_size)
+                            [(log_path, s, e, first, events_dir, tag, batch_size, schema_path)
                              for tag, ((s, e), first) in enumerate(zip(ranges, first_lines))],
                             chunksize=1)
 
 
 def ingest_log(log_path: Path, out_dir: Path, batch_size: int = 200_000, workers: int = 1,
-               chunk_bytes: int = 256 * 1024 * 1024) -> IngestStats:
+               chunk_bytes: int = 256 * 1024 * 1024, schema_path: Path | None = None) -> IngestStats:
     start = time.perf_counter()
     events_dir = Path(out_dir) / "events"
     events_dir.mkdir(parents=True, exist_ok=True)
@@ -154,9 +159,9 @@ def ingest_log(log_path: Path, out_dir: Path, batch_size: int = 200_000, workers
     ranges = _line_aligned_ranges(log_path, size, chunk_bytes)
     parallel = workers > 1 and len(ranges) > 1
     if parallel:
-        results = _ingest_parallel(log_path, events_dir, ranges, workers, batch_size)
+        results = _ingest_parallel(log_path, events_dir, ranges, workers, batch_size, schema_path)
     else:
-        results = [_ingest_range(log_path, 0, size, 1, events_dir, 0, batch_size)]
+        results = [_ingest_range(log_path, 0, size, 1, events_dir, 0, batch_size, schema_path)]
     worker_peaks: dict[int, float] = {}
     for r in results:
         worker_peaks[r["pid"]] = max(worker_peaks.get(r["pid"], 0.0), r["peak_rss_mb"])

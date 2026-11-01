@@ -39,10 +39,70 @@ def cmd_run(a: argparse.Namespace) -> None:
     log = Path(a.log or get_settings().KILLCHAIN_LOG_PATH)
     if not a.skip_ingest and not log.is_file():
         raise SystemExit(f"Log not found: {log}\nPass --log PATH or set KILLCHAIN_LOG_PATH in .env.")
+    schema = Path(a.schema) if a.schema else None
+    if schema:
+        from killchain.onboard import load_schema
+
+        try:
+            load_schema(schema)
+        except (OSError, ValueError) as exc:
+            raise SystemExit(str(exc)) from exc
+    elif not a.skip_ingest:
+        _require_known_format(log)
     meta = run_killchain(log, _run_dir(a.run_id),
                          Path(get_settings().KILLCHAIN_RULES_DIR), skip_ingest=a.skip_ingest,
+                         schema_path=schema,
                          progress=lambda s: print(f"[killchain] {s}", flush=True))
     print(json.dumps(meta, indent=1))
+
+
+def _require_known_format(log: Path) -> None:
+    """Stop early on a format Kavach can't read, instead of skipping every line and reporting no attacks."""
+    from killchain.parse import parse_line
+
+    with open(log, "rb") as fh:
+        for n, raw in enumerate(fh, 1):
+            if parse_line(raw.decode("utf-8", errors="replace"), n) is not None:
+                return
+            if n >= 1000:
+                break
+    raise SystemExit(f"{log} is not a FortiGate log. Learn its format first:\n"
+                     f"  python -m killchain.cli onboard --log {log} --schema config/log_sources/NAME.yaml")
+
+
+def cmd_onboard(a: argparse.Namespace) -> None:
+    from killchain.onboard import build_schema, save_schema, scan_log
+    from llm.client import ProviderError, get_mapper_client
+
+    say = lambda s: print(f"[onboard] {s}", flush=True)  # noqa: E731
+    say(f"scanning {a.log}")
+    try:
+        scan = scan_log(Path(a.log))
+        client = get_mapper_client()
+        schema = build_schema(scan, lambda msgs: client.chat(msgs, temperature=0.0, max_tokens=1500),
+                              Path(a.schema).stem, progress=say)
+    except (OSError, ValueError, ProviderError) as exc:
+        raise SystemExit(str(exc)) from exc
+    save_schema(schema, Path(a.schema))
+    review = schema["review"]
+    print(f"\nFormat: {schema['format']}. Timestamp: {schema['timestamp']['field']} ({schema['timestamp']['kind']}).")
+    print(f"Mapped {len(schema['fields'])} fields; {len(review['columns_not_found'])} columns not found.")
+    for field, info in review["how_mapped"].items():
+        print(f"  {field} -> {info['target']}  [{info['by']}, confidence {info['confidence']}]")
+    for col, table in schema["values"].items():
+        print(f"  values of {col}: {table}")
+    for w in review["warnings"]:
+        print(f"  WARNING: {w}")
+    for r in review["rejected"]:
+        print(f"  REJECTED: {r['source']} -> {r['target']}: {r['reason']}")
+    print(f"\nReview {a.schema}, then run:\n  python -m killchain.cli approve-schema {a.schema}")
+
+
+def cmd_approve_schema(a: argparse.Namespace) -> None:
+    from killchain.onboard import approve_schema
+
+    approve_schema(Path(a.path))
+    print(f"Approved {a.path}. Run it with: python -m killchain.cli run --log LOG --schema {a.path} --run-id NAME")
 
 
 def render_benchmark(m, meta: dict) -> str:
@@ -130,7 +190,15 @@ def main(argv: list[str] | None = None) -> None:
     r.add_argument("--log")
     r.add_argument("--run-id", default=get_settings().KILLCHAIN_RUN_ID)
     r.add_argument("--skip-ingest", action="store_true")
+    r.add_argument("--schema", help="approved schema for a log format that is not FortiGate")
     r.set_defaults(fn=cmd_run)
+    o = sub.add_parser("onboard", help="learn an unknown log format; sends statistics and sample records to the LLM")
+    o.add_argument("--log", required=True)
+    o.add_argument("--schema", required=True, help="where to save the proposed schema")
+    o.set_defaults(fn=cmd_onboard)
+    ap = sub.add_parser("approve-schema", help="mark a reviewed schema as safe to use")
+    ap.add_argument("path")
+    ap.set_defaults(fn=cmd_approve_schema)
     b = sub.add_parser("bench", help="score a run against the ground truth")
     b.add_argument("--run-id", default=get_settings().KILLCHAIN_RUN_ID)
     b.add_argument("--gt")

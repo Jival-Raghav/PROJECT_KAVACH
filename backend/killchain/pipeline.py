@@ -45,7 +45,8 @@ def _incident_json(inc: Incident, con_graph, assets) -> dict:
 
 def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: bool = False,
                   assets_path: Path | None = None,
-                  progress: Callable[[str], None] | None = None) -> dict:
+                  progress: Callable[[str], None] | None = None,
+                  schema_path: Path | None = None) -> dict:
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     say = progress or (lambda _s: None)
@@ -60,7 +61,8 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
     else:
         say("ingest")
         ingest = ingest_log(Path(log_path), run_dir,
-                            workers=get_settings().KILLCHAIN_INGEST_WORKERS).model_dump()
+                            workers=get_settings().KILLCHAIN_INGEST_WORKERS,
+                            schema_path=schema_path).model_dump()
         seconds["ingest"] = round(time.perf_counter() - t, 2)
 
     say("detect")
@@ -123,6 +125,14 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
         "anomaly_lead_count": len(leads),
         "raw_alerts_merged": sum(i.raw_alert_count for i in incidents),
     }
+    source_schema = str(schema_path) if schema_path else old.get("source_schema")
+    if source_schema:  # only logs read through a learned schema report what they can support
+        from killchain.onboard import rule_coverage
+
+        meta["source_schema"] = source_schema
+        con = open_events(run_dir)
+        meta["rule_coverage"] = rule_coverage(con, rules)
+        con.close()
     meta_path.write_text(json.dumps(meta, indent=1), encoding="utf-8")
     _CACHE.pop(str(run_dir), None)
     say("done")
