@@ -136,15 +136,17 @@ fails. The live path has been tested with simulated responses, not against real 
 
 ## Other log formats (experimental)
 
-FortiGate logs use the normal parser. Other key=value, JSON or CSV logs can be translated into the same columns, so
-rules and analysis run unchanged. Common words match the obvious names, an LLM handles the rest, code checks every answer
-against the data, and a person approves the stored schema. Parsing itself never calls an LLM.
+Kavach chooses the parser for any input file. FortiGate logs use the normal parser, with no LLM. Other key=value, JSON or
+CSV logs reuse a saved schema if the format is known. Otherwise common words match the obvious names, an LLM handles the
+rest, code checks every answer against the data, and the schema is saved so the format is only learned once. Parsing
+itself never calls an LLM. The log is translated into the same columns, so rules and analysis run unchanged.
+
+Results from an automatically learned schema are marked as not reviewed until a person checks and approves it:
 
 ```bash
 cd backend
-python -m killchain.cli onboard --log LOG --schema ../config/log_sources/NAME.yaml  # sends statistics and sample records to the LLM
-python -m killchain.cli approve-schema ../config/log_sources/NAME.yaml              # after reviewing it
-python -m killchain.cli run --log LOG --schema ../config/log_sources/NAME.yaml --run-id NAME
+python -m killchain.cli run --log LOG --run-id NAME   # learns the format if needed; sends statistics and sample records to the LLM
+python -m killchain.cli approve-schema data/killchain/schemas/LOG.yaml
 ```
 
 Tested by rewriting `firex-10G.log` with different names (`scripts/bench_schema_onboarding.py`), before a later fix for

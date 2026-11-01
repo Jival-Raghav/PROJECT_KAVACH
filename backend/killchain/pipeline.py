@@ -59,6 +59,10 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
         ingest = old.get("ingest")
         seconds["ingest"] = float(old.get("seconds", {}).get("ingest", 0.0))
     else:
+        if schema_path is None:
+            from killchain.onboard import choose_parser
+
+            schema_path = choose_parser(Path(log_path), progress=say)
         say("ingest")
         ingest = ingest_log(Path(log_path), run_dir,
                             workers=get_settings().KILLCHAIN_INGEST_WORKERS,
@@ -127,9 +131,10 @@ def run_killchain(log_path: Path, run_dir: Path, rules_dir: Path, skip_ingest: b
     }
     source_schema = str(schema_path) if schema_path else old.get("source_schema")
     if source_schema:  # only logs read through a learned schema report what they can support
-        from killchain.onboard import rule_coverage
+        from killchain.onboard import load_schema, rule_coverage
 
         meta["source_schema"] = source_schema
+        meta["schema_reviewed"] = load_schema(Path(source_schema))["approved"] is True
         con = open_events(run_dir)
         meta["rule_coverage"] = rule_coverage(con, rules)
         con.close()

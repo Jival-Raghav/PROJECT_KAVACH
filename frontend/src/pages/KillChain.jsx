@@ -97,6 +97,12 @@ export default function KillChain() {
         </div>
       )}
 
+      {meta.schema_reviewed === false && (
+        <div className="kc-error">
+          <AlertTriangle size={14} /> This log is not FortiGate. Kavach learned its format automatically and nobody has
+          reviewed that yet, so outcomes and risk scores may be wrong. Approve the schema after checking it.
+        </div>
+      )}
       {error && <div className="kc-error"><AlertTriangle size={14} /> {error}</div>}
       {status?.status === 'error' && <div className="kc-error"><AlertTriangle size={14} /> {status.error}</div>}
 

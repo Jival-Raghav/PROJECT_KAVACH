@@ -654,7 +654,7 @@ def load_schema(path: Path, require_approved: bool = True) -> dict:
 
 def approve_schema(path: Path) -> None:
     schema = load_schema(path, require_approved=False)
-    schema["approved"] = True
+    schema["approved"] = True  # a person has reviewed it; "auto" means nobody has
     save_schema(schema, path)
 
 
@@ -711,6 +711,87 @@ def make_parser(schema: dict) -> Callable[[str, int], dict | None]:
         return rec
 
     return parse
+
+
+# ── Choosing the parser for any input file ───────────────────────────────────
+
+def _sample_lines(log_path: Path, limit: int = 1000) -> list[str]:
+    lines: list[str] = []
+    with open(log_path, "rb") as fh:
+        for raw in fh:
+            text = raw.decode("utf-8", errors="replace")
+            if text.strip():
+                lines.append(text)
+            if len(lines) >= limit:
+                break
+    return lines
+
+
+def is_fortigate(lines: list[str]) -> bool:
+    """FortiGate lines parse with the normal parser and carry its log id and type fields."""
+    from killchain.parse import parse_line
+
+    good = 0
+    for n, line in enumerate(lines, 1):
+        rec = parse_line(line, n)
+        good += bool(rec and rec["logid"] and rec["type"])
+    return bool(lines) and good >= 0.8 * len(lines)
+
+
+def _schema_fits(schema: dict, names: set[str], fmt: str) -> bool:
+    """A saved schema fits when the log has the same layout, its timestamp field and largely the same fields."""
+    known = set(schema["fields"]) | set((schema.get("review") or {}).get("unmapped_log_fields") or [])
+    known.add(schema["timestamp"]["field"])
+    return (schema["format"] == fmt and schema["timestamp"]["field"] in names and bool(names)
+            and len(names & known) >= 0.9 * len(names))
+
+
+def find_saved_schema(lines: list[str], folders: list[Path]) -> Path | None:
+    """Reuse a schema for a format already learned, preferring ones a person has reviewed."""
+    fmt, columns = detect_layout(lines)
+    names: set[str] = set()
+    for line in lines:
+        names |= set(tokenize(line, fmt, columns) or {})
+    fits = []
+    for folder in folders:
+        for path in sorted(Path(folder).glob("*.yaml")) if Path(folder).is_dir() else []:
+            try:
+                schema = load_schema(path, require_approved=True)
+            except (ValueError, KeyError, TypeError, yaml.YAMLError):
+                continue
+            if _schema_fits(schema, names, fmt):
+                fits.append((schema["approved"] is not True, str(path), path))
+    return min(fits)[2] if fits else None
+
+
+def choose_parser(log_path: Path, progress: Callable[[str], None] = lambda _s: None,
+                  llm: Callable[[list[dict]], str] | None = None) -> Path | None:
+    """None means the normal FortiGate parser. Otherwise, the schema to read this log with."""
+    lines = _sample_lines(log_path)
+    if is_fortigate(lines):
+        progress("FortiGate log: using the standard parser")
+        return None
+    cfg = get_settings()
+    saved_dir = Path(cfg.KILLCHAIN_DATA_DIR) / "schemas"
+    root = Path(cfg.KILLCHAIN_CONCEPTS_PATH).parent / "log_sources"
+    saved = find_saved_schema(lines, [root, saved_dir])
+    if saved:
+        progress(f"Known log format: using {saved.name}")
+        return saved
+    if llm is None:
+        if cfg.LLM_REPLAY_ONLY:
+            raise ValueError("This is not a FortiGate log, and learning a new format needs the LLM. "
+                             "Set LLM_REPLAY_ONLY=0 and GROQ_API_KEY in .env.")
+        from llm.client import get_mapper_client
+
+        client = get_mapper_client()
+        llm = lambda messages: client.chat(messages, temperature=0.0, max_tokens=1500)  # noqa: E731
+    progress("New log format: learning it, which sends statistics and sample records to the LLM")
+    schema = build_schema(scan_log(log_path), llm, Path(log_path).stem, progress=progress)
+    schema["approved"] = "auto"  # usable, but reported as unreviewed until a person approves it
+    path = saved_dir / f"{Path(log_path).stem}.yaml"
+    save_schema(schema, path)
+    return path
 
 
 # ── What can run on this log ─────────────────────────────────────────────────

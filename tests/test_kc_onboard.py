@@ -345,12 +345,98 @@ def test_missing_fields_are_reported_not_hidden(tmp_path):
     assert by_id["KC-RECON-001"]["status"] == "missing_fields" and "srcintfrole" in by_id["KC-RECON-001"]["missing"]
 
 
-def test_unknown_format_stops_early_and_fortigate_passes(tmp_path):
-    from killchain.cli import _require_known_format
+def _settings(tmp_path, monkeypatch, replay=False):
+    from config import get_settings
 
-    good = tmp_path / "fg.log"
-    good.write_text(fg_line(at(0), action="accept") + "\n", encoding="utf-8")
-    _require_known_format(good)
-    bad = _write(tmp_path, _lines())
-    with pytest.raises(SystemExit, match="not a FortiGate log"):
-        _require_known_format(bad)
+    monkeypatch.setattr(get_settings(), "KILLCHAIN_DATA_DIR", str(tmp_path / "kc"))
+    monkeypatch.setattr(get_settings(), "LLM_REPLAY_ONLY", replay)
+
+
+def test_fortigate_log_uses_the_standard_parser_without_any_llm(tmp_path, monkeypatch):
+    from killchain.onboard import choose_parser
+
+    _settings(tmp_path, monkeypatch)
+    log = tmp_path / "fg.log"
+    log.write_text("".join(fg_line(at(i), action="accept", logid="0000000013") + "\n" for i in range(5)), encoding="utf-8")
+
+    def no_llm(_messages):
+        raise AssertionError("the LLM must not be called for FortiGate")
+    assert choose_parser(log, llm=no_llm) is None
+
+
+def test_fortigate_log_with_junk_at_the_end_is_still_fortigate():
+    from killchain.onboard import is_fortigate
+
+    assert is_fortigate([fg_line(at(i), action="accept", logid="1") + "\n" for i in range(9)] + ["\x8b junk\n"])
+
+
+def test_other_layouts_are_not_mistaken_for_fortigate():
+    from killchain.onboard import is_fortigate
+
+    assert not is_fortigate([_vendor_line(at(0), action="accept", srcip="1.1.1.1", dstip="2.2.2.2") + "\n"] * 5)
+    assert not is_fortigate(['date=2026-10-23 eventtime=1792745320000000000 a=1 b=2\n'] * 5)
+    assert not is_fortigate([])
+
+
+def test_new_format_is_learned_once_then_reused(tmp_path, monkeypatch):
+    from killchain.onboard import choose_parser
+
+    _settings(tmp_path, monkeypatch)
+    log = _write(tmp_path, _lines())
+    llm = _llm(GOOD, VALS)
+    monkeypatch.setattr("killchain.onboard.time.sleep", lambda _s: None)
+    first = choose_parser(log, llm=llm)
+    assert first is not None and llm.calls
+    assert load_schema(first)["approved"] == "auto"
+    used = len(llm.calls)
+    assert choose_parser(log, llm=llm) == first
+    assert len(llm.calls) == used
+
+
+def test_a_different_format_is_not_given_a_saved_schema(tmp_path, monkeypatch):
+    from killchain.onboard import find_saved_schema
+
+    _, schema = _schema(tmp_path)
+    schema["approved"] = "auto"
+    save_schema(schema, tmp_path / "saved" / "s.yaml")
+    other = [f"stamp={1792745320 + i} alpha=1 beta=2 gamma=3 delta=4\n" for i in range(5)]
+    assert find_saved_schema(other, [tmp_path / "saved"]) is None
+
+
+def test_unknown_format_with_llm_off_stops_with_a_clear_message(tmp_path, monkeypatch):
+    from killchain.onboard import choose_parser
+
+    _settings(tmp_path, monkeypatch, replay=True)
+    with pytest.raises(ValueError, match="LLM_REPLAY_ONLY"):
+        choose_parser(_write(tmp_path, _lines()))
+
+
+def test_unrecognisable_file_is_refused(tmp_path, monkeypatch):
+    from killchain.onboard import choose_parser
+
+    _settings(tmp_path, monkeypatch)
+    bad = tmp_path / "notes.log"
+    bad.write_text("just some words\nand some more words\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="Could not recognise"):
+        choose_parser(bad, llm=_llm())
+
+
+def test_full_run_on_new_format_is_marked_not_reviewed(tmp_path, monkeypatch):
+    from killchain.onboard import approve_schema as approve, choose_parser
+    from killchain.pipeline import run_killchain
+
+    _settings(tmp_path, monkeypatch)
+    log = _write(tmp_path, _lines())
+    monkeypatch.setattr("killchain.onboard.time.sleep", lambda _s: None)
+    path = choose_parser(log, llm=_llm(GOOD, VALS))
+    meta = run_killchain(log, tmp_path / "run", REPO / "config/detection_rules", schema_path=path)
+    assert meta["schema_reviewed"] is False and meta["rule_coverage"]["rules_total"] > 0
+    approve(path)
+    assert run_killchain(log, tmp_path / "run2", REPO / "config/detection_rules", schema_path=path)["schema_reviewed"] is True
+
+
+def test_explicit_unapproved_schema_is_still_refused(tmp_path):
+    _, schema = _schema(tmp_path)
+    save_schema(schema, tmp_path / "s.yaml")
+    with pytest.raises(ValueError, match="not been approved"):
+        load_schema(tmp_path / "s.yaml")

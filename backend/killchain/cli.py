@@ -47,27 +47,14 @@ def cmd_run(a: argparse.Namespace) -> None:
             load_schema(schema)
         except (OSError, ValueError) as exc:
             raise SystemExit(str(exc)) from exc
-    elif not a.skip_ingest:
-        _require_known_format(log)
-    meta = run_killchain(log, _run_dir(a.run_id),
-                         Path(get_settings().KILLCHAIN_RULES_DIR), skip_ingest=a.skip_ingest,
-                         schema_path=schema,
-                         progress=lambda s: print(f"[killchain] {s}", flush=True))
+    try:
+        meta = run_killchain(log, _run_dir(a.run_id),
+                             Path(get_settings().KILLCHAIN_RULES_DIR), skip_ingest=a.skip_ingest,
+                             schema_path=schema,
+                             progress=lambda s: print(f"[killchain] {s}", flush=True))
+    except ValueError as exc:  # an unreadable format or a missing LLM key: say so plainly
+        raise SystemExit(str(exc)) from exc
     print(json.dumps(meta, indent=1))
-
-
-def _require_known_format(log: Path) -> None:
-    """Stop early on a format Kavach can't read, instead of skipping every line and reporting no attacks."""
-    from killchain.parse import parse_line
-
-    with open(log, "rb") as fh:
-        for n, raw in enumerate(fh, 1):
-            if parse_line(raw.decode("utf-8", errors="replace"), n) is not None:
-                return
-            if n >= 1000:
-                break
-    raise SystemExit(f"{log} is not a FortiGate log. Learn its format first:\n"
-                     f"  python -m killchain.cli onboard --log {log} --schema config/log_sources/NAME.yaml")
 
 
 def cmd_onboard(a: argparse.Namespace) -> None:
