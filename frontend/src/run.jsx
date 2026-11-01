@@ -3,6 +3,7 @@ import { getLiveStatus, getRuns, setApiRunId } from './api'
 
 const RunContext = createContext({
   runId: 'firex', selectRun: () => {}, runs: [], refreshRuns: () => {}, live: null, generation: 0,
+  refreshLive: () => {},
 })
 export const useRun = () => useContext(RunContext)
 
@@ -30,6 +31,12 @@ export function RunProvider({ children }) {
   const isLive = runs.find(r => r.run_id === runId)?.kind === 'live'
   const status = live?.status
 
+  const refreshLive = useCallback(
+    () => getLiveStatus(runId).then(setLive).catch(() => {}), [runId])
+
+  // Keep the selector label current when a live run changes state.
+  useEffect(() => { if (status) refreshRuns() }, [status, refreshRuns])
+
   // Load live state for live runs; keep polling while it is processing.
   useEffect(() => {
     if (!isLive) { setLive(null); return }
@@ -42,8 +49,8 @@ export function RunProvider({ children }) {
   }, [runId, isLive, status])
 
   const value = useMemo(() => ({
-    runId, selectRun, runs, refreshRuns, live, generation: live?.generation ?? 0,
-  }), [runId, selectRun, runs, refreshRuns, live])
+    runId, selectRun, runs, refreshRuns, live, generation: live?.generation ?? 0, refreshLive,
+  }), [runId, selectRun, runs, refreshRuns, live, refreshLive])
 
   return <RunContext.Provider value={value}>{children}</RunContext.Provider>
 }

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertTriangle, ChevronRight, CircleDot, FileCode2, Fingerprint, Gauge, Loader2, Play,
-  RefreshCw, Route, Search,
+  Radio, RefreshCw, Route, Search,
 } from 'lucide-react'
 import { getIncidents, getKillchainRules, getKillchainStatus, runKillchain } from '../api'
 import IncidentDetail from './IncidentDetail'
 import { useRun } from '../run'
+import StartLive from './live/StartLive'
+import ChangeFeed from './live/ChangeFeed'
 
 export const STAGES = [
   'Reconnaissance', 'Weaponization', 'Delivery', 'Exploitation',
@@ -37,8 +39,11 @@ function Kpi({ label, value }) {
 }
 
 export default function KillChain() {
-  const { runs, runId, generation } = useRun()
-  const isBatch = (runs.find(r => r.run_id === runId)?.kind ?? 'batch') === 'batch'
+  const { runs, runId, generation, live } = useRun()
+  const kind = runs.find(r => r.run_id === runId)?.kind ?? 'batch'
+  const isBatch = kind === 'batch'
+  const isLive = kind === 'live'
+  const [showStart, setShowStart] = useState(false)
   const [incidents, setIncidents] = useState([])
   const [status, setStatus] = useState(null)
   const [selected, setSelected] = useState(null)
@@ -84,6 +89,9 @@ export default function KillChain() {
         </div>
         <div className="kc-actions">
           <button className="btn-ghost" onClick={load}><RefreshCw size={13} /> Refresh</button>
+          <button className="btn-ghost" onClick={() => setShowStart(v => !v)} aria-expanded={showStart}>
+            <Radio size={13} /> New live run
+          </button>
           {isBatch && (
             <button className="btn-primary" onClick={start} disabled={running}>
               {running ? <Loader2 size={13} className="spin-slow" /> : <Play size={13} />}
@@ -101,6 +109,12 @@ export default function KillChain() {
           detection. The remaining {analysed.toLocaleString()} events produced {incidents.length} incidents.
         </div>
       )}
+
+      {(showStart || (incidents.length === 0 && runId !== 'firex' && live?.status !== 'processing')) && (
+        <StartLive onStarted={() => setShowStart(false)} />
+      )}
+
+      {isLive && <ChangeFeed onOpen={setSelected} />}
 
       {error && <div className="kc-error"><AlertTriangle size={14} /> {error}</div>}
       {status?.status === 'error' && <div className="kc-error"><AlertTriangle size={14} /> {status.error}</div>}

@@ -1362,3 +1362,43 @@ button.rv-cite:hover { color: var(--on-accent); background: var(--accent); borde
   border-color: var(--text-muted);
 }
 .run-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.live-start { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.live-start-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.live-start-row { display: flex; gap: 8px; }
+.live-start-input {
+  flex: 1; min-width: 0; height: 32px; padding: 0 10px; font-size: 13px;
+  border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-primary);
+}
+.live-start-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.live-start-note { margin: 0; font-size: 12px; }
+
+.live-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 8px 20px; flex-shrink: 0; font-size: 12px;
+  border-bottom: 1px solid var(--border); background: var(--surface);
+}
+.live-chip { color: var(--accent); }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: live-pulse 1.6s ease-in-out infinite; }
+@keyframes live-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.75); } }
+@media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+.live-progress { width: 180px; height: 6px; border-radius: 3px; background: var(--surface-high); overflow: hidden; }
+.live-progress > div { height: 100%; background: var(--accent); transition: width 400ms ease; }
+.live-text { color: var(--text-secondary); }
+.live-early { display: inline-flex; align-items: center; gap: 4px; }
+.live-err { color: var(--c-critical); }
+.live-spacer { flex: 1; }
+
+.change-feed { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.change-feed-head { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.change-feed-item { padding-top: 8px; border-top: 1px solid var(--border-subtle); }
+.change-feed-item:first-of-type { padding-top: 0; border-top: 0; }
+.change-feed-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 11px; }
+.change-feed ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-primary); }
+.live-link {
+  border: 0; background: none; padding: 0; font: inherit; font-weight: 600;
+  color: var(--accent); cursor: pointer;
+}
+.live-link:hover { text-decoration: underline; }
+.live-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

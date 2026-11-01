@@ -10,6 +10,7 @@ import ResponsePlan from './pages/ResponsePlan'
 import ControlFindings from './pages/ControlFindings'
 import { RunProvider, useRun } from './run'
 import RunSelector from './pages/live/RunSelector'
+import LiveBar from './pages/live/LiveBar'
 
 // In the order an analyst works: find the attack, understand who, then respond.
 const NAV_GROUPS = [
@@ -95,6 +96,7 @@ function AppShell() {
               <p>{active.hint}</p>
             </div>
           </div>
+          <LiveBar />
           <div className="content-area">
             <main className="left-panel"><Page key={runId} /></main>
           </div>
